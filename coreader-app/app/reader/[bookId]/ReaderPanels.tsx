@@ -382,7 +382,7 @@ function HighlightsPanel({
               onClick={() => onJump(h)}
               className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-slate-700"
             >
-              <span className="line-clamp-3 text-slate-200">ƒ?o{h.quote}ƒ??</span>
+              <span className="line-clamp-3 text-slate-200">“{h.quote}”</span>
               <span className="mt-2 block text-[11px] text-slate-500">
                 {formatRelativeDate(h.createdAt)}
               </span>

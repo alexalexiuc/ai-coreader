@@ -1,0 +1,45 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "createdAt",
+      "mimeType",
+      "originalName",
+      "size",
+      "status",
+      "storageName",
+      "storagePath",
+      "updatedAt"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "createdAt": {
+        "bsonType": "date"
+      },
+      "mimeType": {
+        "bsonType": "string"
+      },
+      "originalName": {
+        "bsonType": "string"
+      },
+      "size": {
+        "bsonType": "int"
+      },
+      "status": {
+        "bsonType": "string"
+      },
+      "storageName": {
+        "bsonType": "string"
+      },
+      "storagePath": {
+        "bsonType": "string"
+      },
+      "updatedAt": {
+        "bsonType": "date"
+      }
+    }
+  }
+}

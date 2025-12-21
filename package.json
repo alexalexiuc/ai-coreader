@@ -1,0 +1,23 @@
+{
+  "name": "ai-coreader",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node ./scripts/dev.js",
+    "dev:win": "powershell -ExecutionPolicy Bypass -File ./scripts/dev.ps1",
+    "dev:unix": "bash ./scripts/dev.sh",
+    "docker:up": "bash ./scripts/up-docker.sh",
+    "docker:down": "bash ./scripts/up-docker.sh --down",
+    "docker:up:win": "powershell -ExecutionPolicy Bypass -File ./scripts/up-docker.ps1",
+    "app:dev": "npm --prefix coreader-app run dev",
+    "app:start": "npm --prefix coreader-app run start",
+    "worker:run": "cd coreader-worker && go run .",
+    "lint": "npm --prefix coreader-app run lint",
+    "format": "npm --prefix coreader-app run format",
+    "help": "node ./scripts/help.js",
+    "db:types": "node ./infra/generate-types-from-schema.js"
+  }
+}
