@@ -4,7 +4,7 @@ import { PageContainer } from '@/ui/PageContainer';
 import { Section } from '@/ui/Section';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { useLibrary } from '@/hooks';
-import { MOCK_BOOKS } from '@/lib/mockBooks';
+import { MOCK_BOOKS } from '@/app/library/mockBooks';
 import { BookCardGrid } from '@/app/library/BookCardGrid';
 import { BookRow } from '@/app/library/BookRow';
 import { EmptyLibrary, EmptyFiltered } from '@/app/library/LibraryEmptyStates';
