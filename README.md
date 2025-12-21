@@ -15,7 +15,7 @@ Dev-friendly setup for the Next.js app, Go worker, and local infra (MongoDB + LL
 
 ## Quick start
 - Host dev (Mongo + LLM in Docker, apps on host):
-  - PowerShell: `pwsh ./scripts/dev.ps1`
+  - PowerShell: `powershell -File ./scripts/dev.ps1` (or `pwsh ./scripts/dev.ps1` if you have PowerShell 7)
   - Bash: `bash ./scripts/dev.sh`
   - Stop infra when done: `docker compose -f infra/docker-compose.yaml --profile infra down`
 - Full dockerized stack (app + worker + Mongo + LLM):

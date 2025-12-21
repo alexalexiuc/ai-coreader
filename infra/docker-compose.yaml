@@ -25,8 +25,8 @@ services:
       - OLLAMA_KEEP_ALIVE=5m
     volumes:
       - ../storage/ollama:/root/.ollama
-      - ../coreader-llm:/app/llm
-    entrypoint: ["/bin/sh", "/app/llm/ollama-entrypoint.sh"]
+      - ./ollama-entrypoint.sh:/entrypoint/ollama-entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint/ollama-entrypoint.sh"]
     networks:
       - llmreader-net
 
