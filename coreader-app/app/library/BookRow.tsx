@@ -4,13 +4,12 @@ import type { LibraryBook } from '@/lib/library';
 import { clampPct } from '@/lib/number';
 import { formatRelativeDate } from '@/lib/date';
 
-export function BookRow({
-  book,
-  onTogglePin,
-}: {
+type BookRowProps = {
   book: LibraryBook;
   onTogglePin: (id: string) => void;
-}) {
+};
+
+export const BookRow: React.FC<BookRowProps> = ({ book, onTogglePin }) => {
   const pct = clampPct(book.progressPct) ?? 0;
 
   return (
@@ -57,4 +56,4 @@ export function BookRow({
       </button>
     </div>
   );
-}
+};

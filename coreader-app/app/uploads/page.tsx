@@ -218,10 +218,8 @@ export default function FilesPage() {
         actions={<AvailableActions />}
       />
 
-      {/* Upload dropzone */}
       <DropzoneStub />
 
-      {/* Search + sort */}
       <Section paddingClassName="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-md">
@@ -264,7 +262,6 @@ export default function FilesPage() {
         />
       </div>
 
-      {/* Table */}
       <Section
         paddingClassName="p-5"
         header={{
@@ -300,7 +297,6 @@ export default function FilesPage() {
             </div>
           </div>
         )}
-        {/* </section> */}
       </Section>
     </PageContainer>
   );

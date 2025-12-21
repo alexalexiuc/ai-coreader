@@ -1,8 +1,8 @@
-import { ActionsSection } from '@/ui/ActionsSection';
-import { ContinueReadingSection, type ContinueReadingEntry } from '@/ui/ContinueReadingSection';
-import { RecentUploads, type RecentUpload } from '@/ui/RecentUploads';
+import { ActionsSection } from '@/app/ActionsSection';
+import { ContinueReadingSection, type ContinueReadingEntry } from '@/app/ContinueReadingSection';
+import { RecentUploads, type RecentUpload } from '@/app/RecentUploads';
 import { TipsList } from '@/ui/TipsList';
-import { WorkspaceOverview, type WorkspaceStats } from '@/ui/WorkspaceOverview';
+import { WorkspaceOverview, type WorkspaceStats } from '@/app/WorkspaceOverview';
 import { PageContainer } from '@/ui/PageContainer';
 
 export default function Home() {

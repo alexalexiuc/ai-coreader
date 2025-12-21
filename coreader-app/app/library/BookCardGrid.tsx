@@ -4,13 +4,12 @@ import type { LibraryBook } from '@/lib/library';
 import { clampPct } from '@/lib/number';
 import { formatRelativeDate } from '@/lib/date';
 
-export function BookCardGrid({
-  book,
-  onTogglePin,
-}: {
+type BookCardGridProps = {
   book: LibraryBook;
   onTogglePin: (id: string) => void;
-}) {
+};
+
+export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
   const pct = clampPct(book.progressPct) ?? 0;
   const isFinished = pct >= 100;
   const isReading = pct > 0 && pct < 100;

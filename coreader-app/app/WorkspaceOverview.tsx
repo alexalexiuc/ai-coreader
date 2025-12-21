@@ -1,5 +1,5 @@
-import { Section } from './Section';
-import { Card } from './Card';
+import { Section } from '../ui/Section';
+import { Card } from '../ui/Card';
 
 type WorkspaceOverviewProps = {
   stats: WorkspaceStats;

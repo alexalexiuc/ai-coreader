@@ -1,7 +1,7 @@
 import type { IconType } from 'react-icons';
 
-import { ActionCard } from './ActionCard';
-import { SectionHeader } from './SectionHeader';
+import { ActionCard } from '../ui/ActionCard';
+import { SectionHeader } from '../ui/SectionHeader';
 import {
   IoCloudUploadOutline,
   IoLibraryOutline,

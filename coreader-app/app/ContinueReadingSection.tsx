@@ -4,9 +4,9 @@ import {
   IoPlayOutline,
   IoTimeOutline,
 } from 'react-icons/io5';
-import { Card } from './Card';
-import { ActionCard } from './ActionCard';
-import { Section } from './Section';
+import { Card } from '../ui/Card';
+import { ActionCard } from '../ui/ActionCard';
+import { Section } from '../ui/Section';
 
 export type ContinueReadingEntry = {
   title: string;
