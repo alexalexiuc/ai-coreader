@@ -1,33 +1,51 @@
-# AGENTS
+# AGENTS.md
 
-This file defines default instructions for the entire repository. If you work inside a subdirectory that contains its own `AGENTS.md`, follow the more specific guidance there as well.
+Default instructions for AI agents working in this repository.
+Nested AGENTS.md files override this one.
 
-## Scope and priorities
-- Applies repo-wide unless a nested `AGENTS.md` overrides it.
-- Keep diffs focused and well-explained; prefer small, purposeful commits.
-- Avoid committing secrets or test credentials; scrub sample values from logs and docs.
+## General rules
 
-## Development workflow
-- Check for nested `AGENTS.md` files before editing.
-- Keep the codebase lint- and format-clean. Use existing project tooling instead of ad-hoc formatters.
-- When adding behavior, include targeted tests where practical and document noteworthy design decisions in code comments or commit messages.
+- Keep changes focused and minimal
+- Do not add dependencies or refactor unrelated code unless asked
+- Never commit secrets, credentials, or real tokens
+- Prefer existing tooling and conventions
 
-## Frontend (`coreader-app/`)
-- Use TypeScript-first React components; mark client components only when necessary.
-- Favor Tailwind utility classes already in use and let Prettier + `prettier-plugin-tailwindcss` manage class order.
-- Keep shared UI in `ui/`; keep route-specific logic inside `app/` pages or associated server actions.
-- Validate changes with `npm run lint`; run `npm run build` for build-sensitive changes; format with `npm run format` instead of manual edits.
+## Repo structure
 
-## Worker (`coreader-worker/`)
-- Format Go changes with `gofmt` (or `go fmt ./...`); organize imports automatically.
-- Use `context.Context` for external calls and avoid panics in favor of explicit errors.
-- Add or update tests near the code under `./...`; run `go test ./...` after behavior changes.
+- coreader-app/ → Frontend (TypeScript, React)
+- coreader-worker/ → Go worker
+- infra/, scripts/ → Infra and utilities (be conservative)
 
-## Infra and scripts (`infra/`, `scripts/`)
-- Keep scripts POSIX-friendly where possible; mirror changes in PowerShell equivalents when both exist.
-- Document required environment variables and defaults at the top of scripts.
-- For Compose changes, sanity check with `docker compose -f infra/docker-compose.yaml config` when feasible.
+## Frontend (coreader-app/)
 
-## Validation and handoff
-- Before handing off work, summarize the changes and the commands you ran (or explain why checks were skipped).
-- If you add new files or workflows, mention any setup steps needed for future contributors.
+- Use TypeScript-first React
+- Mark client components only when required
+- Use existing Tailwind patterns; let Prettier handle formatting
+- Shared UI goes in `ui/`, route logic stays close to pages
+- Run lint/build only when changes affect them
+
+## Worker (coreader-worker/)
+
+- Use gofmt
+- Avoid panics; return explicit errors
+- Use context.Context for external calls
+- Add tests only when behavior changes
+
+## Infra & scripts
+
+- Avoid infra changes unless explicitly requested
+- Document env vars in scripts
+- Validate docker-compose changes when touched
+
+## Handoff
+
+- Summarize changes
+- List commands run (or say why not)
+
+## Commit messages
+
+- Use `[type]: (AI:{ainame}) description` format
+- Types: feat, fix, docs, style, refactor, test, chore
+- Example: `feat: (AI:Codex) add new API endpoint for user data`
+- Add detailed description if needed
+- Reference issues/PRs if applicable
