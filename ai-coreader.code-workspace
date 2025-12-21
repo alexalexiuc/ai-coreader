@@ -1,0 +1,23 @@
+{
+  "folders": [
+    {
+      "name": "coreader-app",
+      "path": "coreader-app"
+    },
+    {
+      "name": "coreader-worker",
+      "path": "coreader-worker"
+    },
+    {
+      "name": "storage",
+      "path": "storage"
+    },
+    {
+      "path": "infra"
+    },
+    {
+      "path": "scripts"
+    }
+  ],
+  "settings": {}
+}

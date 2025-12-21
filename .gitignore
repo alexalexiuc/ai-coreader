@@ -1,0 +1,86 @@
+storage/**
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries and build outputs
+*.test
+*.out
+coverage.out
+
+# Build / output directories
+/bin/
+/build/
+/dist/
+
+# Vendor (if you DON'T commit vendor/); remove if you vendored deps intentionally
+/vendor/
+
+# Go build cache and packages (local GOPATH artifacts)
+pkg/
+pkg/mod/
+
+# Tools and logs
+*.log
+*.lock
+
+# Environment / secrets
+.env
+.env.*.local
+.env.local
+
+# IDE / editor files
+.vscode/
+.idea/
+*.iml
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

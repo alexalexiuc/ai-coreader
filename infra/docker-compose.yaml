@@ -1,0 +1,76 @@
+name: ai-coreader-project
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: llmreader-mongo
+    restart: unless-stopped
+    profiles: [infra, stack]
+    ports:
+      - "27017:27017"
+    volumes:
+      - ../storage/mongo:/data/db
+    networks:
+      - llmreader-net
+
+  llm:
+    image: ollama/ollama:latest
+    container_name: llm
+    restart: unless-stopped
+    gpus: all
+    profiles: [infra, stack]
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_KEEP_ALIVE=5m
+    volumes:
+      - ../storage/ollama:/root/.ollama
+      - ../coreader-llm:/app/llm
+    entrypoint: ["/bin/sh", "/app/llm/ollama-entrypoint.sh"]
+    networks:
+      - llmreader-net
+
+  app:
+    build:
+      context: ../coreader-app
+    container_name: llmreader-app
+    restart: unless-stopped
+    profiles: [stack]
+    depends_on:
+      - mongodb
+      - llm
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DB_NAME: llm_reader
+      FILE_STORAGE_ROOT: /app/storage
+      LLM_BASE_URL: http://llm:11434
+    volumes:
+      - ../storage:/app/storage
+    networks:
+      - llmreader-net
+
+  go-worker:
+    build:
+      context: ../coreader-worker
+    container_name: llmreader-go-worker
+    restart: unless-stopped
+    profiles: [stack]
+    depends_on:
+      - mongodb
+      - llm
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DB_NAME: llm_reader
+      FILE_STORAGE_ROOT: /worker-storage
+      LLM_BASE_URL: http://llm:11434
+    volumes:
+      - ../storage:/worker-storage
+    networks:
+      - llmreader-net
+
+networks:
+  llmreader-net:
+    driver: bridge

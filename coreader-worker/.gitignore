@@ -1,0 +1,42 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries and build outputs
+*.test
+*.out
+coverage.out
+
+# Build / output directories
+/bin/
+/build/
+/dist/
+
+# Vendor (if you DON'T commit vendor/); remove if you vendored deps intentionally
+/vendor/
+
+# Go build cache and packages (local GOPATH artifacts)
+pkg/
+pkg/mod/
+
+# Tools and logs
+*.log
+*.lock
+
+# Environment / secrets
+.env
+.env.*.local
+.env.local
+
+# IDE / editor files
+.vscode/
+.idea/
+*.iml
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
