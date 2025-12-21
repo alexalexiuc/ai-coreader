@@ -16,7 +16,7 @@ import {
   IoListOutline,
 } from 'react-icons/io5';
 
-import type { FilterKey, SortKey } from '@/lib/library';
+import type { FilterKey, SortKey } from '@/app/library/types';
 import { Select } from '@/ui/Select';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
@@ -63,7 +63,7 @@ export default function LibraryPage() {
       <SectionHeader label="Library" title="Your books" actions={<AvailableActions />} />
 
       {/* Search + controls */}
-      <Section paddingClassName="p-4">
+      <Section paddingClass="p-4">
         <div className="flex flex-col gap-3 rounded-2xl sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-md">
             <IoSearchOutline className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-500" />
@@ -112,7 +112,7 @@ export default function LibraryPage() {
       </div>
 
       {/* Main list */}
-      <Section paddingClassName="p-5" header={{ title: 'Books', titleSize: 'lg' }}>
+      <Section paddingClass="p-5" header={{ title: 'Books', titleSize: 'lg' }}>
         {/* Empty states */}
         {isEmptyAll ? (
           <EmptyLibrary />

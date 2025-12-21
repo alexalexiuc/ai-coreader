@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { IoBookOutline, IoPin, IoPinOutline } from 'react-icons/io5';
-import type { LibraryBook } from '@/lib/library';
+import type { LibraryBook } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
 import { formatRelativeDate } from '@/lib/date';
 

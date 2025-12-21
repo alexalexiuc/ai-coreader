@@ -1,16 +1,17 @@
-export function formatRelativeDate(iso?: string, format = 'YYYY-MM-DD') {
-  if (!iso) return '--';
+'use client';
+
+export function formatRelativeDate(iso?: string) {
+  if (!iso) return '';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '--';
-
-  const parts = {
-    YYYY: String(d.getFullYear()),
-    MM: String(d.getMonth() + 1).padStart(2, '0'),
-    DD: String(d.getDate()).padStart(2, '0'),
-    HH: String(d.getHours()).padStart(2, '0'),
-    mm: String(d.getMinutes()).padStart(2, '0'),
-    ss: String(d.getSeconds()).padStart(2, '0'),
-  } as const;
-
-  return format.replace(/YYYY|MM|DD|HH|mm|ss/g, (token) => parts[token as keyof typeof parts]);
+  const now = new Date();
+  const ms = now.getTime() - d.getTime();
+  const mins = Math.floor(ms / (1000 * 60));
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString();
 }

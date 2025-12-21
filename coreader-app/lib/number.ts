@@ -1,4 +1,8 @@
+export function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
 export function clampPct(v?: number) {
   if (typeof v !== 'number') return undefined;
-  return Math.max(0, Math.min(100, Math.round(v)));
+  return clamp(v, 0, 100);
 }

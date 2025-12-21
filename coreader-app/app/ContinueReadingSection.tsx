@@ -35,7 +35,7 @@ export function ContinueReadingSection({ continueReading }: ContinueReadingSecti
         titleSize: 'lg',
       }}
       className="lg:col-span-2"
-      paddingClassName="p-4"
+      paddingClass="p-4"
     >
       {/* <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">Continue reading</h3>

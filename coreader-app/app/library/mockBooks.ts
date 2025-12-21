@@ -1,4 +1,4 @@
-import type { LibraryBook } from '../../lib/library';
+import type { LibraryBook } from './types';
 
 export const MOCK_BOOKS: LibraryBook[] = [
   {

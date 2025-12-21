@@ -9,8 +9,8 @@ import {
   IoTimeOutline,
   IoTrashOutline,
 } from 'react-icons/io5';
-import type { UploadedFile } from '@/lib/uploads';
-import { statusLabel } from '@/lib/uploads';
+import type { UploadedFile } from '@/app/uploads/types';
+import { statusLabel } from '@/app/uploads/utils';
 import { clampPct } from '@/lib/number';
 import { formatBytes } from '@/lib/bytes';
 import { formatRelativeDate } from '@/lib/date';

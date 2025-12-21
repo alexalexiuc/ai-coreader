@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { LibraryBook, FilterKey, SortKey, ViewKey } from '@/lib/library';
+import type { LibraryBook, FilterKey, SortKey, ViewKey } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
 
 export default function useLibrary(initialBooks: LibraryBook[] = []) {

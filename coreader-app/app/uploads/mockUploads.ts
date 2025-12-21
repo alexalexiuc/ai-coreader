@@ -1,4 +1,4 @@
-import type { UploadedFile } from '../../lib/uploads';
+import type { UploadedFile } from './types';
 
 export const MOCK_UPLOADS: UploadedFile[] = [
   {

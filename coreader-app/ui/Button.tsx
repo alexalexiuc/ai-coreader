@@ -15,6 +15,8 @@ type ButtonProps = {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   className?: string;
+  paddingClass?: string;
+  textSizeClass?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const baseStyles =
@@ -22,9 +24,9 @@ const baseStyles =
 
 const variantStyles: Record<string, string> = {
   primary:
-    'rounded-xl border border-slate-800 bg-slate-950/70 text-sm text-slate-200 hover:border-slate-700',
-  secondary:
-    'rounded-xl border border-slate-800 bg-slate-950/70 text-sm text-slate-200 hover:border-slate-700',
+    'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
+  active:
+    'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -37,14 +39,17 @@ export const Button: React.FC<ButtonProps> = ({
   leftIcon,
   rightIcon,
   className,
+  paddingClass,
+  textSizeClass,
   ...props
 }) => {
   const classes = clsx(
     baseStyles,
     variantStyles[variant],
     fullWidth && 'w-full',
-    'px-4 py-2',
+    paddingClass ?? 'px-4 py-2',
     className,
+    textSizeClass ?? 'text-sm',
     (disabled || loading) && 'opacity-50 pointer-events-none',
   );
 

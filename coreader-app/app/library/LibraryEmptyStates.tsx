@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { IoCloudUploadOutline, IoStorefrontOutline } from 'react-icons/io5';
-import type { FilterKey } from '@/lib/library';
+import type { FilterKey } from '@/app/library/types';
 
 export function EmptyLibrary() {
   return (

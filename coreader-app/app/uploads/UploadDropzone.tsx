@@ -47,7 +47,7 @@ export function UploadDropzone() {
   };
 
   return (
-    <Section paddingClassName="p-5" header={{ title: 'Upload', titleSize: 'lg' }}>
+    <Section paddingClass="p-5" header={{ title: 'Upload', titleSize: 'lg' }}>
       <div className="mt-2">
         <FileUpload
           accept={['text/plain', '.txt']}

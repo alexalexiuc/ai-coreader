@@ -12,7 +12,7 @@ export function RecentUploads({ recentUploads }: { recentUploads: RecentUpload[]
         title: 'Recent uploads',
         titleSize: 'lg',
       }}
-      paddingClassName="p-5"
+      paddingClass="p-5"
     >
       {recentUploads.length === 0 ? (
         <p className="mt-3 text-sm text-slate-400">

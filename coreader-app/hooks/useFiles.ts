@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { UploadedFile, FilterKey, SortKey } from '@/lib/uploads';
-import { statusOrder } from '@/lib/uploads';
+import type { UploadedFile, FilterKey, SortKey } from '@/app/uploads/types';
+import { statusOrder } from '@/app/uploads/utils';
 
 export default function useFiles(initialFiles: UploadedFile[] = []) {
   const [query, setQuery] = useState('');

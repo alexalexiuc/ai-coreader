@@ -5,12 +5,15 @@ export type SectionHeaderProps = {
   title?: string;
   description?: string;
   actions?: React.ReactNode;
-  titleSize?: 'lg' | 'xl' | '3xl';
+  titleSize?: 'sm' | 'lg' | 'xl' | '3xl';
   spaceBetween?: boolean;
+  className?: string;
 };
 
-const getTitleSizeClass = (size: 'lg' | 'xl' | '3xl') => {
+const getTitleSizeClass = (size: 'sm' | 'lg' | 'xl' | '3xl') => {
   switch (size) {
+    case 'sm':
+      return 'text-sm';
     case 'lg':
       return 'text-lg';
     case 'xl':
@@ -27,9 +30,15 @@ export const SectionHeader = ({
   actions,
   titleSize = '3xl',
   spaceBetween = true,
+  className,
 }: SectionHeaderProps) => {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className={clsx(
+        'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+        className,
+      )}
+    >
       <div>
         {label && <p className="text-xs tracking-[0.25em] text-slate-500 uppercase">{label}</p>}
         {title && (

@@ -4,7 +4,7 @@ import { SectionHeader, SectionHeaderProps } from './SectionHeader';
 type SectionProps = React.PropsWithChildren<{
   header?: React.ReactNode | SectionHeaderProps;
   className?: string;
-  paddingClassName?: string;
+  paddingClass?: string;
 }>;
 
 const isSectionHeaderProps = (
@@ -22,13 +22,13 @@ export const Section: React.FC<SectionProps> = ({
   header,
   children,
   className,
-  paddingClassName,
+  paddingClass: paddingClass,
 }) => {
   return (
     <section
       className={clsx(
         'rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl shadow-slate-950/50',
-        paddingClassName ?? 'px-6 py-7',
+        paddingClass ?? 'px-6 py-7',
         className,
       )}
     >

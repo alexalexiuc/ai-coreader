@@ -13,7 +13,7 @@ export function TipsList() {
         title: 'Tips',
         titleSize: 'lg',
       }}
-      paddingClassName="p-5"
+      paddingClass="p-5"
     >
       <ul className="mt-3 space-y-2 text-sm text-slate-300">
         {tips.map((tip, i) => (

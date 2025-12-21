@@ -1,4 +1,4 @@
-import type { FilterKey } from '@/lib/uploads';
+import type { FilterKey } from '@/app/uploads/types';
 import { IoCloudUploadOutline } from 'react-icons/io5';
 
 export function EmptyUploads() {

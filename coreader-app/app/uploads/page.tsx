@@ -1,7 +1,7 @@
 'use client';
 
 import { useFiles } from '@/hooks';
-import type { FilterKey, SortKey } from '@/lib/uploads';
+import type { FilterKey, SortKey } from '@/app/uploads/types';
 import { MOCK_UPLOADS } from '@/app/uploads/mockUploads';
 import { FileRow } from '@/app/uploads/FileRow';
 import { EmptyFiltered, EmptyUploads } from '@/app/uploads/UploadEmptyStates';
@@ -62,7 +62,7 @@ export default function FilesPage() {
 
       <UploadDropzone />
 
-      <Section paddingClassName="p-4">
+      <Section paddingClass="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-md">
             <IoSearchOutline className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-500" />
@@ -105,7 +105,7 @@ export default function FilesPage() {
       </div>
 
       <Section
-        paddingClassName="p-5"
+        paddingClass="p-5"
         header={{
           title: 'Uploaded files',
           titleSize: 'lg',
