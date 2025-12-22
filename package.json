@@ -18,6 +18,19 @@
     "lint": "npm --prefix coreader-app run lint",
     "format": "npm --prefix coreader-app run format",
     "help": "node ./scripts/help.js",
-    "db:types": "node ./infra/generate-types-from-schema.js"
+    "db:migrate": "node ./infra/db/scripts/migrate.js",
+    "db:drop": "node ./infra/db/scripts/drop-database.js",
+    "db:types": "node ./infra/db/scripts/generate-types.js"
+  },
+  "devDependencies": {
+    "bson-schema-to-typescript": "^0.0.26",
+    "dotenv-cli": "^11.0.0",
+    "json-schema-to-typescript": "^15.0.4",
+    "mongodb": "^7.0.0",
+    "prettier": "^3.7.4",
+    "quicktype": "^23.2.6"
+  },
+  "dependencies": {
+    "dotenv-mono": "^1.5.1"
   }
 }

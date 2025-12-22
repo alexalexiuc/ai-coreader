@@ -1,0 +1,60 @@
+{
+  "title": "files",
+  "description": "Files Collection",
+  "bsonType": "object",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "createdAt",
+    "mimeType",
+    "originalName",
+    "size",
+    "status",
+    "storageName",
+    "storagePath",
+    "updatedAt"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId",
+      "description": "The unique identifier for a file."
+    },
+    "createdAt": {
+      "bsonType": "date",
+      "description": "The date and time when the file record was created."
+    },
+    "mimeType": {
+      "bsonType": "string",
+      "description": "The MIME type of the file, indicating its format."
+    },
+    "originalName": {
+      "bsonType": "string",
+      "description": "The original name of the file as uploaded by the user."
+    },
+    "size": {
+      "bsonType": "int",
+      "description": "The size of the file in bytes."
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "processing",
+        "processed",
+        "failed"
+      ],
+      "description": "The current status of the file, such as 'uploaded' or 'processed'."
+    },
+    "storageName": {
+      "bsonType": "string",
+      "description": "The name used to store the file in the storage system."
+    },
+    "storagePath": {
+      "bsonType": "string",
+      "description": "The path where the file is stored in the storage system."
+    },
+    "updatedAt": {
+      "bsonType": "date",
+      "description": "The date and time when the file record was last updated."
+    }
+  }
+}

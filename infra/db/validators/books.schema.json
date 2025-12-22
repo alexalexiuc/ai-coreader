@@ -1,0 +1,73 @@
+{
+  "title": "books",
+  "description": "Books Collection",
+  "bsonType": "object",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "fileId",
+    "updatedAt",
+    "createdAt",
+    "totalChars",
+    "totalChunks",
+    "finished",
+    "source"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId",
+      "description": "The unique identifier for a book."
+    },
+    "createdAt": {
+      "bsonType": "date",
+      "description": "The date and time when the book record was created."
+    },
+    "updatedAt": {
+      "bsonType": "date",
+      "description": "The date and time when the book record was last updated."
+    },
+    "fileId": {
+      "bsonType": "objectId",
+      "description": "The identifier for the file associated with the book."
+    },
+    "title": {
+      "bsonType": "string",
+      "description": "The title of the book."
+    },
+    "author": {
+      "bsonType": "string",
+      "description": "The author of the book."
+    },
+    "publisher": {
+      "bsonType": "string",
+      "description": "The publisher of the book."
+    },
+    "year": {
+      "bsonType": "string",
+      "description": "The year the book was published."
+    },
+    "genre": {
+      "bsonType": "string",
+      "description": "The genre or category of the book."
+    },
+    "totalChars": {
+      "bsonType": "int",
+      "description": "The total number of characters in the book."
+    },
+    "totalChunks": {
+      "bsonType": "int",
+      "description": "The total number of chunks the book is divided into."
+    },
+    "finished": {
+      "bsonType": "bool",
+      "description": "Indicates whether the book processing is finished."
+    },
+    "source": {
+      "description": "The source of the book, such as user upload or shop.",
+      "enum": [
+        "user_upload",
+        "shop"
+      ]
+    }
+  }
+}

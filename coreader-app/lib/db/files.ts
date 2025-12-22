@@ -39,9 +39,7 @@ function toDTO(doc: FileDoc): FileDTO {
   };
 }
 
-export async function insertFileMetadata(
-  params: Omit<FileDoc, '_id' | 'createdAt' | 'updatedAt'>,
-): Promise<FileDTO> {
+export async function insertFileMetadata(params: Omit<FileDoc, '_id' | 'createdAt' | 'updatedAt'>): Promise<FileDTO> {
   const db = await getDb();
   const now = new Date();
 
@@ -56,9 +54,7 @@ export async function insertFileMetadata(
     storagePath: params.storagePath,
   });
 
-  const inserted = await db
-    .collection<FileDoc>(collections.FILES)
-    .findOne({ _id: result.insertedId });
+  const inserted = await db.collection<FileDoc>(collections.FILES).findOne({ _id: result.insertedId });
 
   if (!inserted) {
     throw new Error('Failed to fetch inserted file metadata');
@@ -69,11 +65,7 @@ export async function insertFileMetadata(
 
 export async function listFiles(): Promise<FileDTO[]> {
   const db = await getDb();
-  const docs = await db
-    .collection<FileDoc>(collections.FILES)
-    .find({})
-    .sort({ createdAt: -1 })
-    .toArray();
+  const docs = await db.collection<FileDoc>(collections.FILES).find({}).sort({ createdAt: -1 }).toArray();
 
   return docs.map(toDTO);
 }
