@@ -20,3 +20,17 @@ export const getMongoDb = async () => {
 
   return client.db(MONGODB_DB_NAME);
 };
+
+export function toPascalCase(name) {
+  return name
+    .replace(/(^|[_-])+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim()
+    .split(/\s+/)
+    .map((part) => {
+      const lower = part.toLowerCase();
+      if (lower === "id") return "ID";
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join("");
+}

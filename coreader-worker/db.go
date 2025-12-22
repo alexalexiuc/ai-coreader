@@ -13,6 +13,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+type BaseDoc struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
+}
+
+type HasBaseDoc interface {
+	GetBaseDoc() *BaseDoc
+}
+
 func query(coll *mongo.Collection, filter interface{}, result interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -102,13 +112,13 @@ func UpdateOneWithMeta(ctx context.Context, coll *mongo.Collection, Id primitive
 	return coll.UpdateOne(ctx, bson.D{{Key: "_id", Value: Id}}, bson.D{{Key: "$set", Value: update}})
 }
 
-func (db *DB) GetUnprocessedFiles() ([]FileDocCollection, error) {
-	var files []FileDocCollection
+func (db *DB) GetUnprocessedFiles() ([]FilesDoc, error) {
+	var files []FilesDoc
 	filter := bson.D{
 		{
 			Key: "$or", Value: bson.A{
-				bson.D{{Key: "status", Value: FileStatusPending}},
-				bson.D{{Key: "status", Value: FileStatusProcessing}},
+				bson.D{{Key: "status", Value: "pending"}},
+				bson.D{{Key: "status", Value: "processing"}},
 			},
 		},
 	}
@@ -117,12 +127,12 @@ func (db *DB) GetUnprocessedFiles() ([]FileDocCollection, error) {
 	return files, err
 }
 
-func (db *DB) SetFileStatus(fileID primitive.ObjectID, status FileStatus) error {
+func (db *DB) SetFileStatus(fileID primitive.ObjectID, status string) error {
 	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"status": status})
 	return err
 }
 
-func (db *DB) CreateBookDoc(book *BookDoc) (*BookDoc, error) {
+func (db *DB) CreateBookDoc(book *BooksDoc) (*BooksDoc, error) {
 	fmt.Printf("Creating BookDoc %+v\n", book)
 	book, err := InsertOneWithMeta(context.TODO(), db.BookDocsCollection, book)
 	return book, err

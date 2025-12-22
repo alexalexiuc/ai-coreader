@@ -21,13 +21,13 @@ const (
 	3. Send each chunk to LLM to find any entities.
 */
 
-func ProcessFile(db *DB, file *FileDocCollection, llm *LLMClient) error {
+func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 	fileChunkChan := ReadFileInChunks(file.StoragePath, file.StorageName, CHUNK_SIZE_BYTES) // 1MB chunks
 	var processedData []byte
 	var totalChars int
 	var totalChunks int
 	// create book with known info, additional will be added later
-	book, err := db.CreateBookDoc(&BookDoc{
+	book, err := db.CreateBookDoc(&BooksDoc{
 		FileID: file.ID,
 	})
 	if err != nil {
@@ -85,7 +85,7 @@ func ProcessFile(db *DB, file *FileDocCollection, llm *LLMClient) error {
 
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
 	// Update file status in DB
-	err = db.SetFileStatus(file.ID, FileStatusPending) // TODO: set to appropriate status
+	err = db.SetFileStatus(file.ID, "processed") // TODO: set to appropriate status
 	if err != nil {
 		return err
 	}

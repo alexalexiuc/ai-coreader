@@ -63,6 +63,7 @@
       "description": "Indicates whether the book processing is finished."
     },
     "source": {
+      "bsonType": "string",
       "description": "The source of the book, such as user upload or shop.",
       "enum": [
         "user_upload",

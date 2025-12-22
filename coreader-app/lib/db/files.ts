@@ -1,19 +1,8 @@
 import { ObjectId } from 'mongodb';
 import { collections, getDb } from './mongo';
+import { Files } from './generated/files';
 
 export type FileStatus = 'pending' | 'processing' | 'processed' | 'failed';
-
-export interface FileDoc {
-  _id: ObjectId;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  storagePath: string;
-  storageName: string;
-  createdAt: Date;
-  updatedAt: Date;
-  status: FileStatus;
-}
 
 export interface FileDTO {
   id: string;
@@ -26,7 +15,7 @@ export interface FileDTO {
   status: FileStatus;
 }
 
-function toDTO(doc: FileDoc): FileDTO {
+function toDTO(doc: Files): FileDTO {
   return {
     id: doc._id.toHexString(),
     originalName: doc.originalName,
@@ -39,11 +28,11 @@ function toDTO(doc: FileDoc): FileDTO {
   };
 }
 
-export async function insertFileMetadata(params: Omit<FileDoc, '_id' | 'createdAt' | 'updatedAt'>): Promise<FileDTO> {
+export async function insertFileMetadata(params: Omit<Files, '_id' | 'createdAt' | 'updatedAt'>): Promise<FileDTO> {
   const db = await getDb();
   const now = new Date();
 
-  const result = await db.collection<Omit<FileDoc, '_id'>>(collections.FILES).insertOne({
+  const result = await db.collection<Omit<Files, '_id'>>(collections.FILES).insertOne({
     originalName: params.originalName,
     mimeType: params.mimeType,
     size: params.size,
@@ -54,7 +43,7 @@ export async function insertFileMetadata(params: Omit<FileDoc, '_id' | 'createdA
     storagePath: params.storagePath,
   });
 
-  const inserted = await db.collection<FileDoc>(collections.FILES).findOne({ _id: result.insertedId });
+  const inserted = await db.collection<Files>(collections.FILES).findOne({ _id: result.insertedId });
 
   if (!inserted) {
     throw new Error('Failed to fetch inserted file metadata');
@@ -65,19 +54,19 @@ export async function insertFileMetadata(params: Omit<FileDoc, '_id' | 'createdA
 
 export async function listFiles(): Promise<FileDTO[]> {
   const db = await getDb();
-  const docs = await db.collection<FileDoc>(collections.FILES).find({}).sort({ createdAt: -1 }).toArray();
+  const docs = await db.collection<Files>(collections.FILES).find({}).sort({ createdAt: -1 }).toArray();
 
   return docs.map(toDTO);
 }
 
-export async function getFileById(id: string): Promise<FileDoc | null> {
+export async function getFileById(id: string): Promise<Files | null> {
   const db = await getDb();
-  return db.collection<FileDoc>(collections.FILES).findOne({ _id: new ObjectId(id) });
+  return db.collection<Files>(collections.FILES).findOne({ _id: new ObjectId(id) });
 }
 
-export async function deleteFileById(id: string): Promise<FileDoc | null> {
+export async function deleteFileById(id: string): Promise<Files | null> {
   const db = await getDb();
-  const coll = db.collection<FileDoc>(collections.FILES);
+  const coll = db.collection<Files>(collections.FILES);
   const doc = await coll.findOne({ _id: new ObjectId(id) });
   if (!doc) return null;
 

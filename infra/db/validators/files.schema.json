@@ -36,6 +36,7 @@
       "description": "The size of the file in bytes."
     },
     "status": {
+      "bsonType": "string",
       "enum": [
         "pending",
         "processing",
