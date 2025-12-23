@@ -1,61 +1,61 @@
 {
-  "title": "files",
-  "description": "Files Collection",
-  "bsonType": "object",
+  "title": "FilesDoc",
+  "description": "Represents a stored file and its processing status",
   "additionalProperties": false,
   "required": [
-    "_id",
     "createdAt",
-    "mimeType",
+    "updatedAt",
     "originalName",
+    "mimeType",
     "size",
-    "status",
-    "storageName",
     "storagePath",
-    "updatedAt"
+    "storageName",
+    "status"
   ],
   "properties": {
     "_id": {
-      "bsonType": "objectId",
-      "description": "The unique identifier for a file."
+      "description": "File unique identifier",
+      "bsonType": "objectId"
     },
     "createdAt": {
-      "bsonType": "date",
-      "description": "The date and time when the file record was created."
+      "description": "Creation timestamp",
+      "bsonType": "date"
     },
-    "mimeType": {
-      "bsonType": "string",
-      "description": "The MIME type of the file, indicating its format."
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "bsonType": "date"
     },
     "originalName": {
-      "bsonType": "string",
-      "description": "The original name of the file as uploaded by the user."
+      "description": "Original file name as uploaded by the user",
+      "bsonType": "string"
+    },
+    "mimeType": {
+      "description": "MIME type of the file",
+      "bsonType": "string"
     },
     "size": {
-      "bsonType": "int",
-      "description": "The size of the file in bytes."
+      "minimum": 0,
+      "description": "File size in bytes",
+      "bsonType": "int"
+    },
+    "storagePath": {
+      "description": "Storage path of the file",
+      "bsonType": "string"
+    },
+    "storageName": {
+      "description": "Internal storage file name",
+      "bsonType": "string"
     },
     "status": {
-      "bsonType": "string",
+      "description": "Processing status of the file",
       "enum": [
         "pending",
         "processing",
         "processed",
         "failed"
       ],
-      "description": "The current status of the file, such as 'uploaded' or 'processed'."
-    },
-    "storageName": {
-      "bsonType": "string",
-      "description": "The name used to store the file in the storage system."
-    },
-    "storagePath": {
-      "bsonType": "string",
-      "description": "The path where the file is stored in the storage system."
-    },
-    "updatedAt": {
-      "bsonType": "date",
-      "description": "The date and time when the file record was last updated."
+      "bsonType": "string"
     }
-  }
+  },
+  "bsonType": "object"
 }

@@ -1,0 +1,102 @@
+{
+  "title": "BookChunkDoc",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "index",
+    "startChar",
+    "endChar",
+    "text",
+    "llmProcessed"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Book chunk unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "bsonType": "date"
+    },
+    "bookId": {
+      "description": "Reference to the parent book",
+      "bsonType": "objectId"
+    },
+    "index": {
+      "minimum": 0,
+      "description": "0-based in book order",
+      "bsonType": "int"
+    },
+    "startChar": {
+      "minimum": 0,
+      "bsonType": "int"
+    },
+    "endChar": {
+      "minimum": 0,
+      "description": "exclusive",
+      "bsonType": "int"
+    },
+    "text": {
+      "bsonType": "string"
+    },
+    "llmProcessed": {
+      "bsonType": "bool"
+    },
+    "llmMetadata": {
+      "title": "ChunkLLMMetadata",
+      "additionalProperties": false,
+      "properties": {
+        "entities": {
+          "items": {
+            "title": "ChunkEntityRef",
+            "additionalProperties": false,
+            "required": [
+              "tempName",
+              "type",
+              "startOffset",
+              "endOffset",
+              "isIntroducedInThisChunk"
+            ],
+            "properties": {
+              "tempName": {
+                "bsonType": "string"
+              },
+              "type": {
+                "bsonType": "string"
+              },
+              "startOffset": {
+                "minimum": 0,
+                "description": "relative to chunk.text",
+                "bsonType": "int"
+              },
+              "endOffset": {
+                "minimum": 0,
+                "bsonType": "int"
+              },
+              "isIntroducedInThisChunk": {
+                "bsonType": "bool"
+              }
+            },
+            "bsonType": "object"
+          },
+          "bsonType": "array"
+        },
+        "hasChapterStart": {
+          "bsonType": "bool"
+        },
+        "chapterTitle": {
+          "bsonType": "string"
+        },
+        "chapterNumber": {
+          "bsonType": "string"
+        }
+      },
+      "bsonType": "object"
+    }
+  },
+  "bsonType": "object"
+}

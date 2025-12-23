@@ -23,6 +23,38 @@ type HasBaseDoc interface {
 	GetBaseDoc() *BaseDoc
 }
 
+func (f *FilesDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        f.ID,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
+	}
+}
+
+func (b *BooksDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        b.ID,
+		CreatedAt: b.CreatedAt,
+		UpdatedAt: b.UpdatedAt,
+	}
+}
+
+func (e *EntityDescriptionDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        e.ID,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+}
+
+func (b *BookChunkDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        b.ID,
+		CreatedAt: b.CreatedAt,
+		UpdatedAt: b.UpdatedAt,
+	}
+}
+
 func query(coll *mongo.Collection, filter interface{}, result interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

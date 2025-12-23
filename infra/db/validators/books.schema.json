@@ -1,7 +1,6 @@
 {
-  "title": "books",
+  "title": "BooksDoc",
   "description": "Books Collection",
-  "bsonType": "object",
   "additionalProperties": false,
   "required": [
     "_id",
@@ -15,60 +14,61 @@
   ],
   "properties": {
     "_id": {
-      "bsonType": "objectId",
-      "description": "The unique identifier for a book."
+      "description": "The unique identifier for a book.",
+      "bsonType": "objectId"
     },
     "createdAt": {
-      "bsonType": "date",
-      "description": "The date and time when the book record was created."
+      "description": "The date and time when the book record was created.",
+      "bsonType": "date"
     },
     "updatedAt": {
-      "bsonType": "date",
-      "description": "The date and time when the book record was last updated."
+      "description": "The date and time when the book record was last updated.",
+      "bsonType": "date"
     },
     "fileId": {
-      "bsonType": "objectId",
-      "description": "The identifier for the file associated with the book."
+      "description": "The identifier for the file associated with the book.",
+      "bsonType": "objectId"
     },
     "title": {
-      "bsonType": "string",
-      "description": "The title of the book."
+      "description": "The title of the book.",
+      "bsonType": "string"
     },
     "author": {
-      "bsonType": "string",
-      "description": "The author of the book."
+      "description": "The author of the book.",
+      "bsonType": "string"
     },
     "publisher": {
-      "bsonType": "string",
-      "description": "The publisher of the book."
+      "description": "The publisher of the book.",
+      "bsonType": "string"
     },
     "year": {
-      "bsonType": "string",
-      "description": "The year the book was published."
+      "description": "The year the book was published.",
+      "bsonType": "string"
     },
     "genre": {
-      "bsonType": "string",
-      "description": "The genre or category of the book."
+      "description": "The genre or category of the book.",
+      "bsonType": "string"
     },
     "totalChars": {
-      "bsonType": "int",
-      "description": "The total number of characters in the book."
+      "description": "The total number of characters in the book.",
+      "bsonType": "int"
     },
     "totalChunks": {
-      "bsonType": "int",
-      "description": "The total number of chunks the book is divided into."
+      "description": "The total number of chunks the book is divided into.",
+      "bsonType": "int"
     },
     "finished": {
-      "bsonType": "bool",
-      "description": "Indicates whether the book processing is finished."
+      "description": "Indicates whether the book processing is finished.",
+      "bsonType": "bool"
     },
     "source": {
-      "bsonType": "string",
       "description": "The source of the book, such as user upload or shop.",
       "enum": [
         "user_upload",
         "shop"
-      ]
+      ],
+      "bsonType": "string"
     }
-  }
+  },
+  "bsonType": "object"
 }

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/files.schema.json",
+  "title": "FilesDoc",
+  "description": "Represents a stored file and its processing status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "originalName",
+    "mimeType",
+    "size",
+    "storagePath",
+    "storageName",
+    "status"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "File unique identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "originalName": {
+      "type": "string",
+      "description": "Original file name as uploaded by the user"
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "MIME type of the file"
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "File size in bytes"
+    },
+    "storagePath": {
+      "type": "string",
+      "description": "Storage path of the file"
+    },
+    "storageName": {
+      "type": "string",
+      "description": "Internal storage file name"
+    },
+    "status": {
+      "type": "string",
+      "description": "Processing status of the file",
+      "enum": [
+        "pending",
+        "processing",
+        "processed",
+        "failed"
+      ]
+    }
+  }
+}

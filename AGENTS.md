@@ -14,7 +14,7 @@ Nested AGENTS.md files override this one.
 
 - coreader-app/ → Frontend (TypeScript, React)
 - coreader-worker/ → Go worker
-- infra/, scripts/ → Infra and utilities (be conservative)
+- infra/, scripts/ → Infra and utilities
 
 ## Frontend (coreader-app/)
 

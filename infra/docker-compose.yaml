@@ -5,7 +5,7 @@ services:
     image: mongo:7
     container_name: llmreader-mongo
     restart: unless-stopped
-    profiles: [infra, stack]
+    profiles: [infra, stack, mongo]
     ports:
       - "27017:27017"
     volumes:

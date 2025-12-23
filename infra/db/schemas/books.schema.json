@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/books.schema.json",
+  "title": "BooksDoc",
+  "description": "Books Collection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "fileId",
+    "updatedAt",
+    "createdAt",
+    "totalChars",
+    "totalChunks",
+    "finished",
+    "source"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "The unique identifier for a book.",
+      "format": "objectId"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the book record was created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the book record was last updated."
+    },
+    "fileId": {
+      "type": "string",
+      "description": "The identifier for the file associated with the book.",
+      "format": "objectId"
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the book."
+    },
+    "author": {
+      "type": "string",
+      "description": "The author of the book."
+    },
+    "publisher": {
+      "type": "string",
+      "description": "The publisher of the book."
+    },
+    "year": {
+      "type": "string",
+      "description": "The year the book was published."
+    },
+    "genre": {
+      "type": "string",
+      "description": "The genre or category of the book."
+    },
+    "totalChars": {
+      "type": "integer",
+      "description": "The total number of characters in the book."
+    },
+    "totalChunks": {
+      "type": "integer",
+      "description": "The total number of chunks the book is divided into."
+    },
+    "finished": {
+      "type": "boolean",
+      "description": "Indicates whether the book processing is finished."
+    },
+    "source": {
+      "type": "string",
+      "description": "The source of the book, such as user upload or shop.",
+      "enum": [
+        "user_upload",
+        "shop"
+      ]
+    }
+  }
+}

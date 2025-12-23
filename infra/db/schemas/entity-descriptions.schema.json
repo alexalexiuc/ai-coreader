@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/entity-descriptions.schema.json",
+  "title": "EntityDescriptionDoc",
+  "description": "LLM-generated description of a book entity (character, place, spell, etc.)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "entityId",
+    "name",
+    "type",
+    "summary"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Entity description unique identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "bookId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the parent book"
+    },
+    "name": {
+      "type": "string",
+      "description": "Entity name"
+    },
+    "type": {
+      "type": "string",
+      "description": "Entity type (character, place, spell, etc.)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "LLM-generated summary of the entity"
+    },
+    "role": {
+      "type": "string",
+      "description": "Narrative role of the entity"
+    },
+    "traits": {
+      "type": "array",
+      "description": "List of notable traits",
+      "items": {
+        "type": "string"
+      }
+    },
+    "importantLocations": {
+      "type": "array",
+      "description": "Important locations associated with the entity",
+      "items": {
+        "type": "string"
+      }
+    },
+    "importantRelationships": {
+      "type": "array",
+      "description": "Important relationships with other entities",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/book-chunks.schema.json",
+  "title": "BookChunkDoc",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "index",
+    "startChar",
+    "endChar",
+    "text",
+    "llmProcessed"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Book chunk unique identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "bookId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the parent book"
+    },
+    "index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based in book order"
+    },
+    "startChar": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "endChar": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "exclusive"
+    },
+    "text": {
+      "type": "string"
+    },
+    "llmProcessed": {
+      "type": "boolean"
+    },
+    "llmMetadata": {
+      "$ref": "#/$defs/ChunkLLMMetadata"
+    }
+  },
+  "$defs": {
+    "ChunkEntityRef": {
+      "$id": "https://example.com/schemas/chunkEntityRef.schema.json",
+      "title": "ChunkEntityRef",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tempName",
+        "type",
+        "startOffset",
+        "endOffset",
+        "isIntroducedInThisChunk"
+      ],
+      "properties": {
+        "tempName": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "startOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "relative to chunk.text"
+        },
+        "endOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "isIntroducedInThisChunk": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ChunkLLMMetadata": {
+      "$id": "https://example.com/schemas/chunkLLMMetadata.schema.json",
+      "title": "ChunkLLMMetadata",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChunkEntityRef"
+          }
+        },
+        "hasChapterStart": {
+          "type": "boolean"
+        },
+        "chapterTitle": {
+          "type": "string"
+        },
+        "chapterNumber": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -50,7 +50,7 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 			StartChar:    totalChars - currentChunkLength,
 			EndChar:      totalChars,
 			Text:         logicalChunk.Text, // replaces invalid with �
-			LLMProcessed: false,
+			LlmProcessed: false,
 		})
 		if err != nil {
 			return err
