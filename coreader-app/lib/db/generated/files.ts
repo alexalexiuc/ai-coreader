@@ -3,7 +3,7 @@
  *
  * Do not modify it by hand
  */
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 /**
  * Files Collection
@@ -32,7 +32,7 @@ export interface Files {
   /**
    * The current status of the file, such as 'uploaded' or 'processed'.
    */
-  status: 'pending' | 'processing' | 'processed' | 'failed';
+  status: "pending" | "processing" | "processed" | "failed";
   /**
    * The name used to store the file in the storage system.
    */

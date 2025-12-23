@@ -3,7 +3,7 @@
  *
  * Do not modify it by hand
  */
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 /**
  * Books Collection
@@ -60,5 +60,5 @@ export interface Books {
   /**
    * The source of the book, such as user upload or shop.
    */
-  source: 'user_upload' | 'shop';
+  source: "user_upload" | "shop";
 }

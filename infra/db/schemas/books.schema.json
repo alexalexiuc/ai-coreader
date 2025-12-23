@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "books",
+  "description": "Books Collection",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "fileId",
+    "updatedAt",
+    "createdAt",
+    "totalChars",
+    "totalChunks",
+    "finished",
+    "source"
+  ],
+  "type": "object",
+  "properties": {
+    "_id": {
+      "description": "The unique identifier for a book.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{24}$"
+    },
+    "createdAt": {
+      "description": "The date and time when the book record was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "The date and time when the book record was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "fileId": {
+      "description": "The identifier for the file associated with the book.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{24}$"
+    },
+    "title": {
+      "description": "The title of the book.",
+      "type": "string"
+    },
+    "author": {
+      "description": "The author of the book.",
+      "type": "string"
+    },
+    "publisher": {
+      "description": "The publisher of the book.",
+      "type": "string"
+    },
+    "year": {
+      "description": "The year the book was published.",
+      "type": "string"
+    },
+    "genre": {
+      "description": "The genre or category of the book.",
+      "type": "string"
+    },
+    "totalChars": {
+      "description": "The total number of characters in the book.",
+      "type": "integer"
+    },
+    "totalChunks": {
+      "description": "The total number of chunks the book is divided into.",
+      "type": "integer"
+    },
+    "finished": {
+      "description": "Indicates whether the book processing is finished.",
+      "type": "boolean"
+    },
+    "source": {
+      "description": "The source of the book, such as user upload or shop.",
+      "enum": [
+        "user_upload",
+        "shop"
+      ],
+      "type": "string"
+    }
+  }
+}

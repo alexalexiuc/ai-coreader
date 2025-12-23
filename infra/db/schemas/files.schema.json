@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "files",
+  "description": "Files Collection",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "createdAt",
+    "mimeType",
+    "originalName",
+    "size",
+    "status",
+    "storageName",
+    "storagePath",
+    "updatedAt"
+  ],
+  "type": "object",
+  "properties": {
+    "_id": {
+      "description": "The unique identifier for a file.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{24}$"
+    },
+    "createdAt": {
+      "description": "The date and time when the file record was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "mimeType": {
+      "description": "The MIME type of the file, indicating its format.",
+      "type": "string"
+    },
+    "originalName": {
+      "description": "The original name of the file as uploaded by the user.",
+      "type": "string"
+    },
+    "size": {
+      "description": "The size of the file in bytes.",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "processing",
+        "processed",
+        "failed"
+      ],
+      "description": "The current status of the file, such as 'uploaded' or 'processed'.",
+      "type": "string"
+    },
+    "storageName": {
+      "description": "The name used to store the file in the storage system.",
+      "type": "string"
+    },
+    "storagePath": {
+      "description": "The path where the file is stored in the storage system.",
+      "type": "string"
+    },
+    "updatedAt": {
+      "description": "The date and time when the file record was last updated.",
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
