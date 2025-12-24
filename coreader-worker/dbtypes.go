@@ -80,3 +80,13 @@ type FilesDoc struct {
 	StorageName  string             `bson:"storageName" json:"storageName"`
 	Status       string             `bson:"status" json:"status"`
 }
+
+type UsersDoc struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
+	FirstName string             `bson:"firstName" json:"firstName"`
+	LastName  string             `bson:"lastName" json:"lastName"`
+	Email     string             `bson:"email" json:"email"`
+	Password  string             `bson:"password" json:"password"`
+}

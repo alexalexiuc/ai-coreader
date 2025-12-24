@@ -195,3 +195,37 @@ export interface FilesDoc {
    */
   status: "pending" | "processing" | "processed" | "failed";
 }
+
+/**
+ * Users collection storing authentication credentials and profile metadata
+ */
+export interface UsersDoc {
+  /**
+   * User unique identifier
+   */
+  _id: ObjectId;
+  /**
+   * Creation timestamp
+   */
+  createdAt: Date;
+  /**
+   * Last update timestamp
+   */
+  updatedAt: Date;
+  /**
+   * User's given name
+   */
+  firstName: string;
+  /**
+   * User's family name
+   */
+  lastName: string;
+  /**
+   * User email address (unique)
+   */
+  email: string;
+  /**
+   * Hashed password for authentication
+   */
+  password: string;
+}

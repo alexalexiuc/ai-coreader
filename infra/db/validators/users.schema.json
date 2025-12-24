@@ -1,0 +1,45 @@
+{
+  "title": "UsersDoc",
+  "description": "Users collection storing authentication credentials and profile metadata",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "createdAt",
+    "updatedAt",
+    "firstName",
+    "lastName",
+    "email",
+    "password"
+  ],
+  "properties": {
+    "_id": {
+      "description": "User unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "bsonType": "date"
+    },
+    "firstName": {
+      "description": "User's given name",
+      "bsonType": "string"
+    },
+    "lastName": {
+      "description": "User's family name",
+      "bsonType": "string"
+    },
+    "email": {
+      "description": "User email address (unique)",
+      "bsonType": "string"
+    },
+    "password": {
+      "description": "Hashed password for authentication",
+      "bsonType": "string"
+    }
+  },
+  "bsonType": "object"
+}
