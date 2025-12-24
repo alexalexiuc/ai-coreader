@@ -20,6 +20,7 @@
     "help": "node ./scripts/help.js",
     "db:migrate": "node ./infra/db/scripts/migrate.js",
     "db:drop": "node ./infra/db/scripts/drop-database.js",
+    "db:seed": "node ./infra/db/scripts/seed.js",
     "db:types": "node ./infra/db/scripts/generate-types.js"
   },
   "devDependencies": {
