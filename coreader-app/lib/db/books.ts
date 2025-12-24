@@ -1,22 +1,54 @@
-import { listFiles, type FileStatus } from './files';
+import { ObjectId } from 'mongodb';
+import { BooksDoc } from './generated/db-types';
+import { collections, getDb } from './mongo';
 
-type BookMetadata = {
+export type BookDTO = {
   id: string;
-  title: string;
-  author: string;
-  status: FileStatus;
-  added: string;
-  iconUrl?: string;
+  fileId: string;
+  title?: string;
+  author?: string;
+  publisher?: string;
+  year?: string;
+  genre?: string;
+  totalChars: number;
+  totalChunks: number;
+  finished: boolean;
+  source: BooksDoc['source'];
+  createdAt: string;
+  updatedAt: string;
 };
 
-export const fetchBooks = async (): Promise<BookMetadata[]> => {
-  // get raw uploaded books from database
-  const rawBooks = await listFiles();
-  return rawBooks.map((b) => ({
-    id: b.id,
-    title: b.originalName,
-    author: 'Unknown Author',
-    status: b.status,
-    added: b.createdAt,
-  }));
-};
+function toDTO(doc: BooksDoc): BookDTO {
+  return {
+    id: doc._id.toHexString(),
+    fileId: doc.fileId.toHexString(),
+    title: doc.title,
+    author: doc.author,
+    publisher: doc.publisher,
+    year: doc.year,
+    genre: doc.genre,
+    totalChars: doc.totalChars,
+    totalChunks: doc.totalChunks,
+    finished: doc.finished,
+    source: doc.source,
+    createdAt: doc.createdAt.toISOString(),
+    updatedAt: doc.updatedAt.toISOString(),
+  };
+}
+
+export async function listBooks(): Promise<BookDTO[]> {
+  const db = await getDb();
+  const books = await db.collection<BooksDoc>(collections.BOOKS).find({}).sort({ createdAt: -1 }).toArray();
+
+  return books.map(toDTO);
+}
+
+export async function findBookByFileId(fileId: string): Promise<BookDTO | null> {
+  const db = await getDb();
+  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ fileId: new ObjectId(fileId) });
+
+  return doc ? toDTO(doc) : null;
+}
+
+// Backward-compatible alias
+export const fetchBooks = listBooks;

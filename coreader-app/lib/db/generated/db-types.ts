@@ -191,6 +191,10 @@ export interface FilesDoc {
    */
   storageName: string;
   /**
+   * Processing completion percentage (0-100)
+   */
+  percentage?: number;
+  /**
    * Processing status of the file
    */
   status: "pending" | "processing" | "processed" | "failed";

@@ -78,6 +78,7 @@ type FilesDoc struct {
 	Size         int                `bson:"size" json:"size"`
 	StoragePath  string             `bson:"storagePath" json:"storagePath"`
 	StorageName  string             `bson:"storageName" json:"storageName"`
+	Percentage   float64            `bson:"percentage,omitempty" json:"percentage,omitempty"`
 	Status       string             `bson:"status" json:"status"`
 }
 

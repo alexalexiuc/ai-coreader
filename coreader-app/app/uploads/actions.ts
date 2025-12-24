@@ -23,7 +23,7 @@ export async function uploadFileAction(formData: FormData) {
   });
 
   // Revalidate listing page
-  revalidatePath('/files');
+  revalidatePath('/uploads');
 }
 
 export async function deleteFileAction(id: string) {
@@ -32,7 +32,7 @@ export async function deleteFileAction(id: string) {
     await deleteStoredFile(doc.storagePath, doc.storageName);
   }
 
-  revalidatePath('/files');
+  revalidatePath('/uploads');
 }
 
 export async function listFilesAction(): Promise<FileDTO[]> {

@@ -52,6 +52,12 @@
       "type": "string",
       "description": "Internal storage file name"
     },
+    "percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Processing completion percentage (0-100)"
+    },
     "status": {
       "type": "string",
       "description": "Processing status of the file",

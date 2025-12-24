@@ -46,6 +46,12 @@
       "description": "Internal storage file name",
       "bsonType": "string"
     },
+    "percentage": {
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Processing completion percentage (0-100)",
+      "bsonType": "double"
+    },
     "status": {
       "description": "Processing status of the file",
       "enum": [
