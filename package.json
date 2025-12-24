@@ -18,9 +18,9 @@
     "lint": "npm --prefix coreader-app run lint",
     "format": "npm --prefix coreader-app run format",
     "help": "node ./scripts/help.js",
-    "db:migrate": "node ./infra/db/scripts/migrate.js",
+    "db:migrate": "node ./infra/db/scripts/apply-mongo-scripts.js --migrate",
     "db:drop": "node ./infra/db/scripts/drop-database.js",
-    "db:seed": "node ./infra/db/scripts/seed.js",
+    "db:seed": "node ./infra/db/scripts/apply-mongo-scripts.js --seed",
     "db:types": "node ./infra/db/scripts/generate-types.js"
   },
   "devDependencies": {
