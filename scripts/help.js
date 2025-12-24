@@ -10,6 +10,8 @@ Available root npm scripts (examples):
   npm run worker:run   # Run Go worker locally (requires Go installed)
   npm run lint         # Run frontend linter
   npm run format       # Run frontend formatter
+  npm run db:migrate   # Apply database migrations
+  npm run db:seed      # Load database seed data for testing
 
 Note: On Windows you can also run the native PS scripts in ./scripts directly (e.g. pwsh ./scripts/dev.ps1).
 `);
