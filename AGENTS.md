@@ -12,13 +12,13 @@ Nested AGENTS.md files override this one.
 
 ## Repo structure
 
-- coreader-app/ → Frontend (TypeScript, React)
+- coreader-app/ → Frontend (NextJs)
 - coreader-worker/ → Go worker
 - infra/, scripts/ → Infra and utilities
 
 ## Frontend (coreader-app/)
 
-- Use TypeScript-first React
+- Use NextJs (React + TypeScript)
 - Mark client components only when required
 - Use existing Tailwind patterns; let Prettier handle formatting
 - Shared UI goes in `ui/`, route logic stays close to pages
