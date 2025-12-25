@@ -22,11 +22,13 @@
     "db:drop": "node ./infra/db/scripts/drop-database.js",
     "db:seed": "node ./infra/db/scripts/seed.js",
     "db:types": "node ./infra/db/scripts/generate-types.js",
-    "db:reset": "npm run db:drop && npm run db:migrate && npm run db:seed"
+    "db:reset": "npm run db:drop && npm run db:migrate && npm run db:seed",
+    "prepare": "husky"
   },
   "devDependencies": {
     "bson-schema-to-typescript": "^0.0.26",
     "dotenv-cli": "^11.0.0",
+    "husky": "^9.1.7",
     "json-schema-to-typescript": "^15.0.4",
     "mongodb": "^7.0.0",
     "prettier": "^3.7.4",

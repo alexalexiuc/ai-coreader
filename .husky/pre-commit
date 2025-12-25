@@ -1,0 +1,2 @@
+cd coreader-app
+npm run format
