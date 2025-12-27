@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -26,6 +27,7 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 	var processedData []byte
 	var totalChars int
 	var totalChunks int
+	var processedBytes int
 	// create book with known info, additional will be added later
 	book, err := db.CreateBookDoc(&BooksDoc{
 		FileID: file.ID,
@@ -34,12 +36,15 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		return err
 	}
 	isFirstChunk := true
+	err = db.SetFileStatus(file.ID, "processing")
+	if err != nil {
+		return err
+	}
 	for logicalChunk := range ReadLogicalChunks(fileChunkChan, ChunkingOptions{
 		MinChars:          CHUNK_SIZE_CHARS,
 		MaxLookaheadChars: MAX_ENDING_SEARCH_CHARS,
 	}) {
 		fmt.Printf("Appending %d chars\n", len(logicalChunk.Text))
-		// Todo: send to llm for entity extraction
 		currentChunkLength := len(logicalChunk.Text)
 		totalChars += currentChunkLength
 		totalChunks++
@@ -81,6 +86,24 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		}
 		fmt.Printf("Found %d entities in chunk %d\n", len(chunkEntities.Entities), totalChunks-1)
 		processedData = append(processedData, []byte(logicalChunk.Text)...)
+		processedBytes += len(logicalChunk.Text)
+		if file.Size > 0 {
+			progress := math.Floor((float64(processedBytes) / float64(file.Size)) * 100)
+			if progress >= 100 {
+				progress = 99
+			}
+			err = db.SetFileProgress(file.ID, progress)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if file.Size > 0 {
+		err = db.SetFileProgress(file.ID, 100)
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))

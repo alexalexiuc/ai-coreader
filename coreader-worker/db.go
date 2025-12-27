@@ -76,7 +76,7 @@ type DB struct {
 
 const (
 	FilesCollectionName         = "files"
-	BookDocsCollectionName      = "bookDocs"
+	BookDocsCollectionName      = "books"
 	BookChunkDocsCollectionName = "bookChunks"
 )
 
@@ -161,6 +161,11 @@ func (db *DB) GetUnprocessedFiles() ([]FilesDoc, error) {
 
 func (db *DB) SetFileStatus(fileID primitive.ObjectID, status string) error {
 	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"status": status})
+	return err
+}
+
+func (db *DB) SetFileProgress(fileID primitive.ObjectID, percentage float64) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"percentage": percentage})
 	return err
 }
 
