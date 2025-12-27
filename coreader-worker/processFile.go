@@ -30,7 +30,8 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 	var processedBytes int
 	// create book with known info, additional will be added later
 	book, err := db.CreateBookDoc(&BooksDoc{
-		FileID: file.ID,
+		FileID:   file.ID,
+		Finished: false,
 	})
 	if err != nil {
 		return err

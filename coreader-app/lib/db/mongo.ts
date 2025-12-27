@@ -29,6 +29,7 @@ export async function getDb(): Promise<Db> {
 export const collections = {
   FILES: 'files',
   BOOKS: 'books',
+  BOOK_CHUNKS: 'bookChunks',
 };
 
 type SchemaRuleDetail = {

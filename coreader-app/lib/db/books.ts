@@ -55,5 +55,12 @@ export async function findBookByFileId(fileId: string): Promise<BookDTO | null> 
   return doc ? toDTO(doc) : null;
 }
 
+export async function findBookById(bookId: string): Promise<BookDTO | null> {
+  const db = await getDb();
+  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ _id: new ObjectId(bookId) });
+
+  return doc ? toDTO(doc) : null;
+}
+
 // Backward-compatible alias
 export const fetchBooks = listBooks;
