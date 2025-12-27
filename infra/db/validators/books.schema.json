@@ -68,6 +68,10 @@
         "shop"
       ],
       "bsonType": "string"
+    },
+    "isPinned": {
+      "description": "Indicates whether the book is pinned by the user.",
+      "bsonType": "bool"
     }
   },
   "bsonType": "object"

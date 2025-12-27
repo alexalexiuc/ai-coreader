@@ -7,7 +7,7 @@ import { PinButton } from './PinButton';
 
 type BookCardGridProps = {
   book: LibraryBook;
-  onTogglePin: (id: string) => void;
+  onTogglePin: (id: string) => void | Promise<void>;
 };
 
 export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {

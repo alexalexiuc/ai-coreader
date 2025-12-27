@@ -77,9 +77,34 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const isEmptyAll = books.length === 0;
   const isEmptyFiltered = !isEmptyAll && filtered.length === 0;
 
-  const togglePin = useCallback((id: string) => {
+  const togglePin = useCallback(async (id: string) => {
+    // Optimistically update UI
     setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
-  }, []);
+
+    try {
+      // Find the book to get its new pin state
+      const book = books.find((b) => b.id === id);
+      const newIsPinned = !book?.isPinned;
+
+      const response = await fetch(`/api/books/${id}/pin`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isPinned: newIsPinned }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
+        console.error('Failed to update pin status');
+      }
+    } catch (error) {
+      // Revert on error
+      setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
+      console.error('Error updating pin status:', error);
+    }
+  }, [books]);
 
   return {
     books,

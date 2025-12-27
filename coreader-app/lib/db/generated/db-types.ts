@@ -101,7 +101,11 @@ export interface BooksDoc {
   /**
    * The source of the book, such as user upload or shop.
    */
-  source: 'user_upload' | 'shop';
+  source: "user_upload" | "shop";
+  /**
+   * Indicates whether the book is pinned by the user.
+   */
+  isPinned?: boolean;
 }
 
 /**
@@ -197,7 +201,7 @@ export interface FilesDoc {
   /**
    * Processing status of the file
    */
-  status: 'pending' | 'processing' | 'processed' | 'failed';
+  status: "pending" | "processing" | "processed" | "failed";
 }
 
 /**

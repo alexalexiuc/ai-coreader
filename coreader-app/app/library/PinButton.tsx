@@ -4,7 +4,7 @@ import { SquareButton } from '@/ui/SquareButton';
 
 type PinButtonProps = {
   book: LibraryBook;
-  onTogglePin: (id: string) => void;
+  onTogglePin: (id: string) => void | Promise<void>;
 };
 
 export const PinButton: React.FC<PinButtonProps> = ({ book, onTogglePin }) => (

@@ -53,6 +53,7 @@ type BooksDoc struct {
 	TotalChunks int                `bson:"totalChunks" json:"totalChunks"`
 	Finished    bool               `bson:"finished" json:"finished"`
 	Source      string             `bson:"source" json:"source"`
+	IsPinned    bool               `bson:"isPinned,omitempty" json:"isPinned,omitempty"`
 }
 
 type EntityDescriptionDoc struct {

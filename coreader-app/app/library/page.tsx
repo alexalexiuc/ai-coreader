@@ -20,6 +20,6 @@ function toLibraryBook(book: BookDTO): LibraryBook {
     addedAt: book.createdAt,
     lastOpenedAt: book.updatedAt,
     progressPct: book.finished ? 100 : 0,
-    isPinned: false,
+    isPinned: book.isPinned ?? false,
   };
 }

@@ -75,6 +75,10 @@
         "user_upload",
         "shop"
       ]
+    },
+    "isPinned": {
+      "type": "boolean",
+      "description": "Indicates whether the book is pinned by the user."
     }
   }
 }

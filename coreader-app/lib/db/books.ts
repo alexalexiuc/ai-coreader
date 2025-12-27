@@ -14,6 +14,7 @@ export type BookDTO = {
   totalChunks: number;
   finished: boolean;
   source: BooksDoc['source'];
+  isPinned?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -36,6 +37,7 @@ function toDTO(doc: BooksDoc): BookDTO {
     totalChunks: toNumber(doc.totalChunks),
     finished: doc.finished,
     source: doc.source,
+    isPinned: doc.isPinned,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   };
@@ -53,6 +55,17 @@ export async function findBookByFileId(fileId: string): Promise<BookDTO | null> 
   const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ fileId: new ObjectId(fileId) });
 
   return doc ? toDTO(doc) : null;
+}
+
+export async function updateBookPinStatus(id: string, isPinned: boolean): Promise<BookDTO | null> {
+  const db = await getDb();
+  const result = await db.collection<BooksDoc>(collections.BOOKS).findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: { isPinned, updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+
+  return result ? toDTO(result) : null;
 }
 
 // Backward-compatible alias
