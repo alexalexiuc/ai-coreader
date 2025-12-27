@@ -22,7 +22,7 @@
     "db:drop": "node ./infra/db/scripts/drop-database.js",
     "db:seed": "node ./infra/db/scripts/seed.js",
     "db:types": "node ./infra/db/scripts/generate-types.js",
-    "db:reset": "npm run db:drop && npm run db:migrate && npm run db:seed",
+    "db:reset": "npm run db:drop && npm run db:migrate",
     "prepare": "husky"
   },
   "devDependencies": {
