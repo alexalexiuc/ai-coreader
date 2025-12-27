@@ -30,10 +30,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
         {book.isPinned ? <IoPin /> : <IoPinOutline />}
       </button>
 
-      <Link
-        href={`/reader/${book.id}`}
-        className="block outline-none focus:ring-2 focus:ring-slate-600"
-      >
+      <Link href={`/reader/${book.id}`} className="block outline-none focus:ring-2 focus:ring-slate-600">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-slate-200">
             <IoBookOutline />
@@ -49,9 +46,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
             {book.source === 'uploaded' ? 'Uploaded' : 'Shop'}
           </span>
           <span className="text-xs text-slate-400">
-            {book.lastOpenedAt
-              ? `Opened ${formatRelativeDate(book.lastOpenedAt)}`
-              : `Added ${formatRelativeDate(book.addedAt)}`}
+            {book.lastOpenedAt ? `Opened ${formatRelativeDate(book.lastOpenedAt)}` : `Added ${formatRelativeDate(book.addedAt)}`}
           </span>
         </div>
 

@@ -1,9 +1,4 @@
-import {
-  IoCloudUploadOutline,
-  IoLibraryOutline,
-  IoPlayOutline,
-  IoTimeOutline,
-} from 'react-icons/io5';
+import { IoCloudUploadOutline, IoLibraryOutline, IoPlayOutline, IoTimeOutline } from 'react-icons/io5';
 import { Card } from '../ui/Card';
 import { ActionCard } from '../ui/ActionCard';
 import { Section } from '../ui/Section';
@@ -48,9 +43,7 @@ export function ContinueReadingSection({ continueReading }: ContinueReadingSecti
         {!continueReading ? (
           <div>
             <p className="text-sm font-semibold text-white">No active book</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Upload a book or pick one from your library to start reading.
-            </p>
+            <p className="mt-1 text-xs text-slate-400">Upload a book or pick one from your library to start reading.</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <ActionCard
                 icon={IoCloudUploadOutline}

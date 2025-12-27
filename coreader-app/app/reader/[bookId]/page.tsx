@@ -15,13 +15,7 @@ import {
 import { BottomSheet, PanelBody, SidePanel, panelTitle } from './ReaderPanels';
 import { SelectionToolbar } from './SelectionToolbar';
 import { MOCK_BLOCKS, MOCK_BOOK } from './mockBook';
-import {
-  getNearestBlockIdToViewportTop,
-  getSelectionBlockId,
-  getSelectionText,
-  safeId,
-  scrollToBlock,
-} from './readerUtils';
+import { getNearestBlockIdToViewportTop, getSelectionBlockId, getSelectionText, safeId, scrollToBlock } from './readerUtils';
 import type { Chapter, Highlight, PanelKey, SearchHit } from './types';
 import { Button } from '@/ui/Button';
 import { SquareButton } from '@/ui/SquareButton';
@@ -77,13 +71,11 @@ export default function ReaderPage() {
   const [selPos, setSelPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    const firstOpenDone =
-      typeof window !== 'undefined' && window.localStorage.getItem(firstOpenKey) === '1';
+    const firstOpenDone = typeof window !== 'undefined' && window.localStorage.getItem(firstOpenKey) === '1';
     if (!firstOpenDone) {
       setOpenPanel('overview');
     } else {
-      const lastBlockId =
-        typeof window !== 'undefined' ? window.localStorage.getItem(lastPosKey) : null;
+      const lastBlockId = typeof window !== 'undefined' ? window.localStorage.getItem(lastPosKey) : null;
       if (lastBlockId) {
         setTimeout(() => scrollToBlock(lastBlockId), 50);
       }
@@ -103,11 +95,7 @@ export default function ReaderPage() {
       const contentTop = el.getBoundingClientRect().top + scrollTop;
       const contentH = el.offsetHeight;
 
-      const within = clamp(
-        (scrollTop + viewportH * 0.2 - contentTop) / Math.max(1, contentH),
-        0,
-        1,
-      );
+      const within = clamp((scrollTop + viewportH * 0.2 - contentTop) / Math.max(1, contentH), 0, 1);
       setProgressPct(Math.round(within * 100));
 
       const nearest = getNearestBlockIdToViewportTop();
@@ -203,10 +191,7 @@ export default function ReaderPage() {
     const blockId = selBlockId ?? getNearestBlockIdToViewportTop() ?? blocks[0]?.id;
     if (!blockId) return;
 
-    setHighlights((prev) => [
-      { id: `h-${safeId()}`, blockId, quote, createdAt: new Date().toISOString() },
-      ...prev,
-    ]);
+    setHighlights((prev) => [{ id: `h-${safeId()}`, blockId, quote, createdAt: new Date().toISOString() }, ...prev]);
 
     setSelOpen(false);
 
@@ -237,21 +222,12 @@ export default function ReaderPage() {
             Library
           </Button>
 
-          <button
-            type="button"
-            onClick={() => togglePanel('overview')}
-            className="ml-1 min-w-0 flex-1 text-left"
-            title="Open overview"
-          >
+          <button type="button" onClick={() => togglePanel('overview')} className="ml-1 min-w-0 flex-1 text-left" title="Open overview">
             <div className="truncate text-sm font-semibold text-white">{book.title}</div>
             <div className="truncate text-xs text-slate-400">{book.author ?? 'ƒ?"'}</div>
           </button>
 
-          <Button
-            onClick={() => togglePanel('toc')}
-            title="Table of contents"
-            paddingClass="px-3 py-2"
-          >
+          <Button onClick={() => togglePanel('toc')} title="Table of contents" paddingClass="px-3 py-2">
             <span className="text-slate-400">{progressPct}%</span>
             <span className="h-4 w-px bg-slate-800" />
             <span className="text-slate-200">TOC</span>
@@ -285,9 +261,7 @@ export default function ReaderPage() {
                   data-block-id={b.id}
                   className={clsx(
                     'rounded-xl px-3 py-2 text-slate-100/95',
-                    b.text.toUpperCase() === b.text &&
-                      b.text.length < 60 &&
-                      'font-semibold text-slate-200',
+                    b.text.toUpperCase() === b.text && b.text.length < 60 && 'font-semibold text-slate-200',
                     'selection:bg-slate-200/20',
                   )}
                 >
@@ -324,11 +298,7 @@ export default function ReaderPage() {
         </div>
       </div>
 
-      <BottomSheet
-        open={!!openPanel}
-        title={panelTitle(openPanel)}
-        onClose={() => setOpenPanel(null)}
-      >
+      <BottomSheet open={!!openPanel} title={panelTitle(openPanel)} onClose={() => setOpenPanel(null)}>
         <PanelBody
           openPanel={openPanel}
           book={book}
@@ -365,15 +335,7 @@ export default function ReaderPage() {
   );
 }
 
-function IconBtn({
-  onClick,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
+function IconBtn({ onClick, title, children }: { onClick: () => void; title: string; children: React.ReactNode }) {
   return (
     <button
       type="button"

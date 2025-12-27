@@ -8,13 +8,7 @@ import { MOCK_BOOKS } from '@/app/library/mockBooks';
 import { BookCardGrid } from '@/app/library/BookCardGrid';
 import { BookRow } from '@/app/library/BookRow';
 import { EmptyLibrary, EmptyFiltered } from '@/app/library/LibraryEmptyStates';
-import {
-  IoSearchOutline,
-  IoCloudUploadOutline,
-  IoStorefrontOutline,
-  IoGridOutline,
-  IoListOutline,
-} from 'react-icons/io5';
+import { IoSearchOutline, IoCloudUploadOutline, IoStorefrontOutline, IoGridOutline, IoListOutline } from 'react-icons/io5';
 
 import type { FilterKey, SortKey } from '@/app/library/types';
 import { Select } from '@/ui/Select';
@@ -43,21 +37,8 @@ const ViewToggleOptions = [
 ] as const;
 
 export default function LibraryPage() {
-  const {
-    query,
-    setQuery,
-    filter,
-    setFilter,
-    sort,
-    setSort,
-    view,
-    setView,
-    counts,
-    filtered,
-    isEmptyAll,
-    isEmptyFiltered,
-    togglePin,
-  } = useLibrary(MOCK_BOOKS);
+  const { query, setQuery, filter, setFilter, sort, setSort, view, setView, counts, filtered, isEmptyAll, isEmptyFiltered, togglePin } =
+    useLibrary(MOCK_BOOKS);
   return (
     <PageContainer>
       <SectionHeader label="Library" title="Your books" actions={<AvailableActions />} />
@@ -76,18 +57,8 @@ export default function LibraryPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <Select
-              value={sort}
-              onChange={setSort}
-              options={SORTS}
-              aria-label="Sort"
-              className="w-40"
-            />
-            <ViewToggle<'grid' | 'list'>
-              value={view}
-              onChange={setView}
-              options={ViewToggleOptions}
-            />
+            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-40" />
+            <ViewToggle<'grid' | 'list'> value={view} onChange={setView} options={ViewToggleOptions} />
           </div>
         </div>
       </Section>

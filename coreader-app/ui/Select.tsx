@@ -15,13 +15,7 @@ type SelectProps<T> = {
   ariaLabel?: string;
 };
 
-export function Select<T extends string>({
-  value,
-  onChange,
-  options,
-  className,
-  ariaLabel,
-}: SelectProps<T>) {
+export function Select<T extends string>({ value, onChange, options, className, ariaLabel }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,9 +44,7 @@ export function Select<T extends string>({
         aria-label={ariaLabel ?? 'Select'}
       >
         <span>{active?.label ?? 'Select'}</span>
-        <IoChevronDownOutline
-          className={`transition ${open ? 'rotate-180 text-slate-300' : 'text-slate-500'}`}
-        />
+        <IoChevronDownOutline className={`transition ${open ? 'rotate-180 text-slate-300' : 'text-slate-500'}`} />
       </button>
 
       {open && (
@@ -69,9 +61,7 @@ export function Select<T extends string>({
                 aria-selected={selected}
                 className={clsx(
                   'flex w-full items-center justify-between px-3 py-2 text-left text-sm transition',
-                  selected
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-200 hover:bg-slate-900/70 hover:text-white',
+                  selected ? 'bg-slate-900 text-white' : 'text-slate-200 hover:bg-slate-900/70 hover:text-white',
                 )}
                 onClick={() => {
                   onChange(o.key);

@@ -23,10 +23,8 @@ const baseStyles =
   'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all select-none focus:outline-none disabled:opacity-50 cursor-pointer disabled:pointer-events-none';
 
 const variantStyles: Record<string, string> = {
-  primary:
-    'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
-  active:
-    'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
+  primary: 'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
+  active: 'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
 };
 
 export const Button: React.FC<ButtonProps> = ({

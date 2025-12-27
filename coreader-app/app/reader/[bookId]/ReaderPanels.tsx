@@ -31,10 +31,8 @@ export function SidePanel(props: SidePanelProps) {
         <div className="text-sm text-slate-400">
           <p className="font-semibold text-slate-200">Tools</p>
           <p className="mt-1">
-            Open <span className="text-slate-200">TOC</span>,{' '}
-            <span className="text-slate-200">Search</span>,{' '}
-            <span className="text-slate-200">Coach</span>, or{' '}
-            <span className="text-slate-200">Highlights</span>.
+            Open <span className="text-slate-200">TOC</span>, <span className="text-slate-200">Search</span>,{' '}
+            <span className="text-slate-200">Coach</span>, or <span className="text-slate-200">Highlights</span>.
           </p>
           <p className="mt-3 text-xs text-slate-500">Tip: Ctrl/Cmd + K opens search.</p>
         </div>
@@ -71,13 +69,7 @@ type PanelBodyProps = Omit<SidePanelProps, 'onClose'>;
 export function PanelBody(props: PanelBodyProps) {
   switch (props.openPanel) {
     case 'overview':
-      return (
-        <OverviewPanel
-          book={props.book}
-          progressPct={props.progressPct}
-          onStart={props.onStartReading}
-        />
-      );
+      return <OverviewPanel book={props.book} progressPct={props.progressPct} onStart={props.onStartReading} />;
     case 'toc':
       return <TocPanel chapters={props.chapters} onJump={props.onJumpToChapter} />;
     case 'search':
@@ -121,30 +113,11 @@ export function panelTitle(p: PanelKey) {
   }
 }
 
-export function BottomSheet({
-  open,
-  title,
-  onClose,
-  children,
-}: {
-  open: boolean;
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
+export function BottomSheet({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
   return (
-    <div
-      className={clsx(
-        'fixed inset-0 z-40 lg:hidden',
-        open ? 'pointer-events-auto' : 'pointer-events-none',
-      )}
-      aria-hidden={!open}
-    >
+    <div className={clsx('fixed inset-0 z-40 lg:hidden', open ? 'pointer-events-auto' : 'pointer-events-none')} aria-hidden={!open}>
       {/* Backdrop */}
-      <div
-        className={clsx('absolute inset-0 transition', open ? 'bg-black/50' : 'bg-black/0')}
-        onClick={onClose}
-      />
+      <div className={clsx('absolute inset-0 transition', open ? 'bg-black/50' : 'bg-black/0')} onClick={onClose} />
 
       {/* Sheet */}
       <div
@@ -172,15 +145,7 @@ export function BottomSheet({
   );
 }
 
-function OverviewPanel({
-  book,
-  progressPct,
-  onStart,
-}: {
-  book: Book;
-  progressPct: number;
-  onStart: () => void;
-}) {
+function OverviewPanel({ book, progressPct, onStart }: { book: Book; progressPct: number; onStart: () => void }) {
   return (
     <div className="space-y-4">
       <div>
@@ -195,10 +160,7 @@ function OverviewPanel({
           <span className="text-sm text-slate-300">{progressPct}%</span>
         </div>
         <div className="mt-2 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">
-          <div
-            className="h-full rounded-full bg-slate-200/70"
-            style={{ width: `${progressPct}%` }}
-          />
+          <div className="h-full rounded-full bg-slate-200/70" style={{ width: `${progressPct}%` }} />
         </div>
         <button
           type="button"
@@ -208,9 +170,7 @@ function OverviewPanel({
           <IoFlashOutline />
           {progressPct > 0 ? 'Resume reading' : 'Start reading'}
         </button>
-        <p className="mt-2 text-xs text-slate-500">
-          Tip: you can always open this overview by clicking the book title.
-        </p>
+        <p className="mt-2 text-xs text-slate-500">Tip: you can always open this overview by clicking the book title.</p>
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
@@ -289,9 +249,7 @@ function SearchPanel({
         ))}
 
         {query.trim() && hits.length === 0 && (
-          <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
-            No matches found.
-          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">No matches found.</div>
         )}
       </div>
     </div>
@@ -303,39 +261,32 @@ function CoachPanel() {
     <div className="space-y-3">
       <div>
         <p className="text-sm font-semibold text-white">Coach</p>
-        <p className="mt-1 text-xs text-slate-500">
-          This panel is a placeholder. Wire it to your chat + RAG backend.
-        </p>
+        <p className="mt-1 text-xs text-slate-500">This panel is a placeholder. Wire it to your chat + RAG backend.</p>
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300">
         <p className="font-semibold text-white">Quick prompts</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {[
-            'Summarize this chapter',
-            'Explain this paragraph',
-            'Who is the main character so far?',
-            'What are the key ideas here?',
-          ].map((t) => (
-            <button
-              key={t}
-              type="button"
-              className="rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-200 hover:border-slate-700"
-              onClick={() => {
-                // hook to chat input
-              }}
-            >
-              {t}
-            </button>
-          ))}
+          {['Summarize this chapter', 'Explain this paragraph', 'Who is the main character so far?', 'What are the key ideas here?'].map(
+            (t) => (
+              <button
+                key={t}
+                type="button"
+                className="rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-200 hover:border-slate-700"
+                onClick={() => {
+                  // hook to chat input
+                }}
+              >
+                {t}
+              </button>
+            ),
+          )}
         </div>
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
         <p className="text-sm font-semibold text-white">Chat</p>
-        <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/30 p-3 text-sm text-slate-400">
-          Messages UI goes here.
-        </div>
+        <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/30 p-3 text-sm text-slate-400">Messages UI goes here.</div>
 
         <div className="mt-3 flex gap-2">
           <input
@@ -354,13 +305,7 @@ function CoachPanel() {
   );
 }
 
-function HighlightsPanel({
-  highlights,
-  onJump,
-}: {
-  highlights: Highlight[];
-  onJump: (h: Highlight) => void;
-}) {
+function HighlightsPanel({ highlights, onJump }: { highlights: Highlight[]; onJump: (h: Highlight) => void }) {
   return (
     <div className="space-y-3">
       <div>
@@ -370,8 +315,7 @@ function HighlightsPanel({
 
       {highlights.length === 0 ? (
         <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
-          No highlights yet. Select text and press <span className="text-slate-200">Highlight</span>
-          .
+          No highlights yet. Select text and press <span className="text-slate-200">Highlight</span>.
         </div>
       ) : (
         <div className="space-y-2">
@@ -383,9 +327,7 @@ function HighlightsPanel({
               className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-slate-700"
             >
               <span className="line-clamp-3 text-slate-200">“{h.quote}”</span>
-              <span className="mt-2 block text-[11px] text-slate-500">
-                {formatRelativeDate(h.createdAt)}
-              </span>
+              <span className="mt-2 block text-[11px] text-slate-500">{formatRelativeDate(h.createdAt)}</span>
             </button>
           ))}
         </div>
@@ -448,15 +390,7 @@ function SettingsPanel(props: ReaderSettings) {
   );
 }
 
-function SettingRow({
-  label,
-  value,
-  children,
-}: {
-  label: string;
-  value: string;
-  children: ReactNode;
-}) {
+function SettingRow({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
       <div className="flex items-center justify-between">

@@ -22,14 +22,7 @@ const formatBytes = (bytes: number) => {
   return `${size.toFixed(size >= 10 || size === 0 ? 0 : 1)} ${units[i]}`;
 };
 
-export function FileUpload({
-  accept,
-  onFileSelect,
-  value,
-  label = 'Drag & drop your file',
-  description,
-  className,
-}: FileUploadProps) {
+export function FileUpload({ accept, onFileSelect, value, label = 'Drag & drop your file', description, className }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const acceptAttr = Array.isArray(accept) ? accept.join(',') : accept;
@@ -96,9 +89,7 @@ export function FileUpload({
         onDragLeave={onDragLeave}
         className={clsx(
           'flex cursor-pointer flex-row items-center justify-center gap-8 rounded-2xl border-2 border-dashed p-6 text-center transition',
-          isDragging
-            ? 'border-blue-500 bg-blue-500/10'
-            : 'border-gray-800 bg-gray-950 hover:border-blue-500 hover:bg-gray-900',
+          isDragging ? 'border-blue-500 bg-blue-500/10' : 'border-gray-800 bg-gray-950 hover:border-blue-500 hover:bg-gray-900',
         )}
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">

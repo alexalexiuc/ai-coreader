@@ -1,14 +1,7 @@
 import type React from 'react';
 import type { IconType } from 'react-icons';
 
-export const PulseDot: IconType = ({
-  size,
-  color,
-  title,
-  className,
-  style,
-  ...props
-}) => {
+export const PulseDot: IconType = ({ size, color, title, className, style, ...props }) => {
   const dimension = size ? (typeof size === 'number' ? `${size}px` : size) : '0.5rem';
   const outerClassName = ['relative inline-flex', className].filter(Boolean).join(' ');
 

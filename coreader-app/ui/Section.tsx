@@ -7,9 +7,7 @@ type SectionProps = React.PropsWithChildren<{
   paddingClass?: string;
 }>;
 
-const isSectionHeaderProps = (
-  header: React.ReactNode | SectionHeaderProps,
-): header is SectionHeaderProps => {
+const isSectionHeaderProps = (header: React.ReactNode | SectionHeaderProps): header is SectionHeaderProps => {
   return (
     (header as SectionHeaderProps).title !== undefined ||
     (header as SectionHeaderProps).label !== undefined ||
@@ -18,12 +16,7 @@ const isSectionHeaderProps = (
   );
 };
 
-export const Section: React.FC<SectionProps> = ({
-  header,
-  children,
-  className,
-  paddingClass: paddingClass,
-}) => {
+export const Section: React.FC<SectionProps> = ({ header, children, className, paddingClass: paddingClass }) => {
   return (
     <section
       className={clsx(

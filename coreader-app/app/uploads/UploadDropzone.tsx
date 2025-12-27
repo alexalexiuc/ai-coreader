@@ -49,12 +49,7 @@ export function UploadDropzone() {
   return (
     <Section paddingClass="p-5" header={{ title: 'Upload', titleSize: 'lg' }}>
       <div className="mt-2">
-        <FileUpload
-          accept={['text/plain', '.txt']}
-          value={file}
-          onFileSelect={newFile}
-          label="Drop your book file"
-        />
+        <FileUpload accept={['text/plain', '.txt']} value={file} onFileSelect={newFile} label="Drop your book file" />
       </div>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Button
@@ -68,24 +63,16 @@ export function UploadDropzone() {
         <Button onClick={() => reset()} disabled={!file || isPending} className="text-gray-300">
           Clear selection
         </Button>
-        {file && !isPending && (
-          <span className="text-xs text-gray-500">Ready to upload: {file.name}</span>
-        )}
+        {file && !isPending && <span className="text-xs text-gray-500">Ready to upload: {file.name}</span>}
       </div>
 
       {message && (
         <div
           className={`mt-6 flex items-center gap-3 rounded-xl px-4 py-3 text-sm ${
-            status === 'success'
-              ? 'border border-green-800 bg-green-950 text-green-200'
-              : 'border border-red-800 bg-red-950 text-red-200'
+            status === 'success' ? 'border border-green-800 bg-green-950 text-green-200' : 'border border-red-800 bg-red-950 text-red-200'
           }`}
         >
-          {status === 'success' ? (
-            <IoCheckmarkCircleOutline className="h-5 w-5" />
-          ) : (
-            <IoWarningOutline className="h-5 w-5" />
-          )}
+          {status === 'success' ? <IoCheckmarkCircleOutline className="h-5 w-5" /> : <IoWarningOutline className="h-5 w-5" />}
           <span>{message}</span>
         </div>
       )}

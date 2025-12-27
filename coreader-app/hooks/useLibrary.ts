@@ -63,21 +63,10 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
       if (ap !== bp) return bp - ap;
 
       if (sort === 'title') return a.title.localeCompare(b.title);
-      if (sort === 'progress')
-        return (clampPct(b.progressPct) ?? 0) - (clampPct(a.progressPct) ?? 0);
+      if (sort === 'progress') return (clampPct(b.progressPct) ?? 0) - (clampPct(a.progressPct) ?? 0);
 
-      const at =
-        sort === 'recentlyAdded'
-          ? new Date(a.addedAt).getTime()
-          : a.lastOpenedAt
-            ? new Date(a.lastOpenedAt).getTime()
-            : 0;
-      const bt =
-        sort === 'recentlyAdded'
-          ? new Date(b.addedAt).getTime()
-          : b.lastOpenedAt
-            ? new Date(b.lastOpenedAt).getTime()
-            : 0;
+      const at = sort === 'recentlyAdded' ? new Date(a.addedAt).getTime() : a.lastOpenedAt ? new Date(a.lastOpenedAt).getTime() : 0;
+      const bt = sort === 'recentlyAdded' ? new Date(b.addedAt).getTime() : b.lastOpenedAt ? new Date(b.lastOpenedAt).getTime() : 0;
 
       return bt - at;
     });

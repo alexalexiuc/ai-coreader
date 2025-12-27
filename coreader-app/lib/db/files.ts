@@ -30,8 +30,7 @@ function toDTO(doc: FilesDoc): FileDTO {
 
   const size = Number(doc.size);
   const normalizedSize = Number.isFinite(size) ? size : 0;
-  const percentage =
-    doc.percentage === undefined ? undefined : Number.isFinite(Number(doc.percentage)) ? Number(doc.percentage) : undefined;
+  const percentage = doc.percentage === undefined ? undefined : Number.isFinite(Number(doc.percentage)) ? Number(doc.percentage) : undefined;
 
   return {
     id: doc._id.toHexString(),
@@ -46,9 +45,7 @@ function toDTO(doc: FilesDoc): FileDTO {
   };
 }
 
-export async function insertFileMetadata(
-  params: Omit<FilesDoc, '_id' | 'createdAt' | 'updatedAt'>,
-): Promise<FileDTO> {
+export async function insertFileMetadata(params: Omit<FilesDoc, '_id' | 'createdAt' | 'updatedAt'>): Promise<FileDTO> {
   const db = await getDb();
   const now = new Date();
 

@@ -14,19 +14,9 @@ type ViewToggleProps<T> = {
   className?: string;
 };
 
-export function ViewToggle<T extends string>({
-  value,
-  onChange,
-  options,
-  className,
-}: ViewToggleProps<T>) {
+export function ViewToggle<T extends string>({ value, onChange, options, className }: ViewToggleProps<T>) {
   return (
-    <div
-      className={clsx(
-        'inline-flex rounded-xl border border-slate-800 bg-slate-950/70 p-1',
-        className,
-      )}
-    >
+    <div className={clsx('inline-flex rounded-xl border border-slate-800 bg-slate-950/70 p-1', className)}>
       {options.map((opt) => {
         const active = value === opt.key;
         const Icon = opt.Icon;

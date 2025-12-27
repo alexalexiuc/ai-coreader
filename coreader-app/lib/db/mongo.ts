@@ -12,13 +12,11 @@ function ensureUri() {
 export async function getClient(): Promise<MongoClient> {
   ensureUri();
   if (!clientPromise) {
-    clientPromise = new MongoClient(uri!, { serverSelectionTimeoutMS: 4000 })
-      .connect()
-      .catch((err) => {
-        console.error('Mongo connection failed:', err.message);
-        clientPromise = null; // allow retries
-        throw new Error(`Failed to connect to MongoDB at ${uri}: ${err.message}`);
-      });
+    clientPromise = new MongoClient(uri!, { serverSelectionTimeoutMS: 4000 }).connect().catch((err) => {
+      console.error('Mongo connection failed:', err.message);
+      clientPromise = null; // allow retries
+      throw new Error(`Failed to connect to MongoDB at ${uri}: ${err.message}`);
+    });
   }
   return clientPromise;
 }

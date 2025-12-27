@@ -33,20 +33,8 @@ type UploadsClientPageProps = {
 };
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
-  const {
-    query,
-    setQuery,
-    filter,
-    setFilter,
-    sort,
-    setSort,
-    counts,
-    filtered,
-    isEmptyAll,
-    isEmptyFiltered,
-    retryFile,
-    deleteFile,
-  } = useFiles(initialFiles);
+  const { query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile } =
+    useFiles(initialFiles);
 
   const onDownload = (id: string) => {
     console.info('Download action not yet implemented for file', id);
@@ -76,13 +64,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
           </div>
 
           <div className="flex items-center gap-2 sm:justify-end">
-            <Select
-              value={sort}
-              onChange={setSort}
-              options={SORTS}
-              aria-label="Sort"
-              className="w-36"
-            />
+            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-36" />
           </div>
         </div>
       </Section>
@@ -129,13 +111,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
 
             <div className="divide-y divide-slate-800">
               {filtered.map((f) => (
-                <FileRow
-                  key={f.id}
-                  file={f}
-                  onRetry={retryFile}
-                  onDelete={deleteFile}
-                  onDownload={onDownload}
-                />
+                <FileRow key={f.id} file={f} onRetry={retryFile} onDelete={deleteFile} onDownload={onDownload} />
               ))}
             </div>
           </div>

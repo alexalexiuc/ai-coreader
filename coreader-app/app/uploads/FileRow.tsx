@@ -46,11 +46,7 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
                   <IoBookOutline className="text-slate-500" />
                   <span className="truncate">
                     Book created:{' '}
-                    <Link
-                      href={`/reader/${file.bookId}`}
-                      className="text-slate-200 hover:underline"
-                      title={file.bookTitle ?? file.bookId}
-                    >
+                    <Link href={`/reader/${file.bookId}`} className="text-slate-200 hover:underline" title={file.bookTitle ?? file.bookId}>
                       {file.bookTitle ?? 'Open book'}
                     </Link>
                   </span>
@@ -70,10 +66,7 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
                     <span>{pct}%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">
-                    <div
-                      className="h-full rounded-full bg-slate-200/70"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="h-full rounded-full bg-slate-200/70" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               )}

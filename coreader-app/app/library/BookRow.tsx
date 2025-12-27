@@ -18,21 +18,14 @@ export const BookRow: React.FC<BookRowProps> = ({ book, onTogglePin }) => {
         <IoBookOutline />
       </div>
 
-      <Link
-        href={`/reader/${book.id}`}
-        className="min-w-0 flex-1 outline-none focus:ring-2 focus:ring-slate-600"
-      >
+      <Link href={`/reader/${book.id}`} className="min-w-0 flex-1 outline-none focus:ring-2 focus:ring-slate-600">
         <p className="truncate text-sm font-semibold text-white">{book.title}</p>
         <p className="mt-0.5 truncate text-xs text-slate-400">
           {(book.author ?? '—') + ' • ' + (book.source === 'uploaded' ? 'Uploaded' : 'Shop')}
         </p>
 
         <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">
-          <span>
-            {book.lastOpenedAt
-              ? `Opened ${formatRelativeDate(book.lastOpenedAt)}`
-              : `Added ${formatRelativeDate(book.addedAt)}`}
-          </span>
+          <span>{book.lastOpenedAt ? `Opened ${formatRelativeDate(book.lastOpenedAt)}` : `Added ${formatRelativeDate(book.addedAt)}`}</span>
           <span className="rounded-full border border-slate-800 bg-slate-900/60 px-2 py-0.5 text-[11px] text-slate-300">
             {pct === 0 ? 'Unread' : pct >= 100 ? 'Finished' : `${pct}%`}
           </span>

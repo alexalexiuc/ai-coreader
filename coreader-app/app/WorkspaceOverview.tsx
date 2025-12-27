@@ -36,14 +36,11 @@ export function WorkspaceOverview({ stats }: WorkspaceOverviewProps) {
       header={{
         label: 'Workspace',
         title: 'Your reading dashboard',
-        description:
-          'Pick up where you left off, check processing, or add new books to your library.',
+        description: 'Pick up where you left off, check processing, or add new books to your library.',
         actions: (
           <Card>
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <span
-                className={`h-2 w-2 rounded-full ${stats.processingCount > 0 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-              />
+              <span className={`h-2 w-2 rounded-full ${stats.processingCount > 0 ? 'bg-amber-400' : 'bg-emerald-400'}`} />
               {stats.processingCount > 0 ? `${stats.processingCount} processing` : 'Queue idle'}
             </div>
           </Card>
@@ -52,27 +49,14 @@ export function WorkspaceOverview({ stats }: WorkspaceOverviewProps) {
     >
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {dashboardItems.map((item) => (
-          <DashboardItem
-            key={item.label}
-            label={item.label}
-            value={item.value}
-            description={item.description}
-          />
+          <DashboardItem key={item.label} label={item.label} value={item.value} description={item.description} />
         ))}
       </div>
     </Section>
   );
 }
 
-function DashboardItem({
-  label,
-  value,
-  description,
-}: {
-  label: string;
-  value: string;
-  description: string;
-}) {
+function DashboardItem({ label, value, description }: { label: string; value: string; description: string }) {
   return (
     <Card>
       <p className="text-xs tracking-[0.2em] text-slate-500 uppercase">{label}</p>

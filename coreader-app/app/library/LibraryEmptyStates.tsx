@@ -7,8 +7,7 @@ export function EmptyLibrary() {
     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-6">
       <p className="text-sm font-semibold text-white">Your library is empty</p>
       <p className="mt-2 text-sm text-slate-400">
-        Library shows books that are ready to read. Uploaded files appear in Uploads until
-        processed.
+        Library shows books that are ready to read. Uploaded files appear in Uploads until processed.
       </p>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -28,31 +27,19 @@ export function EmptyLibrary() {
         >
           <IoStorefrontOutline />
           Browse free books
-          <span className="ml-1 rounded-full border border-slate-800 bg-slate-900 px-2 py-0.5 text-[11px] text-slate-300">
-            Soon
-          </span>
+          <span className="ml-1 rounded-full border border-slate-800 bg-slate-900 px-2 py-0.5 text-[11px] text-slate-300">Soon</span>
         </Link>
       </div>
     </div>
   );
 }
 
-export function EmptyFiltered({
-  query,
-  onClear,
-  filter,
-}: {
-  query: string;
-  onClear: () => void;
-  filter: FilterKey;
-}) {
+export function EmptyFiltered({ query, onClear, filter }: { query: string; onClear: () => void; filter: FilterKey }) {
   const hasQuery = query.trim().length > 0;
 
   return (
     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-6">
-      <p className="text-sm font-semibold text-white">
-        {hasQuery ? `No matches for “${query.trim()}”` : 'Nothing here yet'}
-      </p>
+      <p className="text-sm font-semibold text-white">{hasQuery ? `No matches for “${query.trim()}”` : 'Nothing here yet'}</p>
       <p className="mt-2 text-sm text-slate-400">
         {hasQuery
           ? 'Try a different search term, or clear the search.'

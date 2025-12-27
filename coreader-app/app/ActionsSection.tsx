@@ -2,12 +2,7 @@ import type { IconType } from 'react-icons';
 
 import { ActionCard } from '../ui/ActionCard';
 import { SectionHeader } from '../ui/SectionHeader';
-import {
-  IoCloudUploadOutline,
-  IoLibraryOutline,
-  IoStorefrontOutline,
-  IoPersonOutline,
-} from 'react-icons/io5';
+import { IoCloudUploadOutline, IoLibraryOutline, IoStorefrontOutline, IoPersonOutline } from 'react-icons/io5';
 
 export type ActionItem = {
   icon: IconType;

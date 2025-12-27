@@ -12,15 +12,7 @@ type ActionCardProps = {
   variant?: 'compact' | 'square';
 };
 
-export const ActionCard = ({
-  icon: Icon,
-  label,
-  pathTo,
-  description,
-  badge,
-  disabled,
-  variant,
-}: ActionCardProps) => {
+export const ActionCard = ({ icon: Icon, label, pathTo, description, badge, disabled, variant }: ActionCardProps) => {
   const content = (
     <div
       className={clsx(

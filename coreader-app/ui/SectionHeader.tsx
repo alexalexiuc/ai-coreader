@@ -33,35 +33,11 @@ export const SectionHeader = ({
   className,
 }: SectionHeaderProps) => {
   return (
-    <div
-      className={clsx(
-        'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
-        className,
-      )}
-    >
+    <div className={clsx('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between', className)}>
       <div>
         {label && <p className="text-xs tracking-[0.25em] text-slate-500 uppercase">{label}</p>}
-        {title && (
-          <h1
-            className={clsx(
-              'font-bold text-white',
-              label && spaceBetween && 'mt-2',
-              getTitleSizeClass(titleSize),
-            )}
-          >
-            {title}
-          </h1>
-        )}
-        {description && (
-          <p
-            className={clsx(
-              label && title && spaceBetween && 'mt-2',
-              'max-w-2xl text-sm text-slate-400',
-            )}
-          >
-            {description}
-          </p>
-        )}
+        {title && <h1 className={clsx('font-bold text-white', label && spaceBetween && 'mt-2', getTitleSizeClass(titleSize))}>{title}</h1>}
+        {description && <p className={clsx(label && title && spaceBetween && 'mt-2', 'max-w-2xl text-sm text-slate-400')}>{description}</p>}
       </div>
 
       {actions && <div className="flex items-center gap-2">{actions}</div>}

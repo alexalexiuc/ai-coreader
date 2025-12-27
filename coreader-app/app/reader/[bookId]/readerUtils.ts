@@ -18,9 +18,7 @@ export function getSelectionBlockId(): string | null {
   const node = range.commonAncestorContainer as Node | null;
   if (!node) return null;
 
-  const el = (
-    node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement
-  ) as Element | null;
+  const el = (node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement) as Element | null;
   if (!el) return null;
 
   const blockEl = el.closest?.('[data-block-id]') as HTMLElement | null;

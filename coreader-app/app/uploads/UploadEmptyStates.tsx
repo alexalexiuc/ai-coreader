@@ -6,8 +6,7 @@ export function EmptyUploads() {
     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-6">
       <p className="text-sm font-semibold text-white">No files uploaded yet</p>
       <p className="mt-2 text-sm text-slate-400">
-        Upload a file to start processing it into a book. Completed uploads will link to the created
-        book.
+        Upload a file to start processing it into a book. Completed uploads will link to the created book.
       </p>
       <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2 text-sm text-slate-200">
         <IoCloudUploadOutline />
@@ -17,22 +16,12 @@ export function EmptyUploads() {
   );
 }
 
-export function EmptyFiltered({
-  query,
-  filter,
-  onClear,
-}: {
-  query: string;
-  filter: FilterKey;
-  onClear: () => void;
-}) {
+export function EmptyFiltered({ query, filter, onClear }: { query: string; filter: FilterKey; onClear: () => void }) {
   const hasQuery = query.trim().length > 0;
 
   return (
     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-6">
-      <p className="text-sm font-semibold text-white">
-        {hasQuery ? `No matches for "${query.trim()}"` : 'Nothing here'}
-      </p>
+      <p className="text-sm font-semibold text-white">{hasQuery ? `No matches for "${query.trim()}"` : 'Nothing here'}</p>
       <p className="mt-2 text-sm text-slate-400">
         {hasQuery
           ? 'Try a different search term, or clear the search.'
