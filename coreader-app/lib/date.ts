@@ -1,5 +1,12 @@
 'use client';
 
+const absoluteDateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
 export function formatRelativeDate(iso?: string) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -13,5 +20,5 @@ export function formatRelativeDate(iso?: string) {
   const days = Math.floor(hrs / 24);
   if (days === 1) return 'Yesterday';
   if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString();
+  return absoluteDateFormatter.format(d);
 }
