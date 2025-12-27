@@ -16,6 +16,7 @@ import { formatBytes } from '@/lib/bytes';
 import { formatRelativeDate } from '@/lib/date';
 import { Badge } from '@/ui/Badge';
 import { PulseDot } from '@/ui/icons/PulseDot';
+import { SquareButton } from '@/ui/SquareButton';
 
 type FileRowProps = {
   file: UploadedFile;
@@ -91,37 +92,19 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
 
         <div className="sm:col-span-1 sm:justify-self-end">
           <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => onDownload(file.id)}
-              className="rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-slate-200 hover:border-slate-700"
-              aria-label="Download original file"
-              title="Download"
-            >
+            <SquareButton onClick={() => onDownload(file.id)} aria-label="Download original file" title="Download">
               <IoDownloadOutline />
-            </button>
+            </SquareButton>
 
             {isFailed && (
-              <button
-                type="button"
-                onClick={() => onRetry(file.id)}
-                className="rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-slate-200 hover:border-slate-700"
-                aria-label="Retry processing"
-                title="Retry"
-              >
+              <SquareButton onClick={() => onRetry(file.id)} aria-label="Retry processing" title="Retry">
                 <IoRefreshOutline />
-              </button>
+              </SquareButton>
             )}
 
-            <button
-              type="button"
-              onClick={() => onDelete(file.id)}
-              className="rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-slate-200 hover:border-slate-700"
-              aria-label="Delete file"
-              title="Delete"
-            >
+            <SquareButton onClick={() => onDelete(file.id)} aria-label="Delete file" title="Delete">
               <IoTrashOutline />
-            </button>
+            </SquareButton>
           </div>
         </div>
       </div>
