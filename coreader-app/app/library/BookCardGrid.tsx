@@ -17,16 +17,19 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
 
   return (
     <div className="relative rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700">
-      <PinButton book={book} onTogglePin={onTogglePin} />
-
       <Link href={`/reader/${book.id}`} className="block outline-none focus:ring-slate-600">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-slate-200">
-            <IoBookOutline />
+        <div className="flex justify-between">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-slate-200">
+              <IoBookOutline />
+            </div>
+            <div className="min-w-0">
+              <p className="line-clamp-2 text-sm font-semibold text-white">{book.title}</p>
+              <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? '—'}</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="line-clamp-2 text-sm font-semibold text-white">{book.title}</p>
-            <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? '—'}</p>
+          <div className="mt-0.5">
+            <PinButton book={book} onTogglePin={onTogglePin} />
           </div>
         </div>
 
