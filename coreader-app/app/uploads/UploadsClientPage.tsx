@@ -2,6 +2,7 @@
 
 import { useFiles } from '@/hooks';
 import type { FilterKey, SortKey, UploadedFile } from '@/app/uploads/types';
+import { deleteFileAction } from '@/app/uploads/actions';
 import { FileRow } from '@/app/uploads/FileRow';
 import { EmptyFiltered, EmptyUploads } from '@/app/uploads/UploadEmptyStates';
 import { UploadDropzone } from '@/app/uploads/UploadDropzone';
@@ -12,6 +13,7 @@ import { Select } from '@/ui/Select';
 import { ViewToggle } from '@/ui/ViewToggle';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
+import { useTransition } from 'react';
 import { IoLibraryOutline, IoSearchOutline, IoStorefrontOutline } from 'react-icons/io5';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -33,11 +35,24 @@ type UploadsClientPageProps = {
 };
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
+  const [, startTransition] = useTransition();
   const { query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile } =
     useFiles(initialFiles);
 
   const onDownload = (id: string) => {
-    console.info('Download action not yet implemented for file', id);
+    const url = `/api/files/${id}/download`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const onDelete = (id: string) => {
+    startTransition(async () => {
+      try {
+        await deleteFileAction(id);
+        deleteFile(id);
+      } catch (err) {
+        console.error('Failed to delete file', err);
+      }
+    });
   };
 
   return (
@@ -111,7 +126,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
 
             <div className="divide-y divide-slate-800">
               {filtered.map((f) => (
-                <FileRow key={f.id} file={f} onRetry={retryFile} onDelete={deleteFile} onDownload={onDownload} />
+                <FileRow key={f.id} file={f} onRetry={retryFile} onDelete={onDelete} onDownload={onDownload} />
               ))}
             </div>
           </div>

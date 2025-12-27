@@ -18,6 +18,11 @@ export type BookDTO = {
   updatedAt: string;
 };
 
+function toNumber(value: unknown): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function toDTO(doc: BooksDoc): BookDTO {
   return {
     id: doc._id.toHexString(),
@@ -27,8 +32,8 @@ function toDTO(doc: BooksDoc): BookDTO {
     publisher: doc.publisher,
     year: doc.year,
     genre: doc.genre,
-    totalChars: doc.totalChars,
-    totalChunks: doc.totalChunks,
+    totalChars: toNumber(doc.totalChars),
+    totalChunks: toNumber(doc.totalChunks),
     finished: doc.finished,
     source: doc.source,
     createdAt: doc.createdAt.toISOString(),
