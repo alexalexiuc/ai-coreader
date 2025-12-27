@@ -1,7 +1,7 @@
 import { Button } from './Button';
 
 type SquareButtonProps = React.PropsWithChildren<{
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   title: string;
 }>;
 

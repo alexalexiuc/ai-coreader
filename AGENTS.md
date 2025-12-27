@@ -9,6 +9,7 @@ Nested AGENTS.md files override this one.
 - Do not add dependencies or refactor unrelated code unless asked
 - Never commit secrets, credentials, or real tokens
 - Prefer existing tooling and conventions
+- If after performing tasks, additional changes are needed, add the to the TODO.md file with this format: `- [workspace]: description of needed change`
 
 ## Repo structure
 

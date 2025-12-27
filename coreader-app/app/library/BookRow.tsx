@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { IoBookOutline, IoPin, IoPinOutline } from 'react-icons/io5';
+import { IoBookOutline } from 'react-icons/io5';
 import type { LibraryBook } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
 import { formatRelativeDate } from '@/lib/date';
+import { PinButton } from './PinButton';
 
 type BookRowProps = {
   book: LibraryBook;
@@ -18,7 +19,7 @@ export const BookRow: React.FC<BookRowProps> = ({ book, onTogglePin }) => {
         <IoBookOutline />
       </div>
 
-      <Link href={`/reader/${book.id}`} className="min-w-0 flex-1 outline-none focus:ring-2 focus:ring-slate-600">
+      <Link href={`/reader/${book.id}`} className="min-w-0 flex-1 outline-none focus:ring-slate-600">
         <p className="truncate text-sm font-semibold text-white">{book.title}</p>
         <p className="mt-0.5 truncate text-xs text-slate-400">
           {(book.author ?? '—') + ' • ' + (book.source === 'uploaded' ? 'Uploaded' : 'Shop')}
@@ -38,15 +39,7 @@ export const BookRow: React.FC<BookRowProps> = ({ book, onTogglePin }) => {
         )}
       </Link>
 
-      <button
-        type="button"
-        onClick={() => onTogglePin(book.id)}
-        className="rounded-lg border border-slate-800 bg-slate-900/60 p-2 text-slate-200 hover:border-slate-700"
-        aria-label={book.isPinned ? 'Unpin book' : 'Pin book'}
-        title={book.isPinned ? 'Unpin' : 'Pin'}
-      >
-        {book.isPinned ? <IoPin /> : <IoPinOutline />}
-      </button>
+      <PinButton book={book} onTogglePin={onTogglePin} />
     </div>
   );
 };

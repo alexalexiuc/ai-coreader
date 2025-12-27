@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { IoBookOutline, IoPin, IoPinOutline } from 'react-icons/io5';
+import { IoBookOutline } from 'react-icons/io5';
 import type { LibraryBook } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
 import { formatRelativeDate } from '@/lib/date';
+import { PinButton } from './PinButton';
 
 type BookCardGridProps = {
   book: LibraryBook;
@@ -16,21 +17,9 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
 
   return (
     <div className="relative rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onTogglePin(book.id);
-        }}
-        className="absolute top-3 right-3 rounded-lg border border-slate-800 bg-slate-900/60 p-2 text-slate-200 hover:border-slate-700"
-        aria-label={book.isPinned ? 'Unpin book' : 'Pin book'}
-        title={book.isPinned ? 'Unpin' : 'Pin'}
-      >
-        {book.isPinned ? <IoPin /> : <IoPinOutline />}
-      </button>
+      <PinButton book={book} onTogglePin={onTogglePin} />
 
-      <Link href={`/reader/${book.id}`} className="block outline-none focus:ring-2 focus:ring-slate-600">
+      <Link href={`/reader/${book.id}`} className="block outline-none focus:ring-slate-600">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-slate-200">
             <IoBookOutline />
