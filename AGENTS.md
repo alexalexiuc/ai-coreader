@@ -49,3 +49,7 @@ Nested AGENTS.md files override this one.
 - Example: `feat: (AI:Codex) add new API endpoint for user data`
 - Add detailed description if needed
 - Reference issues/PRs if applicable
+
+## Dictionary
+
+- Generate types: run `npm run db:types` to generate database types
