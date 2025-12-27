@@ -1,4 +1,4 @@
-const { Int32, ObjectId } = require("mongodb");
+const { Double, Int32, ObjectId } = require("mongodb");
 
 const fileIds = {
   emberArchive: new ObjectId("66f000000000000000000001"),
@@ -59,7 +59,7 @@ const files = [
     size: new Int32(24576),
     storagePath: "uploads/testing",
     storageName: "ember-archive.pdf",
-    percentage: new Int32(100),
+    percentage: new Double(100),
     status: "processed",
   },
   {
@@ -71,7 +71,7 @@ const files = [
     size: new Int32(8192),
     storagePath: "uploads/testing",
     storageName: "atlas-field-notes.txt",
-    percentage: new Int32(60),
+    percentage: new Double(60),
     status: "processing",
   },
   {
@@ -83,7 +83,7 @@ const files = [
     size: new Int32(2340120),
     storagePath: "uploads/mock",
     storageName: "foundation.txt",
-    percentage: new Int32(100),
+    percentage: new Double(100),
     status: "processed",
   },
   {
@@ -95,7 +95,7 @@ const files = [
     size: new Int32(1124221),
     storagePath: "uploads/mock",
     storageName: "i_robot.txt",
-    percentage: new Int32(45),
+    percentage: new Double(45),
     status: "processing",
   },
   {
@@ -107,7 +107,7 @@ const files = [
     size: new Int32(3800000),
     storagePath: "uploads/mock",
     storageName: "dune.txt",
-    percentage: new Int32(100),
+    percentage: new Double(100),
     status: "processed",
   },
   {
@@ -119,7 +119,7 @@ const files = [
     size: new Int32(4800004),
     storagePath: "uploads/mock",
     storageName: "bradbury_martian_chronicles.txt",
-    percentage: new Int32(100),
+    percentage: new Double(100),
     status: "processed",
   },
   {
@@ -131,7 +131,7 @@ const files = [
     size: new Int32(18204332),
     storagePath: "uploads/mock",
     storageName: "some_scan.pdf",
-    percentage: new Int32(10),
+    percentage: new Double(10),
     status: "failed",
   },
 ];
@@ -287,6 +287,7 @@ const entityDescriptions = [
     createdAt: primaryDate,
     updatedAt: primaryDate,
     bookId: bookIds.emberArchive,
+    entityId: entityIds.rin,
     name: "Rin Calder",
     type: "character",
     summary:
@@ -301,6 +302,7 @@ const entityDescriptions = [
     createdAt: secondaryDate,
     updatedAt: secondaryDate,
     bookId: bookIds.atlasNotes,
+    entityId: entityIds.theAtlas,
     name: "Atlas of Rivers",
     type: "artifact",
     summary:
