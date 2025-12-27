@@ -227,12 +227,6 @@ export default function ReaderPage() {
             <div className="truncate text-xs text-slate-400">{book.author ?? 'ƒ?"'}</div>
           </button>
 
-          <Button onClick={() => togglePanel('toc')} title="Table of contents" paddingClass="px-3 py-2">
-            <span className="text-slate-400">{progressPct}%</span>
-            <span className="h-4 w-px bg-slate-800" />
-            <span className="text-slate-200">TOC</span>
-          </Button>
-
           <div className="flex items-center gap-2">
             {TOOL_BUTTONS.map(({ key, icon: Icon, title }) => (
               <SquareButton key={key} title={title} onClick={() => togglePanel(key)}>

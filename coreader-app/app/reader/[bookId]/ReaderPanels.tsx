@@ -7,6 +7,7 @@ import type { Book, Chapter, Highlight, PanelKey, ReaderSettings, SearchHit } fr
 import { SquareButton } from '@/ui/SquareButton';
 import { Section } from '@/ui/Section';
 import { SectionHeader } from '@/ui/SectionHeader';
+import { Badge } from '@/ui/Badge';
 
 type SidePanelProps = {
   openPanel: PanelKey;
@@ -260,7 +261,7 @@ function CoachPanel() {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-semibold text-white">Coach</p>
+        <p className="text-sm font-semibold text-white">Coach</p> <Badge>Soon</Badge>
         <p className="mt-1 text-xs text-slate-500">This panel is a placeholder. Wire it to your chat + RAG backend.</p>
       </div>
 
