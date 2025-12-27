@@ -4,20 +4,17 @@ const { compile } = require("json-schema-to-typescript");
 const { execSync } = require("child_process");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
+const APP_ROOT = path.resolve(REPO_ROOT, "coreader-app");
+const WORKER_ROOT = path.resolve(REPO_ROOT, "coreader-worker");
 const DEFAULT_SCHEMAS_DIR = path.resolve(REPO_ROOT, "infra", "db", "schemas");
 const DEFAULT_TS_OUTPUT = path.resolve(
-  REPO_ROOT,
-  "coreader-app",
+  APP_ROOT,
   "lib",
   "db",
   "generated",
   "db-types.ts"
 );
-const DEFAULT_GO_OUTPUT = path.resolve(
-  REPO_ROOT,
-  "coreader-worker",
-  "dbtypes.go"
-);
+const DEFAULT_GO_OUTPUT = path.resolve(WORKER_ROOT, "dbtypes.go");
 const DEFAULT_VALIDATORS_DIR = path.resolve(
   REPO_ROOT,
   "infra",
@@ -169,6 +166,46 @@ function mapPrimitiveType(schema) {
     };
   }
 
+  if (Array.isArray(schema.type)) {
+    const nonNullTypes = schema.type.filter((type) => type !== "null");
+    const uniqueTypes = Array.from(new Set(nonNullTypes));
+    if (uniqueTypes.includes("number")) {
+      return {
+        type: GO_TYPE_MAP.number,
+        usesObjectId: false,
+        usesTime: false,
+        isObject: false,
+      };
+    }
+
+    if (uniqueTypes.includes("integer") && uniqueTypes.length === 1) {
+      return {
+        type: GO_TYPE_MAP.integer,
+        usesObjectId: false,
+        usesTime: false,
+        isObject: false,
+      };
+    }
+
+    if (uniqueTypes.includes("string") && uniqueTypes.length === 1) {
+      return {
+        type: GO_TYPE_MAP.string,
+        usesObjectId: false,
+        usesTime: false,
+        isObject: false,
+      };
+    }
+
+    if (uniqueTypes.includes("boolean") && uniqueTypes.length === 1) {
+      return {
+        type: GO_TYPE_MAP.boolean,
+        usesObjectId: false,
+        usesTime: false,
+        isObject: false,
+      };
+    }
+  }
+
   const goType = GO_TYPE_MAP[schema.type];
   if (goType) {
     return {
@@ -232,6 +269,15 @@ function toBsonValidator(schema) {
       next.bsonType = "objectId";
     } else if (isDate) {
       next.bsonType = "date";
+    } else if (Array.isArray(next.type)) {
+      const mappedTypes = Array.from(
+        new Set(next.type.map(mapBsonType).filter(Boolean))
+      );
+      if (mappedTypes.length === 1) {
+        next.bsonType = mappedTypes[0];
+      } else if (mappedTypes.length > 1) {
+        next.bsonType = mappedTypes;
+      }
     } else if (typeof next.type === "string") {
       const mapped = mapBsonType(next.type);
       if (mapped) next.bsonType = mapped;
@@ -541,6 +587,9 @@ async function run() {
 
   fs.mkdirSync(path.dirname(generatedFile), { recursive: true });
   fs.writeFileSync(generatedFile, output, "utf-8");
+  execSync(
+    `cd ${APP_ROOT} && npm run format -- ${path.relative(APP_ROOT, generatedFile)}`
+  );
 
   console.log(
     `Generated TS types for ${files.length} schemas at ${generatedFile}`

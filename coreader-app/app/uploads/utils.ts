@@ -29,8 +29,7 @@ export function mapFileStatus(status: DbFileStatus): UploadedFile['status'] {
 
 export function toUploadedFile(file: FileDTO | FileWithBookDTO): UploadedFile {
   const status = mapFileStatus(file.status);
-  const rawPct =
-    typeof file.percentage === 'number' && !Number.isNaN(file.percentage) ? file.percentage : undefined;
+  const rawPct = typeof file.percentage === 'number' && !Number.isNaN(file.percentage) ? file.percentage : undefined;
   const progressPct = status === 'completed' || rawPct === undefined ? undefined : clampPct(Math.floor(rawPct));
 
   return {

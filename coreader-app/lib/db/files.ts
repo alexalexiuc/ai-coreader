@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { collections, getDb } from './mongo';
+import { collections, getDb, withMongoValidation } from './mongo';
 import { BooksDoc, FilesDoc } from './generated/db-types';
+import { clampPct } from '../number';
 
 export type FileStatus = FilesDoc['status'];
 
@@ -30,7 +31,7 @@ function toDTO(doc: FilesDoc): FileDTO {
 
   const size = Number(doc.size);
   const normalizedSize = Number.isFinite(size) ? size : 0;
-  const percentage = doc.percentage === undefined ? undefined : Number.isFinite(Number(doc.percentage)) ? Number(doc.percentage) : undefined;
+  const percentage = clampPct(doc.percentage ?? 0);
 
   return {
     id: doc._id.toHexString(),
@@ -49,7 +50,7 @@ export async function insertFileMetadata(params: Omit<FilesDoc, '_id' | 'created
   const db = await getDb();
   const now = new Date();
 
-  const result = await db.collection<Omit<FilesDoc, '_id'>>(collections.FILES).insertOne({
+  console.log({
     originalName: params.originalName,
     mimeType: params.mimeType,
     size: params.size,
@@ -58,8 +59,22 @@ export async function insertFileMetadata(params: Omit<FilesDoc, '_id' | 'created
     updatedAt: now,
     status: params.status ?? 'pending',
     storagePath: params.storagePath,
-    percentage: params.percentage,
+    percentage: clampPct(params.percentage ?? 0),
   });
+
+  const result = await withMongoValidation(() =>
+    db.collection<Omit<FilesDoc, '_id'>>(collections.FILES).insertOne({
+      originalName: params.originalName,
+      mimeType: params.mimeType,
+      size: params.size,
+      storageName: params.storageName,
+      createdAt: now,
+      updatedAt: now,
+      status: params.status ?? 'pending',
+      storagePath: params.storagePath,
+      percentage: clampPct(params.percentage ?? 0),
+    }),
+  );
 
   const inserted = await db.collection<FilesDoc>(collections.FILES).findOne({ _id: result.insertedId });
 

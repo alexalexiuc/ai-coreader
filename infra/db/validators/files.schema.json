@@ -50,7 +50,10 @@
       "minimum": 0,
       "maximum": 100,
       "description": "Processing completion percentage (0-100)",
-      "bsonType": "double"
+      "bsonType": [
+        "double",
+        "int"
+      ]
     },
     "status": {
       "description": "Processing status of the file",

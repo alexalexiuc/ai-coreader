@@ -7,13 +7,7 @@ import { useLibrary } from '@/hooks';
 import { BookCardGrid } from '@/app/library/BookCardGrid';
 import { BookRow } from '@/app/library/BookRow';
 import { EmptyLibrary, EmptyFiltered } from '@/app/library/LibraryEmptyStates';
-import {
-  IoSearchOutline,
-  IoCloudUploadOutline,
-  IoStorefrontOutline,
-  IoGridOutline,
-  IoListOutline,
-} from 'react-icons/io5';
+import { IoSearchOutline, IoCloudUploadOutline, IoStorefrontOutline, IoGridOutline, IoListOutline } from 'react-icons/io5';
 
 import type { FilterKey, SortKey, LibraryBook } from '@/app/library/types';
 import { Select } from '@/ui/Select';
@@ -46,21 +40,8 @@ type LibraryClientPageProps = {
 };
 
 export default function LibraryClientPage({ initialBooks }: LibraryClientPageProps) {
-  const {
-    query,
-    setQuery,
-    filter,
-    setFilter,
-    sort,
-    setSort,
-    view,
-    setView,
-    counts,
-    filtered,
-    isEmptyAll,
-    isEmptyFiltered,
-    togglePin,
-  } = useLibrary(initialBooks);
+  const { query, setQuery, filter, setFilter, sort, setSort, view, setView, counts, filtered, isEmptyAll, isEmptyFiltered, togglePin } =
+    useLibrary(initialBooks);
 
   return (
     <PageContainer>
@@ -80,18 +61,8 @@ export default function LibraryClientPage({ initialBooks }: LibraryClientPagePro
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <Select
-              value={sort}
-              onChange={setSort}
-              options={SORTS}
-              aria-label="Sort"
-              className="w-40"
-            />
-            <ViewToggle<'grid' | 'list'>
-              value={view}
-              onChange={setView}
-              options={ViewToggleOptions}
-            />
+            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-40" />
+            <ViewToggle<'grid' | 'list'> value={view} onChange={setView} options={ViewToggleOptions} />
           </div>
         </div>
       </Section>
