@@ -10,9 +10,10 @@ export type BookDTO = {
   publisher?: string;
   year?: string;
   genre?: string;
+  description?: string;
   totalChars: number;
   totalChunks: number;
-  finished: boolean;
+  processed: boolean;
   source: BooksDoc['source'];
   createdAt: string;
   updatedAt: string;
@@ -32,9 +33,10 @@ function toDTO(doc: BooksDoc): BookDTO {
     publisher: doc.publisher,
     year: doc.year,
     genre: doc.genre,
+    description: doc.description,
     totalChars: toNumber(doc.totalChars),
     totalChunks: toNumber(doc.totalChunks),
-    finished: doc.finished,
+    processed: doc.processed,
     source: doc.source,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),

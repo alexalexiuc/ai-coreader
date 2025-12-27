@@ -30,8 +30,8 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 	var processedBytes int
 	// create book with known info, additional will be added later
 	book, err := db.CreateBookDoc(&BooksDoc{
-		FileID:   file.ID,
-		Finished: false,
+		FileID:    file.ID,
+		Processed: false,
 	})
 	if err != nil {
 		return err
@@ -110,6 +110,10 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
 	// Update file status in DB
 	err = db.SetFileStatus(file.ID, "processed") // TODO: set to appropriate status
+	if err != nil {
+		return err
+	}
+	_, err = db.SetBookProcessed(book.ID)
 	if err != nil {
 		return err
 	}

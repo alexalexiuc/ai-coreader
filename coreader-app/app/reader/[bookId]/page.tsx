@@ -30,7 +30,7 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
     id: bookDto.id,
     title: bookDto.title ?? 'Untitled book',
     author: bookDto.author,
-    description: undefined,
+    description: bookDto.description,
     chapters: [],
   };
 

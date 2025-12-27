@@ -16,10 +16,13 @@ function toLibraryBook(book: BookDTO): LibraryBook {
     id: book.id,
     title: book.title ?? 'Untitled book',
     author: book.author,
+    description: book.description,
     source: book.source === 'user_upload' ? 'uploaded' : 'shop',
     addedAt: book.createdAt,
     lastOpenedAt: book.updatedAt,
-    progressPct: book.finished ? 100 : 0,
+    // TODO: progress should be calculated from last work user read
+    progressPct: book.processed ? 100 : 0,
+    processed: book.processed,
     isPinned: false,
   };
 }

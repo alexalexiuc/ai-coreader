@@ -9,7 +9,7 @@
     "createdAt",
     "totalChars",
     "totalChunks",
-    "finished",
+    "processed",
     "source"
   ],
   "properties": {
@@ -49,6 +49,10 @@
       "description": "The genre or category of the book.",
       "bsonType": "string"
     },
+    "description": {
+      "description": "A very short description of the book.",
+      "bsonType": "string"
+    },
     "totalChars": {
       "description": "The total number of characters in the book.",
       "bsonType": "int"
@@ -57,7 +61,7 @@
       "description": "The total number of chunks the book is divided into.",
       "bsonType": "int"
     },
-    "finished": {
+    "processed": {
       "description": "Indicates whether the book processing is finished.",
       "bsonType": "bool"
     },

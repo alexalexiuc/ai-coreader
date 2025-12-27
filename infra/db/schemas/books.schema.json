@@ -12,7 +12,7 @@
     "createdAt",
     "totalChars",
     "totalChunks",
-    "finished",
+    "processed",
     "source"
   ],
   "properties": {
@@ -56,6 +56,10 @@
       "type": "string",
       "description": "The genre or category of the book."
     },
+    "description": {
+      "type": "string",
+      "description": "A very short description of the book."
+    },
     "totalChars": {
       "type": "integer",
       "description": "The total number of characters in the book."
@@ -64,7 +68,7 @@
       "type": "integer",
       "description": "The total number of chunks the book is divided into."
     },
-    "finished": {
+    "processed": {
       "type": "boolean",
       "description": "Indicates whether the book processing is finished."
     },

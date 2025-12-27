@@ -233,7 +233,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
               lineHeight,
             }}
           >
-            <div className="h-full space-y-4 overflow-y-auto pb-24 pr-2">
+            <div className="h-full space-y-4 overflow-y-auto pr-2 pb-24">
               {blocks.map((b) => (
                 <p
                   key={b.id}

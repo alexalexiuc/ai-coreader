@@ -87,6 +87,10 @@ export interface BooksDoc {
    */
   genre?: string;
   /**
+   * A very short description of the book.
+   */
+  description?: string;
+  /**
    * The total number of characters in the book.
    */
   totalChars: number;
@@ -97,7 +101,7 @@ export interface BooksDoc {
   /**
    * Indicates whether the book processing is finished.
    */
-  finished: boolean;
+  processed: boolean;
   /**
    * The source of the book, such as user upload or shop.
    */

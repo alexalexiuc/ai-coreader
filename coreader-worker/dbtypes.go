@@ -49,9 +49,10 @@ type BooksDoc struct {
 	Publisher   string             `bson:"publisher,omitempty" json:"publisher,omitempty"`
 	Year        string             `bson:"year,omitempty" json:"year,omitempty"`
 	Genre       string             `bson:"genre,omitempty" json:"genre,omitempty"`
+	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	TotalChars  int                `bson:"totalChars" json:"totalChars"`
 	TotalChunks int                `bson:"totalChunks" json:"totalChunks"`
-	Finished    bool               `bson:"finished" json:"finished"`
+	Processed   bool               `bson:"processed" json:"processed"`
 	Source      string             `bson:"source" json:"source"`
 }
 

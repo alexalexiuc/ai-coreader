@@ -2,10 +2,12 @@ export type LibraryBook = {
   id: string;
   title: string;
   author?: string;
+  description?: string;
   source: 'uploaded' | 'shop';
   addedAt: string; // ISO
   lastOpenedAt?: string; // ISO
   progressPct?: number; // 0..100
+  processed: boolean;
   isPinned?: boolean;
 };
 

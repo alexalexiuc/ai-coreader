@@ -179,6 +179,10 @@ func (db *DB) UpdateBookDoc(bookID primitive.ObjectID, updateFields bson.M) (*mo
 	return UpdateOneWithMeta(context.TODO(), db.BookDocsCollection, bookID, updateFields)
 }
 
+func (db *DB) SetBookProcessed(bookID primitive.ObjectID) (*mongo.UpdateResult, error) {
+	return UpdateOneWithMeta(context.TODO(), db.BookDocsCollection, bookID, bson.M{"processed": true})
+}
+
 func (db *DB) CreateBookChunkDoc(chunk *BookChunkDoc) (*BookChunkDoc, error) {
 	fmt.Printf("Creating BookChunkDoc with index %d, startChar %d, endChar %d\n", chunk.Index, chunk.StartChar, chunk.EndChar)
 	chunk, err := InsertOneWithMeta(context.TODO(), db.BookChunkDocsCollection, chunk)
