@@ -78,14 +78,14 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const isEmptyFiltered = !isEmptyAll && filtered.length === 0;
 
   const togglePin = useCallback(async (id: string) => {
+    // Get the current pin state before optimistic update
+    const book = books.find((b) => b.id === id);
+    const newIsPinned = !book?.isPinned;
+
     // Optimistically update UI
-    setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
+    setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: newIsPinned } : b)));
 
     try {
-      // Find the book to get its new pin state
-      const book = books.find((b) => b.id === id);
-      const newIsPinned = !book?.isPinned;
-
       const response = await fetch(`/api/books/${id}/pin`, {
         method: 'PUT',
         headers: {
@@ -96,12 +96,12 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
 
       if (!response.ok) {
         // Revert on error
-        setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
+        setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !newIsPinned } : b)));
         console.error('Failed to update pin status');
       }
     } catch (error) {
       // Revert on error
-      setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
+      setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !newIsPinned } : b)));
       console.error('Error updating pin status:', error);
     }
   }, [books]);
