@@ -176,7 +176,7 @@ function OverviewPanel({ book, progressPct, onStart }: { book: Book; progressPct
 
       <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
         <p className="text-sm font-semibold text-white">Description</p>
-        <p className="mt-2 text-sm text-slate-300">{book.description ?? 'ƒ?"'}</p>
+        <p className="mt-2 text-sm text-slate-300">{book.description ?? '-'}</p>
       </div>
     </div>
   );
@@ -291,7 +291,7 @@ function CoachPanel() {
 
         <div className="mt-3 flex gap-2">
           <input
-            placeholder="Ask something about the bookƒ?İ"
+            placeholder="Ask something about the book?"
             className="flex-1 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 outline-none placeholder:text-slate-500 focus:border-slate-700"
           />
           <button

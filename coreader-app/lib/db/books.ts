@@ -51,15 +51,29 @@ export async function listBooks(): Promise<BookDTO[]> {
 }
 
 export async function findBookByFileId(fileId: string): Promise<BookDTO | null> {
+  let objectId: ObjectId;
+  try {
+    objectId = new ObjectId(fileId);
+  } catch {
+    return null;
+  }
+
   const db = await getDb();
-  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ fileId: new ObjectId(fileId) });
+  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ fileId: objectId });
 
   return doc ? toDTO(doc) : null;
 }
 
 export async function findBookById(bookId: string): Promise<BookDTO | null> {
+  let objectId: ObjectId;
+  try {
+    objectId = new ObjectId(bookId);
+  } catch {
+    return null;
+  }
+
   const db = await getDb();
-  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ _id: new ObjectId(bookId) });
+  const doc = await db.collection<BooksDoc>(collections.BOOKS).findOne({ _id: objectId });
 
   return doc ? toDTO(doc) : null;
 }

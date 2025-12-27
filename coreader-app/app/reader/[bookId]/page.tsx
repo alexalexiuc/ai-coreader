@@ -7,18 +7,21 @@ import { findBookChunkByIndex } from '@/lib/db/book-chunks';
 export const dynamic = 'force-dynamic';
 
 type ReaderPageProps = {
-  params: { bookId: string };
-  searchParams?: { page?: string };
+  params: { bookId: string } | Promise<{ bookId: string }>;
+  searchParams?: { page?: string } | Promise<{ page?: string }>;
 };
 
 export default async function ReaderPage({ params, searchParams }: ReaderPageProps) {
-  const bookDto = await findBookById(params.bookId);
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  console.log('ReaderPage params:', resolvedParams, 'searchParams:', resolvedSearchParams);
+  const bookDto = await findBookById(resolvedParams.bookId);
   if (!bookDto) {
     notFound();
   }
 
   const totalPages = Math.max(bookDto.totalChunks, 1);
-  const requestedPage = Number(searchParams?.page ?? '1');
+  const requestedPage = Number(resolvedSearchParams?.page ?? '1');
   const pageNumber = Number.isFinite(requestedPage) && requestedPage > 0 ? Math.floor(requestedPage) : 1;
   const safePageNumber = Math.min(Math.max(pageNumber, 1), totalPages);
   const pageIndex = safePageNumber - 1;

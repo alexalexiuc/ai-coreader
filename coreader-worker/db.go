@@ -21,6 +21,7 @@ type BaseDoc struct {
 
 type HasBaseDoc interface {
 	GetBaseDoc() *BaseDoc
+	SetDocID(primitive.ObjectID)
 }
 
 func (f *FilesDoc) GetBaseDoc() *BaseDoc {
@@ -30,6 +31,9 @@ func (f *FilesDoc) GetBaseDoc() *BaseDoc {
 		UpdatedAt: f.UpdatedAt,
 	}
 }
+func (f *FilesDoc) SetDocID(id primitive.ObjectID) {
+	f.ID = id
+}
 
 func (b *BooksDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
@@ -37,6 +41,9 @@ func (b *BooksDoc) GetBaseDoc() *BaseDoc {
 		CreatedAt: b.CreatedAt,
 		UpdatedAt: b.UpdatedAt,
 	}
+}
+func (b *BooksDoc) SetDocID(id primitive.ObjectID) {
+	b.ID = id
 }
 
 func (e *EntityDescriptionDoc) GetBaseDoc() *BaseDoc {
@@ -47,12 +54,20 @@ func (e *EntityDescriptionDoc) GetBaseDoc() *BaseDoc {
 	}
 }
 
+func (e *EntityDescriptionDoc) SetDocID(id primitive.ObjectID) {
+	e.ID = id
+}
+
 func (b *BookChunkDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
 		ID:        b.ID,
 		CreatedAt: b.CreatedAt,
 		UpdatedAt: b.UpdatedAt,
 	}
+}
+
+func (b *BookChunkDoc) SetDocID(id primitive.ObjectID) {
+	b.ID = id
 }
 
 func query(coll *mongo.Collection, filter interface{}, result interface{}) error {
@@ -132,7 +147,7 @@ func InsertOneWithMeta[T HasBaseDoc](ctx context.Context, coll *mongo.Collection
 	}
 
 	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
-		base.ID = oid
+		doc.SetDocID(oid)
 	}
 
 	return doc, nil

@@ -5,9 +5,9 @@ import { Section } from '../ui/Section';
 
 export type ContinueReadingEntry = {
   title: string;
-  progressLabel: string; // e.g. "Chapter 4 ƒ?› 38%"
+  progressLabel: string; // e.g. "Chapter 4  38%"
   ctaPath: string;
-  lastSession: string; // e.g. "Yesterday ƒ?› 24 min"
+  lastSession: string; // e.g. "Yesterday 24 min"
 };
 
 export type ContinueReadingSectionProps = {

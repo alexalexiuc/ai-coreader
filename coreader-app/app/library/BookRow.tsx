@@ -19,7 +19,7 @@ export const BookRow: React.FC<BookRowProps> = ({ book, onTogglePin }) => {
     <>
       <p className="truncate text-sm font-semibold text-white">{book.title}</p>
       <p className="mt-0.5 truncate text-xs text-slate-400">
-        {(book.author ?? 'â€”') + ' â€¢ ' + (book.source === 'uploaded' ? 'Uploaded' : 'Shop')}
+        {(book.author ?? '—') + ' • ' + (book.source === 'uploaded' ? 'Uploaded' : 'Shop')}
       </p>
 
       <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">

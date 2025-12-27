@@ -28,7 +28,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
               </div>
               <div className="min-w-0">
                 <p className="line-clamp-2 text-sm font-semibold text-white">{book.title}</p>
-                <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? 'â€”'}</p>
+                <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? '-'}</p>
               </div>
             </div>
             <div className="mt-0.5">
@@ -57,9 +57,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
             </div>
           )}
 
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200">
-            {actionLabel}
-          </div>
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200">{actionLabel}</div>
         </Link>
       ) : (
         <div className="block cursor-not-allowed opacity-70" aria-disabled="true">
@@ -70,7 +68,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
               </div>
               <div className="min-w-0">
                 <p className="line-clamp-2 text-sm font-semibold text-white">{book.title}</p>
-                <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? 'â€”'}</p>
+                <p className="mt-1 truncate text-xs text-slate-400">{book.author ?? '-'}</p>
               </div>
             </div>
             <div className="mt-0.5">
@@ -85,9 +83,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
             <span className="text-xs text-slate-400">Processing</span>
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200">
-            {actionLabel}
-          </div>
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200">{actionLabel}</div>
         </div>
       )}
     </div>
