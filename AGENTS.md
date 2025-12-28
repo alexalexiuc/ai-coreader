@@ -1,56 +1,58 @@
 # AGENTS.md
 
-Default instructions for AI agents working in this repository.
-Nested AGENTS.md files override this one.
+Default instructions for AI agents working in this repository. Nested AGENTS.md files override this one.
 
 ## General rules
 
-- Keep changes focused and minimal
-- Do not add dependencies or refactor unrelated code unless asked
-- Never commit secrets, credentials, or real tokens
-- Prefer existing tooling and conventions
-- If after performing tasks, additional changes are needed, add the to the TODO.md file with this format: `- [workspace]: description of needed change`
+- Keep changes focused and minimal; do not add dependencies or refactor unrelated code unless asked.
+- Never commit secrets, credentials, or real tokens.
+- Prefer existing tooling and conventions; document env vars in scripts.
+- If follow-up work is needed, add to TODO.md with `- [workspace]: description`.
 
-## Repo structure
+## Project at a glance
 
-- coreader-app/ → Frontend (NextJs)
-- coreader-worker/ → Go worker
-- infra/, scripts/ → Infra and utilities
+- Next.js app (`coreader-app`) handles uploads, library, and reading; Go worker (`coreader-worker`) processes files into books with LLM help; MongoDB + local storage power persistence; infra (`infra/`) wires Mongo/Ollama/docker helpers.
+- Text diagram: Users → Next.js upload/API → Mongo `files` + disk storage → Go worker reads `files`, creates `books` + `bookChunks` + `entityDescriptions` → Next.js Library/Reader render from Mongo.
 
-## Frontend (coreader-app/)
+## Services and responsibilities
 
-- Use NextJs (React + TypeScript)
-- Mark client components only when required
-- Use existing Tailwind patterns; let Prettier handle formatting
-- Shared UI goes in `ui/`, route logic stays close to pages
-- Run lint/build only when changes affect them
+| Component        | Owns                                            | Does NOT own                              |
+| ---------------- | ----------------------------------------------- | ----------------------------------------- |
+| coreader-app     | Routes/UI, upload server actions, DB reads, file storage helper | Long-running processing, schema design   |
+| coreader-worker  | File reading, chunking, LLM calls, writing books/chunks/entities, progress updates | Frontend rendering, HTTP API             |
+| infra/ + scripts | Mongo/LLM docker compose, JSON schemas, migrations, typegen | Feature logic in app/worker              |
 
-## Worker (coreader-worker/)
+## Database & schemas
 
-- Use gofmt
-- Avoid panics; return explicit errors
-- Use context.Context for external calls
-- Add tests only when behavior changes
+- Source of truth: JSON Schemas in `infra/db/schemas/*.schema.json`.
+- Validators: generated into `infra/db/validators/` by `npm run db:types`; applied/updated via migration `infra/db/migrations/20251221235500-init.js` run with `npm run db:migrate` (uses `infra/db/scripts/migrate.js`).
+- Types: `npm run db:types` runs `infra/db/scripts/generate-types.js` → TypeScript types at `coreader-app/lib/db/generated/db-types.ts` and Go structs at `coreader-worker/dbtypes.go`, then formats (`npm run format` inside app, `go fmt`).
+- Conventions: ObjectId fields use `format: "objectId"`; timestamps use `format: "date-time"`; enums declared in schema (e.g., `files.status`, `books.source`); `additionalProperties: false` throughout; no custom indexes beyond `_id` unless added in migrations (none observed).
 
-## Infra & scripts
+## Core workflows (paths to change)
 
-- Avoid infra changes unless explicitly requested
-- Document env vars in scripts
-- Validate docker-compose changes when touched
+- Upload → file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc, status `pending`, revalidates `/uploads`).
+- Processing → book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`.
+- Reading UI: Library listing `app/library/page.tsx` via `lib/db/books.ts`; Reader page `app/reader/[bookId]/page.tsx` pulls chunks via `lib/db/book-chunks.ts`; uploads list with book links via `lib/db/files.ts`.
+- Download: `/api/files/[id]/download/route.ts` streams stored file from `FILE_STORAGE_ROOT`.
 
-## Handoff
+## Pages & UX map (coreader-app)
 
-- Summarize changes
-- List commands run (or say why not)
+- `/` Home dashboard (overview cards: `app/WorkspaceOverview.tsx`, actions/tips components).
+- `/uploads` Upload management (`app/uploads/*` components, dropzone + table; see `FUNCTIONALITIES.md` in folder).
+- `/library` Book grid/list (`app/library/LibraryClientPage.tsx`).
+- `/reader/[bookId]` Reader view with pagination over chunks (`app/reader/[bookId]/page.tsx` + `ReaderClientPage.tsx`).
+- Shared UI: `ui/` (buttons, forms), layout/header/footer in `app/layout.tsx`, `app/Header.tsx`, `app/Footer.tsx`.
 
-## Commit messages
+## Where to change what (decision cues)
 
-- Use `[type]: (AI:{ainame}) description` format
-- Types: feat, fix, docs, style, refactor, test, chore
-- Example: `feat: (AI:Codex) add new API endpoint for user data`
-- Add detailed description if needed
-- Reference issues/PRs if applicable
+- Frontend UI/UX or server actions → `coreader-app` (`app/` routes, `lib/db/*`, `lib/files/*`, `ui/`).
+- Processing logic, chunking, LLM prompts, DB writes on ingest → `coreader-worker` (Go files).
+- Schema/migrations/type generation or infra scripts → `infra/` (`db/schemas`, `db/scripts`, `docker-compose`).
+- Cross-cutting DB shape changes → update schema → run `npm run db:types` → commit regenerated TS/Go files and validators → ensure `npm run db:migrate` aligns.
 
-## Dictionary
+## PR checklist for agents
 
-- Generate types: run `npm run db:types` to generate database types
+- Follow commit format `[type]: (AI:{ainame}) description`; prefer `docs` type for instruction updates.
+- Run relevant checks: `npm run lint` (when frontend code touched); `gofmt -w <files>` (Go edits) and `go test ./...` if tests exist; `npm run db:types` + `npm run db:migrate` when schemas change.
+- Keep changes scoped; avoid new deps; note skipped checks with rationale; update TODO.md for leftover work.
