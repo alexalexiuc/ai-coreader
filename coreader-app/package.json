@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:e2e": "node scripts/ensure-mongo.cjs && next dev --hostname 127.0.0.1 --port 3000",
+    "dev:e2e": "node scripts/ensure-mongo.cjs && node scripts/run-db-setup.cjs && next dev --hostname 127.0.0.1 --port 3000",
     "build": "next build",
     "start": "next start",
     "e2e": "playwright test",
