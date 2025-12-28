@@ -32,7 +32,7 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
   const isFailed = file.status === 'failed';
 
   return (
-    <div className="px-4 py-3">
+    <div className="px-4 py-3" data-testid="upload-row" data-file-id={file.id} data-file-name={file.originalName}>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-12 sm:items-center">
         <div className="sm:col-span-5">
           <div className="flex items-start gap-3">

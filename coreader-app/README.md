@@ -40,6 +40,14 @@ FILE_STORAGE_ROOT=D:\repo\ai-coreader\storage  # absolute path to uploaded files
 - Library view (`/library`) lists stored books based on metadata
 - Shared UI components in `ui/` (buttons, file uploader, grid cards, etc.)
 
+## Uploads page (coreader-app)
+
+- `/uploads` lists uploaded files with sortable options (newest/oldest/name/status) and a search box that filters by file name.
+- Filter chips quickly scope the view to processing, completed, or failed files while showing per-status counts.
+- Each row shows size, relative upload time, and a status pill; completed entries link to the generated reader book when available.
+- Row actions include downloading the original file, retrying failed processing (UI state), and deleting uploads.
+- The upload dropzone accepts `.txt`/`text/plain` files, surfaces the pending selection, and shows success/error banners after server actions.
+
 ## Project structure (high level)
 
 ```
