@@ -79,7 +79,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
           </div>
 
           <div className="flex items-center gap-2 sm:justify-end">
-            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-36" />
+            <Select value={sort} onChange={setSort} options={SORTS} ariaLabel="Sort" className="w-36" />
           </div>
         </div>
       </Section>
