@@ -212,6 +212,23 @@ func (db *DB) AddLLMMetadataToBookChunk(chunkID primitive.ObjectID, llmMetadata 
 	return UpdateOneWithMeta(context.TODO(), db.BookChunkDocsCollection, chunkID, updateFields)
 }
 
+func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*EntityDescriptionDoc, error) {
+	var entity EntityDescriptionDoc
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.D{
+		{Key: "bookId", Value: bookID},
+		{Key: "name", Value: name},
+	}
+
+	err := db.LLMDatabase.Collection("entityDescriptions").FindOne(ctx, filter).Decode(&entity)
+	if err != nil {
+		return nil, err
+	}
+	return &entity, nil
+}
+
 func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionDoc) (*EntityDescriptionDoc, error) {
 	entityDesc, err := InsertOneWithMeta(context.TODO(), db.LLMDatabase.Collection("entityDescriptions"), entityDesc)
 	return entityDesc, err

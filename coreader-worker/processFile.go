@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -53,7 +54,7 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		totalChars += currentChunkLength
 		totalChunks++
 
-		_, err := db.CreateBookChunkDoc(&BookChunkDoc{
+		chunk, err := db.CreateBookChunkDoc(&BookChunkDoc{
 			BookID:       book.ID,
 			Index:        totalChunks - 1,
 			StartChar:    totalChars - currentChunkLength,
@@ -89,6 +90,36 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 			return err
 		}
 		fmt.Printf("Found %d entities in chunk %d\n", len(chunkEntities.Entities), totalChunks-1)
+
+		// Update book chunk with LLM metadata
+		_, err = db.AddLLMMetadataToBookChunk(chunk.ID, chunkEntities)
+		if err != nil {
+			return err
+		}
+
+		// Store entities in the database collection
+		for _, entity := range chunkEntities.Entities {
+			// Check if entity already exists for this book
+			existingEntity, err := db.GetEntityByNameAndBook(book.ID, entity.TempName)
+			if err != nil && err != mongo.ErrNoDocuments {
+				return err
+			}
+
+			// Only create entity if it doesn't exist
+			if existingEntity == nil {
+				_, err := db.CreateEntityDescriptionDoc(&EntityDescriptionDoc{
+					BookID:  book.ID,
+					Name:    entity.TempName,
+					Type:    entity.Type,
+					Summary: "", // Will be filled later with more detailed analysis
+				})
+				if err != nil {
+					return err
+				}
+				fmt.Printf("Created new entity: %s (%s)\n", entity.TempName, entity.Type)
+			}
+		}
+
 		processedData = append(processedData, []byte(logicalChunk.Text)...)
 		processedBytes += len(logicalChunk.Text)
 		if file.Size > 0 {
