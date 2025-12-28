@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 Default instructions for AI agents working in this repository. Nested AGENTS.md files override this one.
 
@@ -7,12 +7,13 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 - Keep changes focused and minimal; do not add dependencies or refactor unrelated code unless asked.
 - Never commit secrets, credentials, or real tokens.
 - Prefer existing tooling and conventions; document env vars in scripts.
+- This repo uses npm workspaces (root package.json). Manage JS deps from repo root and keep only the root package-lock.json (do not recreate coreader-app/package-lock.json).
 - If follow-up work is needed, add to TODO.md with `- [workspace]: description`.
 
 ## Project at a glance
 
 - Next.js app (`coreader-app`) handles uploads, library, and reading; Go worker (`coreader-worker`) processes files into books with LLM help; MongoDB + local storage power persistence; infra (`infra/`) wires Mongo/Ollama/docker helpers.
-- Text diagram: Users → Next.js upload/API → Mongo `files` + disk storage → Go worker reads `files`, creates `books` + `bookChunks` + `entityDescriptions` → Next.js Library/Reader render from Mongo.
+- Text diagram: Users -> Next.js upload/API -> Mongo `files` + disk storage -> Go worker reads `files`, creates `books` + `bookChunks` + `entityDescriptions` -> Next.js Library/Reader render from Mongo.
 
 ## Services and responsibilities
 
@@ -26,13 +27,13 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 
 - Source of truth: JSON Schemas in `infra/db/schemas/*.schema.json`.
 - Validators: generated into `infra/db/validators/` by `npm run db:types`; applied/updated via migration `infra/db/migrations/20251221235500-init.js` run with `npm run db:migrate` (uses `infra/db/scripts/migrate.js`).
-- Types: `npm run db:types` runs `infra/db/scripts/generate-types.js` → TypeScript types at `coreader-app/lib/db/generated/db-types.ts` and Go structs at `coreader-worker/dbtypes.go`, then formats (`npm run format` inside app, `go fmt`).
+- Types: `npm run db:types` runs `infra/db/scripts/generate-types.js` -> TypeScript types at `coreader-app/lib/db/generated/db-types.ts` and Go structs at `coreader-worker/dbtypes.go`, then formats (`npm run format` inside app, `go fmt`).
 - Conventions: ObjectId fields use `format: "objectId"`; timestamps use `format: "date-time"`; enums declared in schema (e.g., `files.status`, `books.source`); `additionalProperties: false` throughout; no custom indexes beyond `_id` unless added in migrations (none observed).
 
 ## Core workflows (paths to change)
 
-- Upload → file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc, status `pending`, revalidates `/uploads`).
-- Processing → book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`.
+- Upload -> file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc, status `pending`, revalidates `/uploads`).
+- Processing -> book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`.
 - Reading UI: Library listing `app/library/page.tsx` via `lib/db/books.ts`; Reader page `app/reader/[bookId]/page.tsx` pulls chunks via `lib/db/book-chunks.ts`; uploads list with book links via `lib/db/files.ts`.
 - Download: `/api/files/[id]/download/route.ts` streams stored file from `FILE_STORAGE_ROOT`.
 
@@ -46,10 +47,10 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 
 ## Where to change what (decision cues)
 
-- Frontend UI/UX or server actions → `coreader-app` (`app/` routes, `lib/db/*`, `lib/files/*`, `ui/`).
-- Processing logic, chunking, LLM prompts, DB writes on ingest → `coreader-worker` (Go files).
-- Schema/migrations/type generation or infra scripts → `infra/` (`db/schemas`, `db/scripts`, `docker-compose`).
-- Cross-cutting DB shape changes → update schema → run `npm run db:types` → commit regenerated TS/Go files and validators → ensure `npm run db:migrate` aligns.
+- Frontend UI/UX or server actions -> `coreader-app` (`app/` routes, `lib/db/*`, `lib/files/*`, `ui/`).
+- Processing logic, chunking, LLM prompts, DB writes on ingest -> `coreader-worker` (Go files).
+- Schema/migrations/type generation or infra scripts -> `infra/` (`db/schemas`, `db/scripts`, `docker-compose`).
+- Cross-cutting DB shape changes -> update schema -> run `npm run db:types` -> commit regenerated TS/Go files and validators -> ensure `npm run db:migrate` aligns.
 
 ## PR checklist for agents
 

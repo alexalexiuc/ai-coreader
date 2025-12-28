@@ -2,6 +2,9 @@
   "name": "ai-coreader",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "coreader-app"
+  ],
   "engines": {
     "node": ">=22"
   },
