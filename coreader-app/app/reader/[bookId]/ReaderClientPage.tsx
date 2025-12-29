@@ -2,6 +2,7 @@
 
 import { clamp } from '@/lib/number';
 import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   IoBookmarkOutline,
@@ -42,6 +43,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const [fontSize, setFontSize] = useState(18); // px
   const [lineHeight, setLineHeight] = useState(1.7);
   const [contentWidth, setContentWidth] = useState(720); // px
+  const router = useRouter();
 
   const firstOpenKey = `cr:firstOpenDone:${book.id}`;
   const lastPageKey = `cr:lastPage:${book.id}`;
@@ -74,6 +76,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const [selText, setSelText] = useState('');
   const [selBlockId, setSelBlockId] = useState<string | null>(null);
   const [selPos, setSelPos] = useState<{ x: number; y: number } | null>(null);
+  const [pageInput, setPageInput] = useState(String(pageNumber));
 
   useEffect(() => {
     const firstOpenDone = typeof window !== 'undefined' && window.localStorage.getItem(firstOpenKey) === '1';
@@ -87,6 +90,9 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(lastPageKey, String(pageNumber));
   }, [lastPageKey, pageNumber]);
+  useEffect(() => {
+    setPageInput(String(pageNumber));
+  }, [pageNumber]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -188,6 +194,20 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const prevPage = Math.max(1, pageNumber - 1);
   const nextPage = Math.min(totalPages, pageNumber + 1);
   const makePageHref = (page: number) => `/reader/${book.id}?page=${page}`;
+  const onSubmitPageInput = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const targetPage = Number(pageInput);
+    if (!Number.isFinite(targetPage)) {
+      setPageInput(String(pageNumber));
+      return;
+    }
+
+    const safePage = clamp(Math.floor(targetPage), 1, totalPages);
+    setPageInput(String(safePage));
+    router.push(makePageHref(safePage));
+  };
+  const desktopPageInputId = 'page-input-desktop';
+  const mobilePageInputId = 'page-input-mobile';
 
   return (
     <div className="min-h-screen w-full bg-linear-to-b from-black via-slate-950 to-black">
@@ -207,9 +227,24 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
               <Button href={makePageHref(prevPage)} disabled={!canPrev} leftIcon={<IoChevronBackOutline />}>
                 Prev
               </Button>
-              <div className="text-xs text-slate-400">
-                Page {pageNumber} / {totalPages}
-              </div>
+              <form className="flex items-center gap-2" onSubmit={onSubmitPageInput}>
+                <label className="text-xs text-slate-400" htmlFor={desktopPageInputId}>
+                  Page
+                </label>
+                <input
+                  id={desktopPageInputId}
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  className="w-16 rounded-md border border-slate-800 bg-slate-900/80 px-2 py-1 text-center text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-700"
+                />
+                <div className="text-xs text-slate-400">/ {totalPages}</div>
+                <Button type="submit" paddingClass="px-3 py-1.5" textSizeClass="text-xs">
+                  Go
+                </Button>
+              </form>
               <Button href={makePageHref(nextPage)} disabled={!canNext} rightIcon={<IoChevronForwardOutline />}>
                 Next
               </Button>
@@ -282,9 +317,24 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
         <Button href={makePageHref(prevPage)} disabled={!canPrev} leftIcon={<IoChevronBackOutline />}>
           Prev
         </Button>
-        <div className="text-xs text-slate-400">
-          Page {pageNumber} / {totalPages}
-        </div>
+        <form className="flex items-center gap-2" onSubmit={onSubmitPageInput}>
+          <label className="sr-only" htmlFor={mobilePageInputId}>
+            Page number
+          </label>
+          <input
+            id={mobilePageInputId}
+            type="number"
+            min={1}
+            max={totalPages}
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value)}
+            className="w-16 rounded-md border border-slate-800 bg-slate-900/80 px-2 py-1 text-center text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-700"
+          />
+          <div className="text-xs text-slate-400">/ {totalPages}</div>
+          <Button type="submit" paddingClass="px-3 py-1.5" textSizeClass="text-xs">
+            Go
+          </Button>
+        </form>
         <Button href={makePageHref(nextPage)} disabled={!canNext} rightIcon={<IoChevronForwardOutline />}>
           Next
         </Button>
