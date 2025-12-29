@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import ReaderClientPage from './ReaderClientPage';
 import type { Block, Book } from './types';
 import { findBookById } from '@/lib/db/books';
-import { findBookChunkByIndex } from '@/lib/db/book-chunks';
+import { countBookChunks, findBookChunkByIndex } from '@/lib/db/book-chunks';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,9 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
     notFound();
   }
 
-  const totalPages = Math.max(bookDto.totalChunks, 1);
+  const chunkCount = await countBookChunks(bookDto.id);
+  const totalPagesSource = chunkCount > 0 ? chunkCount : bookDto.totalChunks;
+  const totalPages = Math.max(totalPagesSource, 1);
   const requestedPage = Number(resolvedSearchParams?.page ?? '1');
   const pageNumber = Number.isFinite(requestedPage) && requestedPage > 0 ? Math.floor(requestedPage) : 1;
   const safePageNumber = Math.min(Math.max(pageNumber, 1), totalPages);
@@ -50,10 +52,13 @@ function chunkToBlocks(text: string, pageIndex: number): Block[] {
   const blocks: Block[] = [];
 
   for (const [idx, para] of paragraphs.entries()) {
+    // only replace new lines when between two lowercase letters (to avoid breaking lists, headings, etc)
     const clean = para.replace(/\n+/g, ' ').trim();
     if (!clean) continue;
     blocks.push({ id: `b-${pageIndex}-${idx}`, text: clean });
   }
+
+  console.log(`chunkToBlocks for pageIndex ${pageIndex}:`, blocks);
 
   return blocks.length > 0 ? blocks : fallbackBlocks(pageIndex);
 }

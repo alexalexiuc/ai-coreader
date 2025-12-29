@@ -42,3 +42,15 @@ export async function findBookChunkByIndex(bookId: string, index: number): Promi
 
   return doc ? toDTO(doc) : null;
 }
+
+export async function countBookChunks(bookId: string): Promise<number> {
+  let objectId: ObjectId;
+  try {
+    objectId = new ObjectId(bookId);
+  } catch {
+    return 0;
+  }
+
+  const db = await getDb();
+  return db.collection<BookChunkDoc>(collections.BOOK_CHUNKS).countDocuments({ bookId: objectId });
+}

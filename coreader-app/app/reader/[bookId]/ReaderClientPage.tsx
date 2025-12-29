@@ -1,13 +1,9 @@
 'use client';
 
-import { clamp } from '@/lib/number';
-import clsx from 'clsx';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   IoBookmarkOutline,
   IoChevronBackOutline,
-  IoChevronForwardOutline,
   IoInformationCircleOutline,
   IoListOutline,
   IoOptionsOutline,
@@ -20,6 +16,8 @@ import { getNearestBlockIdToViewportTop, getSelectionBlockId, getSelectionText, 
 import type { Block, Book, Chapter, Highlight, PanelKey, SearchHit } from './types';
 import { Button } from '@/ui/Button';
 import { SquareButton } from '@/ui/SquareButton';
+import { clamp } from '@/lib/number';
+import { ReaderTextView } from './ReaderTextView';
 
 const TOOL_BUTTONS = [
   { key: 'overview', icon: IoInformationCircleOutline, title: 'Overview' },
@@ -43,8 +41,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const [fontSize, setFontSize] = useState(18); // px
   const [lineHeight, setLineHeight] = useState(1.7);
   const [contentWidth, setContentWidth] = useState(720); // px
-  const router = useRouter();
-
   const firstOpenKey = `cr:firstOpenDone:${book.id}`;
   const lastPageKey = `cr:lastPage:${book.id}`;
 
@@ -76,7 +72,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const [selText, setSelText] = useState('');
   const [selBlockId, setSelBlockId] = useState<string | null>(null);
   const [selPos, setSelPos] = useState<{ x: number; y: number } | null>(null);
-  const [pageInput, setPageInput] = useState(String(pageNumber));
 
   useEffect(() => {
     const firstOpenDone = typeof window !== 'undefined' && window.localStorage.getItem(firstOpenKey) === '1';
@@ -90,10 +85,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(lastPageKey, String(pageNumber));
   }, [lastPageKey, pageNumber]);
-  useEffect(() => {
-    setPageInput(String(pageNumber));
-  }, [pageNumber]);
-
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -189,26 +180,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
     scrollToBlock(h.blockId);
   };
 
-  const canPrev = pageNumber > 1;
-  const canNext = pageNumber < totalPages;
-  const prevPage = Math.max(1, pageNumber - 1);
-  const nextPage = Math.min(totalPages, pageNumber + 1);
-  const makePageHref = (page: number) => `/reader/${book.id}?page=${page}`;
-  const onSubmitPageInput = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const targetPage = Number(pageInput);
-    if (!Number.isFinite(targetPage)) {
-      setPageInput(String(pageNumber));
-      return;
-    }
-
-    const safePage = clamp(Math.floor(targetPage), 1, totalPages);
-    setPageInput(String(safePage));
-    router.push(makePageHref(safePage));
-  };
-  const desktopPageInputId = 'page-input-desktop';
-  const mobilePageInputId = 'page-input-mobile';
-
   return (
     <div className="min-h-screen w-full bg-linear-to-b from-black via-slate-950 to-black">
       <div className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
@@ -223,32 +194,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 md:flex">
-              <Button href={makePageHref(prevPage)} disabled={!canPrev} leftIcon={<IoChevronBackOutline />}>
-                Prev
-              </Button>
-              <form className="flex items-center gap-2" onSubmit={onSubmitPageInput}>
-                <label className="text-xs text-slate-400" htmlFor={desktopPageInputId}>
-                  Page
-                </label>
-                <input
-                  id={desktopPageInputId}
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={pageInput}
-                  onChange={(e) => setPageInput(e.target.value)}
-                  className="w-16 rounded-md border border-slate-800 bg-slate-900/80 px-2 py-1 text-center text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-700"
-                />
-                <div className="text-xs text-slate-400">/ {totalPages}</div>
-                <Button type="submit" paddingClass="px-3 py-1.5" textSizeClass="text-xs">
-                  Go
-                </Button>
-              </form>
-              <Button href={makePageHref(nextPage)} disabled={!canNext} rightIcon={<IoChevronForwardOutline />}>
-                Next
-              </Button>
-            </div>
             {TOOL_BUTTONS.map(({ key, icon: Icon, title }) => (
               <SquareButton key={key} title={title} onClick={() => togglePanel(key)}>
                 <Icon />
@@ -260,31 +205,15 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
 
       <div className="mx-auto flex max-w-6xl gap-0 px-4 py-6">
         <div className="min-w-0 flex-1">
-          <div
-            className="mx-auto h-[calc(100vh-140px)]"
-            style={{
-              maxWidth: contentWidth,
-              fontSize,
-              lineHeight,
-            }}
-          >
-            <div className="h-full space-y-4 overflow-y-auto pr-2 pb-24">
-              {blocks.map((b) => (
-                <p
-                  key={b.id}
-                  id={b.id}
-                  data-block-id={b.id}
-                  className={clsx(
-                    'rounded-xl px-3 py-2 text-slate-100/95',
-                    b.text.toUpperCase() === b.text && b.text.length < 60 && 'font-semibold text-slate-200',
-                    'selection:bg-slate-200/20',
-                  )}
-                >
-                  {b.text}
-                </p>
-              ))}
-            </div>
-          </div>
+          <ReaderTextView
+            blocks={blocks}
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            bookId={book.id}
+            contentWidth={contentWidth}
+            fontSize={fontSize}
+            lineHeight={lineHeight}
+          />
         </div>
 
         <div className="hidden w-95 shrink-0 pl-4 lg:block">
@@ -311,33 +240,6 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
             }}
           />
         </div>
-      </div>
-
-      <div className="mx-auto flex max-w-6xl items-center justify-center gap-3 px-4 pb-8 md:hidden">
-        <Button href={makePageHref(prevPage)} disabled={!canPrev} leftIcon={<IoChevronBackOutline />}>
-          Prev
-        </Button>
-        <form className="flex items-center gap-2" onSubmit={onSubmitPageInput}>
-          <label className="sr-only" htmlFor={mobilePageInputId}>
-            Page number
-          </label>
-          <input
-            id={mobilePageInputId}
-            type="number"
-            min={1}
-            max={totalPages}
-            value={pageInput}
-            onChange={(e) => setPageInput(e.target.value)}
-            className="w-16 rounded-md border border-slate-800 bg-slate-900/80 px-2 py-1 text-center text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-700"
-          />
-          <div className="text-xs text-slate-400">/ {totalPages}</div>
-          <Button type="submit" paddingClass="px-3 py-1.5" textSizeClass="text-xs">
-            Go
-          </Button>
-        </form>
-        <Button href={makePageHref(nextPage)} disabled={!canNext} rightIcon={<IoChevronForwardOutline />}>
-          Next
-        </Button>
       </div>
 
       <BottomSheet open={!!openPanel} title={panelTitle(openPanel)} onClose={() => setOpenPanel(null)}>
