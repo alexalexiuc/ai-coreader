@@ -2,10 +2,11 @@
 
 import { useFiles } from '@/hooks';
 import type { FilterKey, SortKey, UploadedFile } from '@/app/uploads/types';
-import { deleteFileAction } from '@/app/uploads/actions';
+import { deleteFileAction, listFilesAction } from '@/app/uploads/actions';
 import { FileRow } from '@/app/uploads/FileRow';
 import { EmptyFiltered, EmptyUploads } from '@/app/uploads/UploadEmptyStates';
 import { UploadDropzone } from '@/app/uploads/UploadDropzone';
+import { toUploadedFile } from '@/app/uploads/utils';
 import { PageContainer } from '@/ui/PageContainer';
 import { Section } from '@/ui/Section';
 import { SectionHeader } from '@/ui/SectionHeader';
@@ -13,7 +14,7 @@ import { Select } from '@/ui/Select';
 import { ViewToggle } from '@/ui/ViewToggle';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { IoLibraryOutline, IoSearchOutline, IoStorefrontOutline } from 'react-icons/io5';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -36,8 +37,24 @@ type UploadsClientPageProps = {
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
   const [, startTransition] = useTransition();
-  const { query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile, addFile } =
+  const { files, setFiles, query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile, addFile } =
     useFiles(initialFiles);
+  const shouldPoll = files.some((file) => file.status === 'processing');
+
+  useEffect(() => {
+    if (!shouldPoll) return;
+    const interval = setInterval(() => {
+      // TODO(coreader-app): replace polling with websockets for upload status updates.
+      listFilesAction()
+        .then((nextFiles) => {
+          setFiles(nextFiles.map(toUploadedFile));
+        })
+        .catch((err) => {
+          console.error('Failed to refresh uploads', err);
+        });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [setFiles, shouldPoll]);
 
   const onDownload = (id: string) => {
     const url = `/api/files/${id}/download`;

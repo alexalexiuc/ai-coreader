@@ -14,6 +14,9 @@ import { Select } from '@/ui/Select';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
 import { ViewToggle } from '@/ui/ViewToggle';
+import { useEffect } from 'react';
+import { listBooksAction } from '@/app/library/actions';
+import { toLibraryBook } from '@/app/library/utils';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -40,8 +43,24 @@ type LibraryClientPageProps = {
 };
 
 export default function LibraryClientPage({ initialBooks }: LibraryClientPageProps) {
-  const { query, setQuery, filter, setFilter, sort, setSort, view, setView, counts, filtered, isEmptyAll, isEmptyFiltered, togglePin } =
+  const { books, setBooks, query, setQuery, filter, setFilter, sort, setSort, view, setView, counts, filtered, isEmptyAll, isEmptyFiltered, togglePin } =
     useLibrary(initialBooks);
+  const shouldPoll = books.some((book) => book.processed !== true);
+
+  useEffect(() => {
+    if (!shouldPoll) return;
+    const interval = setInterval(() => {
+      // TODO(coreader-app): replace polling with websockets for processing book updates.
+      listBooksAction()
+        .then((nextBooks) => {
+          setBooks(nextBooks.map(toLibraryBook));
+        })
+        .catch((err) => {
+          console.error('Failed to refresh library books', err);
+        });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [setBooks, shouldPoll]);
 
   return (
     <PageContainer>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { saveUploadedFile, deleteStoredFile, FOLDERS } from '@/lib/files/storage';
-import { deleteFileById, insertFileMetadata, listFiles, type FileDTO } from '@/lib/db/files';
+import { deleteFileById, insertFileMetadata, listFilesWithBooks, type FileDTO, type FileWithBookDTO } from '@/lib/db/files';
 
 export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
   const file = formData.get('file') as File | null;
@@ -37,6 +37,6 @@ export async function deleteFileAction(id: string) {
   revalidatePath('/uploads');
 }
 
-export async function listFilesAction(): Promise<FileDTO[]> {
-  return listFiles();
+export async function listFilesAction(): Promise<FileWithBookDTO[]> {
+  return listFilesWithBooks();
 }
