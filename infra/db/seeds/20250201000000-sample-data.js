@@ -34,6 +34,8 @@ const chunkIds = {
 const entityIds = {
   rin: new ObjectId("66f000000000000000000301"),
   theAtlas: new ObjectId("66f000000000000000000302"),
+  emberArchive: new ObjectId("66f000000000000000000303"),
+  northernRanges: new ObjectId("66f000000000000000000304"),
 };
 
 const primaryDate = new Date("2024-11-15T12:00:00.000Z");
@@ -230,27 +232,27 @@ const bookChunks = [
     endChar: new Int32(2400),
     text: "Ash and memory are carefully stored in the Ember Archive. The archivist Rin catalogues accounts of cities lost to time, noting flickers of magic that still cling to their ruins.",
     llmProcessed: true,
-    llmMetadata: {
-      entities: [
-        {
-          tempName: "Rin",
-          type: "character",
-          startOffset: new Int32(71),
-          endOffset: new Int32(74),
-          isIntroducedInThisChunk: true,
-        },
-        {
-          tempName: "Ember Archive",
-          type: "place",
-          startOffset: new Int32(36),
-          endOffset: new Int32(49),
-          isIntroducedInThisChunk: true,
-        },
-      ],
-      hasChapterStart: true,
-      chapterTitle: "Prologue",
-      chapterNumber: "1",
-    },
+    entities: [
+      {
+        entityId: entityIds.rin,
+        name: "Rin",
+        type: "character",
+        startOffset: new Int32(71),
+        endOffset: new Int32(74),
+        isIntroducedInThisChunk: true,
+      },
+      {
+        entityId: entityIds.emberArchive,
+        name: "Ember Archive",
+        type: "place",
+        startOffset: new Int32(36),
+        endOffset: new Int32(49),
+        isIntroducedInThisChunk: true,
+      },
+    ],
+    hasChapterStart: true,
+    chapterTitle: "Prologue",
+    chapterNumber: "1",
   },
   {
     _id: chunkIds.emberArchiveField,
@@ -261,7 +263,18 @@ const bookChunks = [
     startChar: new Int32(2400),
     endChar: new Int32(4820),
     text: "Rin ventures to the Ashen Library where the Atlas of Rivers is rumored to be kept. Lantern-light traces faded ink while distant bells keep her aware of the time.",
-    llmProcessed: false,
+    llmProcessed: true,
+    entities: [
+      {
+        entityId: entityIds.theAtlas,
+        name: "Atlas of Rivers",
+        type: "artifact",
+        startOffset: new Int32(47),
+        endOffset: new Int32(63),
+        isIntroducedInThisChunk: true,
+      },
+    ],
+    hasChapterStart: false,
   },
   {
     _id: chunkIds.atlasNotesOverview,
@@ -273,17 +286,17 @@ const bookChunks = [
     endChar: new Int32(2110),
     text: "Collected survey excerpts describe safe passages across the northern ranges. Marginalia warns of seasonal storms and the glow of miner camps on the horizon.",
     llmProcessed: true,
-    llmMetadata: {
-      entities: [
-        {
-          tempName: "northern ranges",
-          type: "place",
-          startOffset: new Int32(70),
-          endOffset: new Int32(85),
-          isIntroducedInThisChunk: true,
-        },
-      ],
-    },
+    entities: [
+      {
+        entityId: entityIds.northernRanges,
+        name: "northern ranges",
+        type: "place",
+        startOffset: new Int32(70),
+        endOffset: new Int32(85),
+        isIntroducedInThisChunk: true,
+      },
+    ],
+    hasChapterStart: false,
   },
 ];
 
@@ -293,7 +306,7 @@ const entityDescriptions = [
     createdAt: primaryDate,
     updatedAt: primaryDate,
     bookId: bookIds.emberArchive,
-    entityId: entityIds.rin,
+    bookChunkId: chunkIds.emberArchiveIntro,
     name: "Rin Calder",
     type: "character",
     summary:
@@ -308,7 +321,7 @@ const entityDescriptions = [
     createdAt: secondaryDate,
     updatedAt: secondaryDate,
     bookId: bookIds.atlasNotes,
-    entityId: entityIds.theAtlas,
+    bookChunkId: chunkIds.emberArchiveField,
     name: "Atlas of Rivers",
     type: "artifact",
     summary:
@@ -316,6 +329,28 @@ const entityDescriptions = [
     traits: ["waterlogged cover", "handwritten marginalia"],
     importantLocations: ["Ashen Library"],
     importantRelationships: ["Referenced alongside the Surveyor's Almanac"],
+  },
+  {
+    _id: entityIds.emberArchive,
+    createdAt: primaryDate,
+    updatedAt: primaryDate,
+    bookId: bookIds.emberArchive,
+    bookChunkId: chunkIds.emberArchiveIntro,
+    name: "Ember Archive",
+    type: "place",
+    summary: "A storied repository of ash-scarred manuscripts and maps.",
+    traits: ["dusty vaults", "sealed stacks"],
+  },
+  {
+    _id: entityIds.northernRanges,
+    createdAt: secondaryDate,
+    updatedAt: secondaryDate,
+    bookId: bookIds.atlasNotes,
+    bookChunkId: chunkIds.atlasNotesOverview,
+    name: "northern ranges",
+    type: "place",
+    summary: "A mountainous stretch marked by seasonal storms and miner camps.",
+    traits: ["storm-prone", "remote"],
   },
 ];
 

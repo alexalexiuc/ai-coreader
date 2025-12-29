@@ -9,7 +9,11 @@ export type BookChunkDTO = {
   text: string;
   startChar: number;
   endChar: number;
-  llmMetadata?: BookChunkDoc['llmMetadata'];
+  llmProcessed: boolean;
+  entities?: BookChunkDoc['entities'];
+  hasChapterStart?: BookChunkDoc['hasChapterStart'];
+  chapterTitle?: BookChunkDoc['chapterTitle'];
+  chapterNumber?: BookChunkDoc['chapterNumber'];
 };
 
 function toDTO(doc: BookChunkDoc): BookChunkDTO {
@@ -24,7 +28,11 @@ function toDTO(doc: BookChunkDoc): BookChunkDTO {
     text: doc.text,
     startChar: doc.startChar,
     endChar: doc.endChar,
-    llmMetadata: doc.llmMetadata,
+    llmProcessed: doc.llmProcessed,
+    entities: doc.entities,
+    hasChapterStart: doc.hasChapterStart,
+    chapterTitle: doc.chapterTitle,
+    chapterNumber: doc.chapterNumber,
   };
 }
 

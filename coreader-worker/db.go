@@ -237,10 +237,13 @@ func (db *DB) CreateBookChunkDoc(chunk *BookChunksDoc) (*BookChunksDoc, error) {
 	return chunk, err
 }
 
-func (db *DB) AddLLMMetadataToBookChunk(chunkID primitive.ObjectID, llmMetadata *ChunkLLMMetadata) (*mongo.UpdateResult, error) {
+func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, llmMetadata *ChunkLLMMetadata) (*mongo.UpdateResult, error) {
 	updateFields := bson.M{
-		"llmProcessed": true,
-		"llmMetadata":  llmMetadata,
+		"llmProcessed":    true,
+		"entities":        llmMetadata.Entities,
+		"hasChapterStart": llmMetadata.HasChapterStart,
+		"chapterTitle":    llmMetadata.ChapterTitle,
+		"chapterNumber":   llmMetadata.ChapterNumber,
 	}
 	return UpdateOneWithMeta(context.TODO(), db.BooksChunksCollection, chunkID, updateFields)
 }
@@ -255,7 +258,7 @@ func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*E
 		{Key: "name", Value: name},
 	}
 
-	err := db.LLMDatabase.Collection("entityDescriptions").FindOne(ctx, filter).Decode(&entity)
+	err := db.EntityDescriptionsCollection.FindOne(ctx, filter).Decode(&entity)
 	if err != nil {
 		return nil, err
 	}
@@ -263,6 +266,6 @@ func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*E
 }
 
 func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*EntityDescriptionsDoc, error) {
-	entityDesc, err := InsertOneWithMeta(context.TODO(), db.LLMDatabase.Collection("entityDescriptions"), entityDesc)
+	entityDesc, err := InsertOneWithMeta(context.TODO(), db.EntityDescriptionsCollection, entityDesc)
 	return entityDesc, err
 }

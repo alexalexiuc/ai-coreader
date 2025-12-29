@@ -91,6 +91,13 @@ type BookHeaderMetadata struct {
 	HeaderEndOffset int      `json:"headerEndOffset"` // char index where main story starts in this chunk
 }
 
+type ChunkLLMMetadata struct {
+	Entities        []ChunkEntityRef `json:"entities,omitempty"`
+	HasChapterStart bool             `json:"hasChapterStart,omitempty"`
+	ChapterTitle    string           `json:"chapterTitle,omitempty"`
+	ChapterNumber   string           `json:"chapterNumber,omitempty"`
+}
+
 // Public function: given entity info + context, ask LLM for a description.
 func (c *LLMClient) DescribeEntity(ctx context.Context, in EntityDescriptionInput) (*EntityDescription, error) {
 	if c.Client == nil {
@@ -300,7 +307,7 @@ Return STRICTLY a JSON object with this structure (no extra text):
 {
   "entities": [
     {
-      "tempName": string,
+      "name": string,
       "type": "character" | "place" | "spell" | "song" | "artifact" | "other",
       "startOffset": number,
       "endOffset": number,

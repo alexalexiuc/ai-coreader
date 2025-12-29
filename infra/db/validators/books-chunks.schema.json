@@ -46,60 +46,54 @@
     "llmProcessed": {
       "bsonType": "bool"
     },
-    "llmMetadata": {
-      "title": "ChunkLLMMetadata",
-      "additionalProperties": false,
-      "properties": {
-        "entities": {
-          "items": {
-            "title": "ChunkEntityRef",
-            "additionalProperties": false,
-            "required": [
-              "name",
-              "type",
-              "startOffset",
-              "endOffset",
-              "isIntroducedInThisChunk"
-            ],
-            "properties": {
-              "entityId": {
-                "description": "Entity ID from EntityDescriptions collection",
-                "bsonType": "objectId"
-              },
-              "name": {
-                "bsonType": "string"
-              },
-              "type": {
-                "bsonType": "string"
-              },
-              "startOffset": {
-                "minimum": 0,
-                "description": "relative to chunk.text",
-                "bsonType": "int"
-              },
-              "endOffset": {
-                "minimum": 0,
-                "bsonType": "int"
-              },
-              "isIntroducedInThisChunk": {
-                "bsonType": "bool"
-              }
-            },
-            "bsonType": "object"
+    "entities": {
+      "items": {
+        "title": "ChunkEntityRef",
+        "additionalProperties": false,
+        "required": [
+          "entityId",
+          "name",
+          "type",
+          "startOffset",
+          "endOffset",
+          "isIntroducedInThisChunk"
+        ],
+        "properties": {
+          "entityId": {
+            "description": "Entity ID from EntityDescriptions collection",
+            "bsonType": "objectId"
           },
-          "bsonType": "array"
+          "name": {
+            "bsonType": "string"
+          },
+          "type": {
+            "bsonType": "string"
+          },
+          "startOffset": {
+            "minimum": 0,
+            "description": "relative to chunk.text",
+            "bsonType": "int"
+          },
+          "endOffset": {
+            "minimum": 0,
+            "bsonType": "int"
+          },
+          "isIntroducedInThisChunk": {
+            "bsonType": "bool"
+          }
         },
-        "hasChapterStart": {
-          "bsonType": "bool"
-        },
-        "chapterTitle": {
-          "bsonType": "string"
-        },
-        "chapterNumber": {
-          "bsonType": "string"
-        }
+        "bsonType": "object"
       },
-      "bsonType": "object"
+      "bsonType": "array"
+    },
+    "hasChapterStart": {
+      "bsonType": "bool"
+    },
+    "chapterTitle": {
+      "bsonType": "string"
+    },
+    "chapterNumber": {
+      "bsonType": "string"
     }
   },
   "bsonType": "object"

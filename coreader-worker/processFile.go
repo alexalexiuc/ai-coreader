@@ -6,7 +6,6 @@ import (
 	"math"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -91,33 +90,29 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		}
 		fmt.Printf("Found %d entities in chunk %d\n", len(chunkEntities.Entities), totalChunks-1)
 
-		// Update book chunk with LLM metadata
-		_, err = db.AddLLMMetadataToBookChunk(chunk.ID, chunkEntities)
-		if err != nil {
-			return err
-		}
-
-		// Store entities in the database collection
+		// Store entities in the database collection and capture IDs on the chunk refs.
+		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, entity := range chunkEntities.Entities {
-			// Check if entity already exists for this book
-			existingEntity, err := db.GetEntityByNameAndBook(book.ID, entity.Name)
-			if err != nil && err != mongo.ErrNoDocuments {
+			createdEntity, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
+				BookID:      book.ID,
+				BookChunkID: chunk.ID,
+				Name:        entity.Name,
+				Type:        entity.Type,
+				Summary:     "", // Will be filled later with more detailed analysis
+			})
+			if err != nil {
 				return err
 			}
+			entity.EntityID = createdEntity.ID
+			entitiesWithIDs = append(entitiesWithIDs, entity)
+			fmt.Printf("Created new entity: %s (%s)\n", entity.Name, entity.Type)
+		}
+		chunkEntities.Entities = entitiesWithIDs
 
-			// Only create entity if it doesn't exist
-			if existingEntity == nil {
-				_, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
-					BookID:  book.ID,
-					Name:    entity.Name,
-					Type:    entity.Type,
-					Summary: "", // Will be filled later with more detailed analysis
-				})
-				if err != nil {
-					return err
-				}
-				fmt.Printf("Created new entity: %s (%s)\n", entity.Name, entity.Type)
-			}
+		// Update book chunk with LLM metadata
+		_, err = db.AddLLMDataToBookChunk(chunk.ID, chunkEntities)
+		if err != nil {
+			return err
 		}
 
 		processedData = append(processedData, []byte(logicalChunk.Text)...)

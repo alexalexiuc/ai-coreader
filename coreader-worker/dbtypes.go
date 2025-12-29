@@ -7,12 +7,13 @@ Do not modify it by hand
 package main
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ChunkEntityRef struct {
-	EntityID                primitive.ObjectID `bson:"entityId,omitempty" json:"entityId,omitempty"`
+	EntityID                primitive.ObjectID `bson:"entityId" json:"entityId"`
 	Name                    string             `bson:"name" json:"name"`
 	Type                    string             `bson:"type" json:"type"`
 	StartOffset             int                `bson:"startOffset" json:"startOffset"`
@@ -20,24 +21,20 @@ type ChunkEntityRef struct {
 	IsIntroducedInThisChunk bool               `bson:"isIntroducedInThisChunk" json:"isIntroducedInThisChunk"`
 }
 
-type ChunkLLMMetadata struct {
-	Entities        []ChunkEntityRef `bson:"entities,omitempty" json:"entities,omitempty"`
-	HasChapterStart bool             `bson:"hasChapterStart,omitempty" json:"hasChapterStart,omitempty"`
-	ChapterTitle    string           `bson:"chapterTitle,omitempty" json:"chapterTitle,omitempty"`
-	ChapterNumber   string           `bson:"chapterNumber,omitempty" json:"chapterNumber,omitempty"`
-}
-
 type BookChunksDoc struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
-	BookID       primitive.ObjectID `bson:"bookId" json:"bookId"`
-	Index        int                `bson:"index" json:"index"`
-	StartChar    int                `bson:"startChar" json:"startChar"`
-	EndChar      int                `bson:"endChar" json:"endChar"`
-	Text         string             `bson:"text" json:"text"`
-	LlmProcessed bool               `bson:"llmProcessed" json:"llmProcessed"`
-	LlmMetadata  *ChunkLLMMetadata  `bson:"llmMetadata,omitempty" json:"llmMetadata,omitempty"`
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt       time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt       time.Time          `bson:"updatedAt" json:"updatedAt"`
+	BookID          primitive.ObjectID `bson:"bookId" json:"bookId"`
+	Index           int                `bson:"index" json:"index"`
+	StartChar       int                `bson:"startChar" json:"startChar"`
+	EndChar         int                `bson:"endChar" json:"endChar"`
+	Text            string             `bson:"text" json:"text"`
+	LlmProcessed    bool               `bson:"llmProcessed" json:"llmProcessed"`
+	Entities        []ChunkEntityRef   `bson:"entities,omitempty" json:"entities,omitempty"`
+	HasChapterStart bool               `bson:"hasChapterStart,omitempty" json:"hasChapterStart,omitempty"`
+	ChapterTitle    string             `bson:"chapterTitle,omitempty" json:"chapterTitle,omitempty"`
+	ChapterNumber   string             `bson:"chapterNumber,omitempty" json:"chapterNumber,omitempty"`
 }
 
 type BooksDoc struct {
@@ -62,6 +59,7 @@ type EntityDescriptionsDoc struct {
 	CreatedAt              time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt              time.Time          `bson:"updatedAt" json:"updatedAt"`
 	BookID                 primitive.ObjectID `bson:"bookId" json:"bookId"`
+	BookChunkID            primitive.ObjectID `bson:"bookChunkId" json:"bookChunkId"`
 	Name                   string             `bson:"name" json:"name"`
 	Type                   string             `bson:"type" json:"type"`
 	Summary                string             `bson:"summary,omitempty" json:"summary,omitempty"`

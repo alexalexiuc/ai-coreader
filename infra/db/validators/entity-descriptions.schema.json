@@ -27,6 +27,10 @@
       "description": "Reference to the parent book",
       "bsonType": "objectId"
     },
+    "bookChunkId": {
+      "description": "Reference to the originating book chunk",
+      "bsonType": "objectId"
+    },
     "name": {
       "description": "Entity name",
       "bsonType": "string"

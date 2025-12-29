@@ -27,9 +27,6 @@ export interface BookChunksDoc {
   endChar: number;
   text: string;
   llmProcessed: boolean;
-  llmMetadata?: ChunkLLMMetadata;
-}
-export interface ChunkLLMMetadata {
   entities?: ChunkEntityRef[];
   hasChapterStart?: boolean;
   chapterTitle?: string;
@@ -39,7 +36,7 @@ export interface ChunkEntityRef {
   /**
    * Entity ID from EntityDescriptions collection
    */
-  entityId?: ObjectId;
+  entityId: ObjectId;
   name: string;
   type: string;
   /**
@@ -132,6 +129,10 @@ export interface EntityDescriptionsDoc {
    * Reference to the parent book
    */
   bookId: ObjectId;
+  /**
+   * Reference to the originating book chunk
+   */
+  bookChunkId: ObjectId;
   /**
    * Entity name
    */

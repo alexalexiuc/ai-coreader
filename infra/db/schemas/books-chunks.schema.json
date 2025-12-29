@@ -53,8 +53,20 @@
     "llmProcessed": {
       "type": "boolean"
     },
-    "llmMetadata": {
-      "$ref": "#/$defs/ChunkLLMMetadata"
+    "entities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ChunkEntityRef"
+      }
+    },
+    "hasChapterStart": {
+      "type": "boolean"
+    },
+    "chapterTitle": {
+      "type": "string"
+    },
+    "chapterNumber": {
+      "type": "string"
     }
   },
   "$defs": {
@@ -64,6 +76,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "entityId",
         "name",
         "type",
         "startOffset",
@@ -93,29 +106,6 @@
         },
         "isIntroducedInThisChunk": {
           "type": "boolean"
-        }
-      }
-    },
-    "ChunkLLMMetadata": {
-      "$id": "https://example.com/schemas/chunkLLMMetadata.schema.json",
-      "title": "ChunkLLMMetadata",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ChunkEntityRef"
-          }
-        },
-        "hasChapterStart": {
-          "type": "boolean"
-        },
-        "chapterTitle": {
-          "type": "string"
-        },
-        "chapterNumber": {
-          "type": "string"
         }
       }
     }
