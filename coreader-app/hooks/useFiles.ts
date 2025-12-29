@@ -80,6 +80,13 @@ export default function useFiles(initialFiles: UploadedFile[] = []) {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
+  const addFile = useCallback((file: UploadedFile) => {
+    setFiles((prev) => {
+      const next = prev.filter((f) => f.id !== file.id);
+      return [file, ...next];
+    });
+  }, []);
+
   return {
     files,
     setFiles,
@@ -95,5 +102,6 @@ export default function useFiles(initialFiles: UploadedFile[] = []) {
     isEmptyFiltered,
     retryFile,
     deleteFile,
+    addFile,
   } as const;
 }

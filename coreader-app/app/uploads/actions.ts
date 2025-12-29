@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { saveUploadedFile, deleteStoredFile, FOLDERS } from '@/lib/files/storage';
 import { deleteFileById, insertFileMetadata, listFiles, type FileDTO } from '@/lib/db/files';
 
-export async function uploadFileAction(formData: FormData) {
+export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
   const file = formData.get('file') as File | null;
 
   if (!file || file.size === 0) {
@@ -13,7 +13,7 @@ export async function uploadFileAction(formData: FormData) {
 
   const { storageName, storagePath, size } = await saveUploadedFile(file, FOLDERS.FILES);
 
-  await insertFileMetadata({
+  const inserted = await insertFileMetadata({
     originalName: file.name,
     mimeType: file.type || 'application/octet-stream',
     size,
@@ -24,6 +24,8 @@ export async function uploadFileAction(formData: FormData) {
 
   // Revalidate listing page
   revalidatePath('/uploads');
+
+  return inserted;
 }
 
 export async function deleteFileAction(id: string) {

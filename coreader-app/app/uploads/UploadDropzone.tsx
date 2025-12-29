@@ -4,8 +4,14 @@ import { uploadFileAction } from './actions';
 import { FileUpload } from '@/ui/FileUpload';
 import { Button } from '@/ui/Button';
 import { Section } from '@/ui/Section';
+import type { UploadedFile } from './types';
+import { toUploadedFile } from './utils';
 
-export function UploadDropzone() {
+type UploadDropzoneProps = {
+  onUploadSuccess?: (file: UploadedFile) => void;
+};
+
+export function UploadDropzone({ onUploadSuccess }: UploadDropzoneProps) {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<'success' | 'error' | null>(null);
@@ -34,7 +40,8 @@ export function UploadDropzone() {
 
     startTransition(async () => {
       try {
-        await uploadFileAction(formData);
+        const inserted = await uploadFileAction(formData);
+        onUploadSuccess?.(toUploadedFile(inserted));
         setMessage('Uploaded! We will process the book and add it to your library shortly.');
         setStatus('success');
         setFile(null);

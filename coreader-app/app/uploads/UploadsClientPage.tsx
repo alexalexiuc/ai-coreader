@@ -36,7 +36,7 @@ type UploadsClientPageProps = {
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
   const [, startTransition] = useTransition();
-  const { query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile } =
+  const { query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile, addFile } =
     useFiles(initialFiles);
 
   const onDownload = (id: string) => {
@@ -64,7 +64,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
         actions={<AvailableActions />}
       />
 
-      <UploadDropzone />
+      <UploadDropzone onUploadSuccess={addFile} />
 
       <Section paddingClass="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
