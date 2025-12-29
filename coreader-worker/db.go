@@ -127,9 +127,34 @@ func (db *DB) Close() {
 	db.Client.Disconnect(context.TODO())
 }
 
-// todo: Subscribe to changes in the files collection to process new files
-func WatchFilesCollectionChanges() {
-	// todo
+func WatchFilesCollectionChanges(db *DB, llm *LLMClient) {
+	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
+	log.Println("Polling files collection for pending files...")
+	for {
+		files, err := queryPendingFiles(db)
+		if err != nil {
+			log.Printf("Polling error: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		for _, file := range files {
+			start := time.Now()
+			log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
+			if err := ProcessFile(db, &file, llm); err != nil {
+				log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
+				continue
+			}
+			log.Printf("Successfully processed file %s in %s", file.ID.Hex(), time.Since(start))
+		}
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func queryPendingFiles(db *DB) ([]FilesDoc, error) {
+	var files []FilesDoc
+	filter := bson.D{{Key: "status", Value: "pending"}}
+	err := query(db.FilesCollection, filter, &files)
+	return files, err
 }
 
 func InsertOneWithMeta[T HasBaseDoc](ctx context.Context, coll *mongo.Collection, doc T) (T, error) {
@@ -170,7 +195,7 @@ func (db *DB) GetUnprocessedFiles() ([]FilesDoc, error) {
 		},
 	}
 	err := query(db.FilesCollection, filter, &files)
-	fmt.Printf("Found %d unprocessed files", len(files))
+	fmt.Printf("Found %d unprocessed files\n", len(files))
 	return files, err
 }
 

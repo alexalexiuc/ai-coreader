@@ -27,4 +27,6 @@ func main() {
 	}
 	defer fmt.Println("Stopping CoReader Worker...")
 	defer db.Close()
+
+	WatchFilesCollectionChanges(db, llm)
 }
