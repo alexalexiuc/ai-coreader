@@ -46,7 +46,7 @@ func (b *BooksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
-func (e *EntityDescriptionDoc) GetBaseDoc() *BaseDoc {
+func (e *EntityDescriptionsDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
 		ID:        e.ID,
 		CreatedAt: e.CreatedAt,
@@ -54,11 +54,11 @@ func (e *EntityDescriptionDoc) GetBaseDoc() *BaseDoc {
 	}
 }
 
-func (e *EntityDescriptionDoc) SetDocID(id primitive.ObjectID) {
+func (e *EntityDescriptionsDoc) SetDocID(id primitive.ObjectID) {
 	e.ID = id
 }
 
-func (b *BookChunkDoc) GetBaseDoc() *BaseDoc {
+func (b *BookChunksDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
 		ID:        b.ID,
 		CreatedAt: b.CreatedAt,
@@ -66,7 +66,7 @@ func (b *BookChunkDoc) GetBaseDoc() *BaseDoc {
 	}
 }
 
-func (b *BookChunkDoc) SetDocID(id primitive.ObjectID) {
+func (b *BookChunksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
@@ -82,17 +82,21 @@ func query(coll *mongo.Collection, filter interface{}, result interface{}) error
 }
 
 type DB struct {
-	Client                  *mongo.Client
-	LLMDatabase             *mongo.Database
-	FilesCollection         *mongo.Collection
-	BookDocsCollection      *mongo.Collection
-	BookChunkDocsCollection *mongo.Collection
+	Client                       *mongo.Client
+	LLMDatabase                  *mongo.Database
+	FilesCollection              *mongo.Collection
+	BooksCollection              *mongo.Collection
+	BooksChunksCollection        *mongo.Collection
+	EntityDescriptionsCollection *mongo.Collection
+	UsersCollection              *mongo.Collection
 }
 
 const (
-	FilesCollectionName         = "files"
-	BookDocsCollectionName      = "books"
-	BookChunkDocsCollectionName = "bookChunks"
+	FilesCollectionName              = "files"
+	BooksCollectionName              = "books"
+	BooksChunksCollectionName        = "books-chunks"
+	EntityDescriptionsCollectionName = "entity-descriptions"
+	UsersCollectionName              = "users"
 )
 
 func InitDB() *DB {
@@ -112,14 +116,18 @@ func InitDB() *DB {
 	MONGODB_DB_NAME := GetEnvWithPanic("MONGODB_DB_NAME")
 	llmDatabase := client.Database(MONGODB_DB_NAME)
 	filesCollection := llmDatabase.Collection(FilesCollectionName)
-	bookDocsCollection := llmDatabase.Collection(BookDocsCollectionName)
-	bookChunkDocsCollection := llmDatabase.Collection(BookChunkDocsCollectionName)
+	booksCollection := llmDatabase.Collection(BooksCollectionName)
+	booksChunksCollection := llmDatabase.Collection(BooksChunksCollectionName)
+	entityDescriptionsCollection := llmDatabase.Collection(EntityDescriptionsCollectionName)
+	usersCollection := llmDatabase.Collection(UsersCollectionName)
 	return &DB{
-		Client:                  client,
-		LLMDatabase:             llmDatabase,
-		FilesCollection:         filesCollection,
-		BookDocsCollection:      bookDocsCollection,
-		BookChunkDocsCollection: bookChunkDocsCollection,
+		Client:                       client,
+		LLMDatabase:                  llmDatabase,
+		FilesCollection:              filesCollection,
+		BooksCollection:              booksCollection,
+		BooksChunksCollection:        booksChunksCollection,
+		EntityDescriptionsCollection: entityDescriptionsCollection,
+		UsersCollection:              usersCollection,
 	}
 }
 
@@ -211,21 +219,21 @@ func (db *DB) SetFileProgress(fileID primitive.ObjectID, percentage float64) err
 
 func (db *DB) CreateBookDoc(book *BooksDoc) (*BooksDoc, error) {
 	fmt.Printf("Creating BookDoc %+v\n", book)
-	book, err := InsertOneWithMeta(context.TODO(), db.BookDocsCollection, book)
+	book, err := InsertOneWithMeta(context.TODO(), db.BooksCollection, book)
 	return book, err
 }
 
 func (db *DB) UpdateBookDoc(bookID primitive.ObjectID, updateFields bson.M) (*mongo.UpdateResult, error) {
-	return UpdateOneWithMeta(context.TODO(), db.BookDocsCollection, bookID, updateFields)
+	return UpdateOneWithMeta(context.TODO(), db.BooksCollection, bookID, updateFields)
 }
 
 func (db *DB) SetBookProcessed(bookID primitive.ObjectID) (*mongo.UpdateResult, error) {
-	return UpdateOneWithMeta(context.TODO(), db.BookDocsCollection, bookID, bson.M{"processed": true})
+	return UpdateOneWithMeta(context.TODO(), db.BooksCollection, bookID, bson.M{"processed": true})
 }
 
-func (db *DB) CreateBookChunkDoc(chunk *BookChunkDoc) (*BookChunkDoc, error) {
+func (db *DB) CreateBookChunkDoc(chunk *BookChunksDoc) (*BookChunksDoc, error) {
 	fmt.Printf("Creating BookChunkDoc with index %d, startChar %d, endChar %d\n", chunk.Index, chunk.StartChar, chunk.EndChar)
-	chunk, err := InsertOneWithMeta(context.TODO(), db.BookChunkDocsCollection, chunk)
+	chunk, err := InsertOneWithMeta(context.TODO(), db.BooksChunksCollection, chunk)
 	return chunk, err
 }
 
@@ -234,11 +242,11 @@ func (db *DB) AddLLMMetadataToBookChunk(chunkID primitive.ObjectID, llmMetadata 
 		"llmProcessed": true,
 		"llmMetadata":  llmMetadata,
 	}
-	return UpdateOneWithMeta(context.TODO(), db.BookChunkDocsCollection, chunkID, updateFields)
+	return UpdateOneWithMeta(context.TODO(), db.BooksChunksCollection, chunkID, updateFields)
 }
 
-func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*EntityDescriptionDoc, error) {
-	var entity EntityDescriptionDoc
+func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*EntityDescriptionsDoc, error) {
+	var entity EntityDescriptionsDoc
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -254,7 +262,7 @@ func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*E
 	return &entity, nil
 }
 
-func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionDoc) (*EntityDescriptionDoc, error) {
+func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*EntityDescriptionsDoc, error) {
 	entityDesc, err := InsertOneWithMeta(context.TODO(), db.LLMDatabase.Collection("entityDescriptions"), entityDesc)
 	return entityDesc, err
 }

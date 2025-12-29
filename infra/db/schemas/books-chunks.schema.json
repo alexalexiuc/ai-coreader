@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/book-chunks.schema.json",
-  "title": "bookChunks",
+  "title": "BookChunksDoc",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -64,14 +64,19 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "tempName",
+        "name",
         "type",
         "startOffset",
         "endOffset",
         "isIntroducedInThisChunk"
       ],
       "properties": {
-        "tempName": {
+        "entityId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "Entity ID from EntityDescriptions collection"
+        },
+        "name": {
           "type": "string"
         },
         "type": {

@@ -51,8 +51,9 @@ module.exports.up = async (db) => {
     .sort((a, b) => a.localeCompare(b, "en"));
 
   for (const file of files) {
+    const collectionName = file.replace(".schema.json", "");
     const validator = loadValidatorJson(`infra/db/validators/${file}`);
-    const collection = toCollectionName(validator.title);
+    const collection = toCollectionName(collectionName);
     await ensureCollectionWithValidator(db, collection, validator);
   }
 };

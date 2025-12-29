@@ -322,8 +322,8 @@ const entityDescriptions = [
 module.exports.seed = async (db) => {
   await db.collection("files").insertMany(files, { ordered: true });
   await db.collection("books").insertMany(books, { ordered: true });
-  await db.collection("bookChunks").insertMany(bookChunks, { ordered: true });
+  await db.collection("books-chunks").insertMany(bookChunks, { ordered: true });
   await db
-    .collection("entityDescriptions")
+    .collection("entity-descriptions")
     .insertMany(entityDescriptions, { ordered: true });
 };

@@ -36,7 +36,7 @@ test.describe('Uploads Page', () => {
       // Check that filter tabs are present - be careful with multiple "All", "Processing", etc.
       const allTab = page.getByRole('button', { name: /^All/i });
       await expect(allTab.first()).toBeVisible();
-      
+
       // Just verify the tabs exist
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toContain('Processing');
@@ -68,11 +68,11 @@ test.describe('Uploads Page', () => {
       if (await noMatches.isVisible()) {
         await expect(noMatches).toBeVisible();
         await expect(page.getByText('Try a different search term, or clear the search.')).toBeVisible();
-        
+
         // Clear search button should be visible
         const clearButton = page.getByRole('button', { name: /Clear search/i });
         await expect(clearButton).toBeVisible();
-        
+
         // Click clear and verify search is cleared
         await clearButton.click();
         await expect(searchInput).toHaveValue('');
@@ -92,7 +92,7 @@ test.describe('Uploads Page', () => {
       // Create a simple text file for upload
       const fileContent = 'This is a test book content for uploading.';
       const buffer = Buffer.from(fileContent, 'utf-8');
-      
+
       // Find the file input and upload
       const fileInput = page.locator('input[type="file"]');
       await fileInput.setInputFiles({
@@ -150,14 +150,14 @@ test.describe('Uploads Page', () => {
 
       // Wait for either success or error message
       await page.waitForTimeout(3000);
-      
+
       // Check if upload succeeded or if there was an error
       const successMessage = page.getByText('Uploaded! We will process the book and add it to your library shortly.');
       const errorMessage = page.locator('div[class*="red"]');
-      
+
       const hasSuccess = await successMessage.isVisible().catch(() => false);
       const hasError = await errorMessage.isVisible().catch(() => false);
-      
+
       // One of them should be visible (either success or error with reason)
       expect(hasSuccess || hasError).toBeTruthy();
     });
@@ -188,11 +188,11 @@ test.describe('Uploads Page', () => {
       if (rowCount > 0) {
         // First file row should have all necessary elements
         const firstRow = fileRows.first();
-        
+
         // Should have file icon, name, status, size, date
         const iconCount = await firstRow.locator('svg').count();
         expect(iconCount).toBeGreaterThan(0);
-        
+
         // Text content should be present (filename, size, date)
         const text = await firstRow.textContent();
         expect(text).toBeTruthy();
@@ -203,8 +203,13 @@ test.describe('Uploads Page', () => {
     test('should display completed file with book link', async ({ page }) => {
       // Look for a completed file with a book link
       const bookLinkText = page.getByText(/Book created:/i);
-      
-      if (await bookLinkText.first().isVisible().catch(() => false)) {
+
+      if (
+        await bookLinkText
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         await expect(bookLinkText.first()).toBeVisible();
         // Should have a clickable link to the book
         const link = page.locator('a[href*="/reader/"]').first();
@@ -215,7 +220,7 @@ test.describe('Uploads Page', () => {
     test('should display processing file with progress bar', async ({ page }) => {
       // Look for processing badge
       const processingFile = page.getByText('Processing').first();
-      
+
       if (await processingFile.isVisible().catch(() => false)) {
         // Check for progress indicators near the processing badge
         const progressText = page.getByText(/%/).first();
@@ -231,22 +236,25 @@ test.describe('Uploads Page', () => {
     test('should display failed file with error message', async ({ page }) => {
       // Look for failed badge (in the file list, not filter tabs)
       const failedBadges = page.locator('span').filter({ hasText: /^Failed$/ });
-      const hasFailed = await failedBadges.first().isVisible().catch(() => false);
-      
+      const hasFailed = await failedBadges
+        .first()
+        .isVisible()
+        .catch(() => false);
+
       if (hasFailed) {
         // Failed files should show error message
         // Look for text that looks like an error (containing common error words)
         const bodyText = await page.locator('body').textContent();
         const errorIndicators = ['Unsupported', 'failed', 'error', 'Error'];
         let foundError = false;
-        
+
         for (const indicator of errorIndicators) {
           if (bodyText?.toLowerCase().includes(indicator.toLowerCase())) {
             foundError = true;
             break;
           }
         }
-        
+
         expect(foundError).toBeTruthy();
       }
     });
@@ -255,17 +263,17 @@ test.describe('Uploads Page', () => {
   test.describe('Search Functionality', () => {
     test('should filter files by search query', async ({ page }) => {
       const searchInput = page.getByPlaceholder('Search files...');
-      
+
       // Get initial file count
       await page.waitForTimeout(500);
-      
+
       // Search for a specific term (based on seed data)
       await searchInput.fill('foundation');
       await page.waitForTimeout(500);
-      
+
       // Should show filtered results
       const filteredText = await page.locator('body').textContent();
-      
+
       // If foundation.txt exists, it should be visible
       if (filteredText?.toLowerCase().includes('foundation')) {
         // Use more specific selector to avoid multiple matches
@@ -276,15 +284,15 @@ test.describe('Uploads Page', () => {
 
     test('should clear search results', async ({ page }) => {
       const searchInput = page.getByPlaceholder('Search files...');
-      
+
       // Enter search term
       await searchInput.fill('test');
       await page.waitForTimeout(300);
-      
+
       // Clear search
       await searchInput.clear();
       await page.waitForTimeout(300);
-      
+
       // Verify input is empty
       await expect(searchInput).toHaveValue('');
     });
@@ -300,16 +308,16 @@ test.describe('Uploads Page', () => {
       // Check if completed badge is visible
       const completedBadges = page.getByText('Completed');
       const count = await completedBadges.count();
-      
+
       if (count > 0) {
         // Should only show completed files
         const processingBadge = page.getByText('Processing');
         const failedBadge = page.getByText('Failed');
-        
+
         // Processing and Failed should not be visible (or minimal visibility from UI labels)
         const processingCount = await processingBadge.count();
         const failedCount = await failedBadge.count();
-        
+
         // These counts should be less than completed (only in filter tabs)
         expect(count).toBeGreaterThanOrEqual(processingCount);
       }
@@ -324,10 +332,13 @@ test.describe('Uploads Page', () => {
       // May show processing files or empty state
       const processingBadges = page.getByText('Processing');
       const emptyMessage = page.getByText('No files are currently processing');
-      
-      const hasProcessing = await processingBadges.first().isVisible().catch(() => false);
+
+      const hasProcessing = await processingBadges
+        .first()
+        .isVisible()
+        .catch(() => false);
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       // Either should show processing files or empty message
       expect(hasProcessing || hasEmptyMessage).toBeTruthy();
     });
@@ -341,10 +352,13 @@ test.describe('Uploads Page', () => {
       // May show failed files or empty state
       const failedBadges = page.getByText('Failed');
       const emptyMessage = page.getByText('No failed uploads');
-      
-      const hasFailed = await failedBadges.first().isVisible().catch(() => false);
+
+      const hasFailed = await failedBadges
+        .first()
+        .isVisible()
+        .catch(() => false);
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       // Either should show failed files or empty message
       expect(hasFailed || hasEmptyMessage).toBeTruthy();
     });
@@ -357,9 +371,12 @@ test.describe('Uploads Page', () => {
 
       // Should show count of all files or empty state
       const emptyMessage = page.getByText('No files uploaded yet');
-      const hasFiles = await page.getByText('shown').isVisible().catch(() => false);
+      const hasFiles = await page
+        .getByText('shown')
+        .isVisible()
+        .catch(() => false);
       const isEmpty = await emptyMessage.isVisible().catch(() => false);
-      
+
       // Either files are shown or empty state
       expect(hasFiles || isEmpty).toBeTruthy();
     });
@@ -371,7 +388,7 @@ test.describe('Uploads Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Newest first' }).click();
       await page.waitForTimeout(500);
-      
+
       // Files should be displayed (can't easily verify order in E2E without known data)
       // Just verify no errors occurred
       await expect(sortButton).toBeVisible();
@@ -382,7 +399,7 @@ test.describe('Uploads Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Oldest first' }).click();
       await page.waitForTimeout(500);
-      
+
       await expect(sortButton).toBeVisible();
     });
 
@@ -391,7 +408,7 @@ test.describe('Uploads Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'File name A-Z' }).click();
       await page.waitForTimeout(500);
-      
+
       await expect(sortButton).toBeVisible();
     });
 
@@ -400,7 +417,7 @@ test.describe('Uploads Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Status' }).click();
       await page.waitForTimeout(500);
-      
+
       await expect(sortButton).toBeVisible();
     });
   });
@@ -410,7 +427,7 @@ test.describe('Uploads Page', () => {
       // Look for download buttons (by aria-label)
       const downloadButtons = page.getByLabel('Download original file');
       const count = await downloadButtons.count();
-      
+
       if (count > 0) {
         await expect(downloadButtons.first()).toBeVisible();
       }
@@ -420,7 +437,7 @@ test.describe('Uploads Page', () => {
       // Look for delete buttons
       const deleteButtons = page.getByLabel('Delete file');
       const count = await deleteButtons.count();
-      
+
       if (count > 0) {
         await expect(deleteButtons.first()).toBeVisible();
       }
@@ -429,7 +446,7 @@ test.describe('Uploads Page', () => {
     test('should have retry button for failed files', async ({ page }) => {
       // Look for failed badge first
       const failedBadge = page.getByText('Failed').first();
-      
+
       if (await failedBadge.isVisible()) {
         // Should have a retry button nearby
         const retryButton = page.getByLabel('Retry processing');
@@ -443,19 +460,19 @@ test.describe('Uploads Page', () => {
       // Find any file's delete button
       const deleteButtons = page.getByLabel('Delete file');
       const count = await deleteButtons.count();
-      
+
       if (count > 0) {
         // Get the file name before deletion
         const firstDeleteButton = deleteButtons.first();
         const fileRow = firstDeleteButton.locator('xpath=ancestor::div[contains(@class, "grid")]');
         const fileName = await fileRow.textContent();
-        
+
         // Click delete
         await firstDeleteButton.click();
-        
+
         // Wait for the file to be removed
         await page.waitForTimeout(1000);
-        
+
         // Verify the file is no longer visible (if we can identify it)
         // This is a basic check - in real scenarios you'd verify the specific file is gone
         const newCount = await deleteButtons.count();
@@ -466,14 +483,14 @@ test.describe('Uploads Page', () => {
     test('should retry failed file when retry button clicked', async ({ page }) => {
       // Look for a failed file with retry button
       const retryButton = page.getByLabel('Retry processing').first();
-      
+
       if (await retryButton.isVisible()) {
         // Click retry
         await retryButton.click();
-        
+
         // Wait for status change
         await page.waitForTimeout(1000);
-        
+
         // The file should now show as processing or the retry button should be gone
         const stillVisible = await retryButton.isVisible().catch(() => false);
         // Either button is gone (now processing) or still there (if it failed again quickly)
@@ -488,37 +505,37 @@ test.describe('Uploads Page', () => {
       // Enter search term
       const searchInput = page.getByPlaceholder('Search files...');
       await searchInput.fill('foundation');
-      
+
       // Select completed filter
       const completedTab = page.getByRole('button').filter({ hasText: /^Completed\d/ });
       await completedTab.click();
-      
+
       await page.waitForTimeout(500);
-      
+
       // Should show filtered and searched results
       const bodyText = await page.locator('body').textContent();
-      
+
       // Either shows results or empty state
       const hasFoundation = bodyText?.toLowerCase().includes('foundation');
       const hasEmpty = bodyText?.toLowerCase().includes('no match') || bodyText?.toLowerCase().includes('nothing here');
-      
+
       expect(hasFoundation || hasEmpty).toBeTruthy();
     });
 
     test('should combine search, filter, and sort', async ({ page }) => {
       // Enter search
       await page.getByPlaceholder('Search files...').fill('txt');
-      
+
       // Select filter
       await page.getByRole('button', { name: /All/i }).click();
-      
+
       // Select sort
       const sortButton = page.getByRole('button', { name: 'Sort' });
       await sortButton.click();
       await page.getByRole('option', { name: 'File name A-Z' }).click();
-      
+
       await page.waitForTimeout(500);
-      
+
       // Should work without errors
       await expect(page.getByPlaceholder('Search files...')).toHaveValue('txt');
     });
@@ -528,7 +545,7 @@ test.describe('Uploads Page', () => {
     test('should navigate to library page', async ({ page }) => {
       const libraryLink = page.getByRole('link', { name: /Library/i });
       await libraryLink.click();
-      
+
       // Should navigate to library page
       await expect(page).toHaveURL('/library');
     });
@@ -536,11 +553,11 @@ test.describe('Uploads Page', () => {
     test('should navigate to book reader from completed file', async ({ page }) => {
       // Find a book link
       const bookLink = page.locator('a[href*="/reader/"]').first();
-      
+
       if (await bookLink.isVisible()) {
         const href = await bookLink.getAttribute('href');
         await bookLink.click();
-        
+
         // Should navigate to reader page
         await expect(page).toHaveURL(new RegExp('/reader/.*'));
       }
@@ -552,7 +569,7 @@ test.describe('Uploads Page', () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/uploads');
-      
+
       // Key elements should still be visible
       await expect(page.getByRole('heading', { name: 'Files', exact: true })).toBeVisible();
       await expect(page.getByPlaceholder('Search files...')).toBeVisible();
@@ -563,7 +580,7 @@ test.describe('Uploads Page', () => {
       // Set tablet viewport
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto('/uploads');
-      
+
       await expect(page.getByRole('heading', { name: 'Files', exact: true })).toBeVisible();
       await expect(page.getByPlaceholder('Search files...')).toBeVisible();
     });

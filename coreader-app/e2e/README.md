@@ -210,6 +210,7 @@ npm run e2e:ui
 Tests automatically apply seed data from `/infra/db/seeds/20250201000000-sample-data.js`, which includes:
 
 ### Files (for Uploads page):
+
 - **foundation.txt** - Completed upload with book
 - **i_robot.txt** - Processing upload (45% complete)
 - **dune.txt** - Completed upload
@@ -217,6 +218,7 @@ Tests automatically apply seed data from `/infra/db/seeds/20250201000000-sample-
 - **some_scan.pdf** - Failed upload (unsupported format)
 
 ### Books (for Library page):
+
 - **Foundation** - Isaac Asimov (processed, uploaded)
 - **I, Robot** - Isaac Asimov (not processed, uploaded)
 - **Dune** - Frank Herbert (processed, from shop)

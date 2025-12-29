@@ -5,7 +5,7 @@
 
 import { ObjectId } from 'mongodb';
 
-export interface BookChunkDoc {
+export interface BookChunksDoc {
   /**
    * Book chunk unique identifier
    */
@@ -36,7 +36,11 @@ export interface ChunkLLMMetadata {
   chapterNumber?: string;
 }
 export interface ChunkEntityRef {
-  tempName: string;
+  /**
+   * Entity ID from EntityDescriptions collection
+   */
+  entityId?: ObjectId;
+  name: string;
   type: string;
   /**
    * relative to chunk.text
@@ -111,7 +115,7 @@ export interface BooksDoc {
 /**
  * LLM-generated description of a book entity (character, place, spell, etc.)
  */
-export interface EntityDescriptionDoc {
+export interface EntityDescriptionsDoc {
   /**
    * Entity description unique identifier
    */
@@ -139,7 +143,7 @@ export interface EntityDescriptionDoc {
   /**
    * LLM-generated summary of the entity
    */
-  summary: string;
+  summary?: string;
   /**
    * Narrative role of the entity
    */

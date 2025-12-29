@@ -36,7 +36,7 @@ test.describe('Library Page', () => {
       // Check that filter tabs are present
       const allTab = page.getByRole('button', { name: /^All/i }).first();
       await expect(allTab).toBeVisible();
-      
+
       // Verify the filter tabs exist
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toContain('Reading');
@@ -74,11 +74,11 @@ test.describe('Library Page', () => {
       if (await noMatches.isVisible()) {
         await expect(noMatches).toBeVisible();
         await expect(page.getByText('Try a different search term, or clear the search.')).toBeVisible();
-        
+
         // Clear search button should be visible
         const clearButton = page.getByRole('button', { name: /Clear search/i });
         await expect(clearButton).toBeVisible();
-        
+
         // Click clear and verify search is cleared
         await clearButton.click();
         await expect(searchInput).toHaveValue('');
@@ -105,14 +105,26 @@ test.describe('Library Page', () => {
       // With seed data, we should have books
       const bookCards = page.locator('div').filter({ hasText: /Foundation|Dune|Robot|Martian/i });
       const count = await bookCards.count();
-      
+
       if (count > 0) {
         // Should display book titles
-        const hasFoundation = await page.getByText('Foundation').isVisible().catch(() => false);
-        const hasDune = await page.getByText('Dune').isVisible().catch(() => false);
-        const hasRobot = await page.getByText('I, Robot').isVisible().catch(() => false);
-        const hasMartian = await page.getByText('The Martian Chronicles').isVisible().catch(() => false);
-        
+        const hasFoundation = await page
+          .getByText('Foundation')
+          .isVisible()
+          .catch(() => false);
+        const hasDune = await page
+          .getByText('Dune')
+          .isVisible()
+          .catch(() => false);
+        const hasRobot = await page
+          .getByText('I, Robot')
+          .isVisible()
+          .catch(() => false);
+        const hasMartian = await page
+          .getByText('The Martian Chronicles')
+          .isVisible()
+          .catch(() => false);
+
         // At least one book should be visible
         expect(hasFoundation || hasDune || hasRobot || hasMartian).toBeTruthy();
       }
@@ -125,11 +137,11 @@ test.describe('Library Page', () => {
 
       if (count > 0) {
         const firstCard = bookCards.first();
-        
+
         // Should have book icon
         const iconCount = await firstCard.locator('svg').count();
         expect(iconCount).toBeGreaterThan(0);
-        
+
         // Should have text content (title, author, etc.)
         const text = await firstCard.textContent();
         expect(text).toBeTruthy();
@@ -141,10 +153,10 @@ test.describe('Library Page', () => {
       // Check for Uploaded or Shop badges
       const uploadedBadge = page.getByText('Uploaded').first();
       const shopBadge = page.getByText('Shop').first();
-      
+
       const hasUploaded = await uploadedBadge.isVisible().catch(() => false);
       const hasShop = await shopBadge.isVisible().catch(() => false);
-      
+
       // At least one source badge should be visible
       expect(hasUploaded || hasShop).toBeTruthy();
     });
@@ -152,7 +164,7 @@ test.describe('Library Page', () => {
     test('should display book progress for reading books', async ({ page }) => {
       // Look for progress indicators (percentage)
       const progressText = page.getByText(/%/).first();
-      
+
       if (await progressText.isVisible().catch(() => false)) {
         await expect(progressText).toBeVisible();
         // Progress bar should be visible
@@ -164,7 +176,7 @@ test.describe('Library Page', () => {
     test('should display finished badge for completed books', async ({ page }) => {
       // Look for Finished status
       const finishedBadge = page.getByText('Finished').first();
-      
+
       if (await finishedBadge.isVisible().catch(() => false)) {
         await expect(finishedBadge).toBeVisible();
       }
@@ -173,7 +185,7 @@ test.describe('Library Page', () => {
     test('should display unread status for books not started', async ({ page }) => {
       // Look for Unread status
       const unreadBadge = page.getByText('Unread').first();
-      
+
       if (await unreadBadge.isVisible().catch(() => false)) {
         await expect(unreadBadge).toBeVisible();
       }
@@ -182,7 +194,7 @@ test.describe('Library Page', () => {
     test('should not display unprocessed books in library or show processing', async ({ page }) => {
       // I, Robot is unprocessed in seed data
       const bodyText = await page.locator('body').textContent();
-      
+
       // If I, Robot appears, it should be marked as Processing
       if (bodyText?.includes('I, Robot')) {
         const processingText = page.getByText('Processing').first();
@@ -194,11 +206,11 @@ test.describe('Library Page', () => {
   test.describe('Search Functionality', () => {
     test('should filter books by title', async ({ page }) => {
       const searchInput = page.getByPlaceholder('Search by title or author…');
-      
+
       // Search for a specific book
       await searchInput.fill('Foundation');
       await page.waitForTimeout(300);
-      
+
       // Should show filtered results
       const foundationText = page.getByText('Foundation');
       if (await foundationText.isVisible().catch(() => false)) {
@@ -208,11 +220,11 @@ test.describe('Library Page', () => {
 
     test('should filter books by author', async ({ page }) => {
       const searchInput = page.getByPlaceholder('Search by title or author…');
-      
+
       // Search by author
       await searchInput.fill('Asimov');
       await page.waitForTimeout(300);
-      
+
       // Should show Asimov books
       const bodyText = await page.locator('body').textContent();
       if (bodyText?.toLowerCase().includes('asimov')) {
@@ -222,15 +234,15 @@ test.describe('Library Page', () => {
 
     test('should clear search results', async ({ page }) => {
       const searchInput = page.getByPlaceholder('Search by title or author…');
-      
+
       // Enter search term
       await searchInput.fill('test');
       await page.waitForTimeout(300);
-      
+
       // Clear search
       await searchInput.clear();
       await page.waitForTimeout(300);
-      
+
       // Verify input is empty
       await expect(searchInput).toHaveValue('');
     });
@@ -246,7 +258,7 @@ test.describe('Library Page', () => {
       // Should show books or empty state
       const emptyMessage = page.getByText('Your library is empty');
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       if (!hasEmptyMessage) {
         // If not empty, should have some book elements
         const bookElements = page.locator('a[href*="/reader/"]');
@@ -266,10 +278,10 @@ test.describe('Library Page', () => {
       // May show reading books or empty state
       const progressText = page.getByText(/%/).first();
       const emptyMessage = page.getByText('Start a book to see it here');
-      
+
       const hasProgress = await progressText.isVisible().catch(() => false);
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       expect(hasProgress || hasEmptyMessage).toBeTruthy();
     });
 
@@ -282,10 +294,10 @@ test.describe('Library Page', () => {
       // May show unread books or empty state
       const unreadBadge = page.getByText('Unread').first();
       const emptyMessage = page.getByText('Nothing here yet');
-      
+
       const hasUnread = await unreadBadge.isVisible().catch(() => false);
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       expect(hasUnread || hasEmptyMessage).toBeTruthy();
     });
 
@@ -298,10 +310,10 @@ test.describe('Library Page', () => {
       // May show finished books or empty state
       const finishedBadge = page.getByText('Finished').first();
       const emptyMessage = page.getByText('Finish a book to see it here');
-      
+
       const hasFinished = await finishedBadge.isVisible().catch(() => false);
       const hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-      
+
       expect(hasFinished || hasEmptyMessage).toBeTruthy();
     });
 
@@ -325,7 +337,7 @@ test.describe('Library Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Last opened' }).click();
       await page.waitForTimeout(300);
-      
+
       // Should work without errors
       await expect(sortButton).toBeVisible();
     });
@@ -335,7 +347,7 @@ test.describe('Library Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Recently added' }).click();
       await page.waitForTimeout(300);
-      
+
       await expect(sortButton).toBeVisible();
     });
 
@@ -344,7 +356,7 @@ test.describe('Library Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Title A-Z' }).click();
       await page.waitForTimeout(300);
-      
+
       await expect(sortButton).toBeVisible();
     });
 
@@ -353,7 +365,7 @@ test.describe('Library Page', () => {
       await sortButton.click();
       await page.getByRole('option', { name: 'Progress' }).click();
       await page.waitForTimeout(300);
-      
+
       await expect(sortButton).toBeVisible();
     });
   });
@@ -363,7 +375,7 @@ test.describe('Library Page', () => {
       const listViewButton = page.getByRole('button', { name: 'List view' });
       await listViewButton.click();
       await page.waitForTimeout(300);
-      
+
       // List view should be active now
       await expect(listViewButton).toBeVisible();
     });
@@ -373,12 +385,12 @@ test.describe('Library Page', () => {
       const listViewButton = page.getByRole('button', { name: 'List view' });
       await listViewButton.click();
       await page.waitForTimeout(300);
-      
+
       // Then switch back to grid view
       const gridViewButton = page.getByRole('button', { name: 'Grid view' });
       await gridViewButton.click();
       await page.waitForTimeout(300);
-      
+
       await expect(gridViewButton).toBeVisible();
     });
 
@@ -387,9 +399,12 @@ test.describe('Library Page', () => {
       const listViewButton = page.getByRole('button', { name: 'List view' });
       await listViewButton.click();
       await page.waitForTimeout(300);
-      
+
       // Books should still be visible
-      const hasBooks = await page.getByText(/Foundation|Dune/).isVisible().catch(() => false);
+      const hasBooks = await page
+        .getByText(/Foundation|Dune/)
+        .isVisible()
+        .catch(() => false);
       if (hasBooks) {
         await expect(page.getByText(/Foundation|Dune/).first()).toBeVisible();
       }
@@ -401,7 +416,7 @@ test.describe('Library Page', () => {
       // Look for pin buttons (by aria-label)
       const pinButtons = page.getByLabel(/Pin|Unpin/i);
       const count = await pinButtons.count();
-      
+
       if (count > 0) {
         await expect(pinButtons.first()).toBeVisible();
       }
@@ -410,12 +425,12 @@ test.describe('Library Page', () => {
     test('should pin a book when pin button clicked', async ({ page }) => {
       // Find a pin button
       const pinButton = page.getByLabel('Pin book').first();
-      
+
       if (await pinButton.isVisible().catch(() => false)) {
         // Click pin
         await pinButton.click();
         await page.waitForTimeout(300);
-        
+
         // Button should now be unpin
         const unpinButton = page.getByLabel('Unpin book').first();
         await expect(unpinButton).toBeVisible();
@@ -425,16 +440,16 @@ test.describe('Library Page', () => {
     test('should unpin a book when unpin button clicked', async ({ page }) => {
       // First pin a book
       const pinButton = page.getByLabel('Pin book').first();
-      
+
       if (await pinButton.isVisible().catch(() => false)) {
         await pinButton.click();
         await page.waitForTimeout(300);
-        
+
         // Now unpin it
         const unpinButton = page.getByLabel('Unpin book').first();
         await unpinButton.click();
         await page.waitForTimeout(300);
-        
+
         // Should be back to pin state
         await expect(page.getByLabel('Pin book').first()).toBeVisible();
       }
@@ -443,20 +458,20 @@ test.describe('Library Page', () => {
     test('should show pinned books in pinned filter', async ({ page }) => {
       // Pin a book first
       const pinButton = page.getByLabel('Pin book').first();
-      
+
       if (await pinButton.isVisible().catch(() => false)) {
         // Get book title before pinning
         const bookCard = pinButton.locator('xpath=ancestor::div[contains(@class, "rounded")]');
         const bookTitle = await bookCard.textContent();
-        
+
         await pinButton.click();
         await page.waitForTimeout(300);
-        
+
         // Navigate to pinned filter
         const pinnedTab = page.getByRole('button', { name: /^Pinned/i });
         await pinnedTab.click();
         await page.waitForTimeout(300);
-        
+
         // The pinned book should be visible
         const bodyText = await page.locator('body').textContent();
         expect(bodyText).toBeTruthy();
@@ -469,37 +484,37 @@ test.describe('Library Page', () => {
       // Enter search term
       const searchInput = page.getByPlaceholder('Search by title or author…');
       await searchInput.fill('Asimov');
-      
+
       // Select All filter
       const allTab = page.getByRole('button', { name: /^All/i }).first();
       await allTab.click();
-      
+
       await page.waitForTimeout(300);
-      
+
       // Should show filtered and searched results
       const bodyText = await page.locator('body').textContent();
-      
+
       // Either shows results or empty state
       const hasAsimov = bodyText?.toLowerCase().includes('asimov');
       const hasEmpty = bodyText?.toLowerCase().includes('no match');
-      
+
       expect(hasAsimov || hasEmpty).toBeTruthy();
     });
 
     test('should combine search, filter, and sort', async ({ page }) => {
       // Enter search
       await page.getByPlaceholder('Search by title or author…').fill('a');
-      
+
       // Select filter
       await page.getByRole('button', { name: /^All/i }).first().click();
-      
+
       // Select sort
       const sortButton = page.getByRole('button', { name: 'Select' });
       await sortButton.click();
       await page.getByRole('option', { name: 'Title A-Z' }).click();
-      
+
       await page.waitForTimeout(300);
-      
+
       // Should work without errors
       await expect(page.getByPlaceholder('Search by title or author…')).toHaveValue('a');
     });
@@ -509,7 +524,7 @@ test.describe('Library Page', () => {
     test('should navigate to uploads page', async ({ page }) => {
       const uploadsLink = page.getByRole('link', { name: 'Upload' }).first();
       await uploadsLink.click();
-      
+
       // Should navigate to uploads page
       await expect(page).toHaveURL('/uploads');
     });
@@ -517,10 +532,10 @@ test.describe('Library Page', () => {
     test('should navigate to book reader from book card', async ({ page }) => {
       // Find a book link (processed books only)
       const bookLink = page.locator('a[href*="/reader/"]').first();
-      
+
       if (await bookLink.isVisible().catch(() => false)) {
         await bookLink.click();
-        
+
         // Should navigate to reader page
         await expect(page).toHaveURL(new RegExp('/reader/.*'));
       }
@@ -532,7 +547,7 @@ test.describe('Library Page', () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/library');
-      
+
       // Key elements should still be visible
       await expect(page.getByRole('heading', { name: 'Your books' })).toBeVisible();
       await expect(page.getByPlaceholder('Search by title or author…')).toBeVisible();
@@ -545,7 +560,7 @@ test.describe('Library Page', () => {
       // Set tablet viewport
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto('/library');
-      
+
       await expect(page.getByRole('heading', { name: 'Your books' })).toBeVisible();
       await expect(page.getByPlaceholder('Search by title or author…')).toBeVisible();
     });

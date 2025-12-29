@@ -1,15 +1,14 @@
 {
-  "title": "EntityDescriptionDoc",
+  "title": "EntityDescriptionsDoc",
   "description": "LLM-generated description of a book entity (character, place, spell, etc.)",
   "additionalProperties": false,
   "required": [
     "createdAt",
     "updatedAt",
     "bookId",
-    "entityId",
+    "bookChunkId",
     "name",
-    "type",
-    "summary"
+    "type"
   ],
   "properties": {
     "_id": {

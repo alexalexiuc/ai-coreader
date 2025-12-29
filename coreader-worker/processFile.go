@@ -54,7 +54,7 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		totalChars += currentChunkLength
 		totalChunks++
 
-		chunk, err := db.CreateBookChunkDoc(&BookChunkDoc{
+		chunk, err := db.CreateBookChunkDoc(&BookChunksDoc{
 			BookID:       book.ID,
 			Index:        totalChunks - 1,
 			StartChar:    totalChars - currentChunkLength,
@@ -100,23 +100,23 @@ func ProcessFile(db *DB, file *FilesDoc, llm *LLMClient) error {
 		// Store entities in the database collection
 		for _, entity := range chunkEntities.Entities {
 			// Check if entity already exists for this book
-			existingEntity, err := db.GetEntityByNameAndBook(book.ID, entity.TempName)
+			existingEntity, err := db.GetEntityByNameAndBook(book.ID, entity.Name)
 			if err != nil && err != mongo.ErrNoDocuments {
 				return err
 			}
 
 			// Only create entity if it doesn't exist
 			if existingEntity == nil {
-				_, err := db.CreateEntityDescriptionDoc(&EntityDescriptionDoc{
+				_, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
 					BookID:  book.ID,
-					Name:    entity.TempName,
+					Name:    entity.Name,
 					Type:    entity.Type,
 					Summary: "", // Will be filled later with more detailed analysis
 				})
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Created new entity: %s (%s)\n", entity.TempName, entity.Type)
+				fmt.Printf("Created new entity: %s (%s)\n", entity.Name, entity.Type)
 			}
 		}
 

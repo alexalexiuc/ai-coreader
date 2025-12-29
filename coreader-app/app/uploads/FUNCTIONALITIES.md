@@ -9,6 +9,7 @@ The Uploads page allows users to upload book files (currently `.txt` files), mon
 ## Page Structure
 
 ### 1. Page Header
+
 - **Label**: "Uploads"
 - **Title**: "Files"
 - **Description**: "Uploaded files appear here while they are processed into readable books."
@@ -19,6 +20,7 @@ The Uploads page allows users to upload book files (currently `.txt` files), mon
 ### 2. Upload Section
 
 #### File Upload Dropzone
+
 - **Functionality**: Drag-and-drop or click to select file
 - **Accepted Formats**: `.txt` (text/plain)
 - **Buttons**:
@@ -32,11 +34,13 @@ The Uploads page allows users to upload book files (currently `.txt` files), mon
 ### 3. Search and Filter Section
 
 #### Search Bar
+
 - **Placeholder**: "Search files..."
 - **Functionality**: Real-time text search across file names
 - **Location**: Left side of the toolbar
 
 #### Sort Dropdown
+
 - **Options**:
   - **Newest first**: Sort by upload date descending (default)
   - **Oldest first**: Sort by upload date ascending
@@ -47,6 +51,7 @@ The Uploads page allows users to upload book files (currently `.txt` files), mon
 ### 4. Status Filter Tabs
 
 Visual tabs with counts for each status:
+
 - **All**: Shows all uploaded files
 - **Processing**: Files currently being processed
 - **Completed**: Successfully processed files
@@ -57,6 +62,7 @@ Each tab displays a count badge showing the number of files in that status.
 ### 5. File List Section
 
 #### Table Headers (Desktop)
+
 - **File**: Filename with icon
 - **Status**: Status badge (Processing/Completed/Failed)
 - **Size**: File size in human-readable format (KB, MB, etc.)
@@ -66,6 +72,7 @@ Each tab displays a count badge showing the number of files in that status.
 #### File Row Details
 
 **Basic Information:**
+
 - **File Icon**: Document icon with slate background
 - **Filename**: Original uploaded filename
 - **Size**: Formatted file size (e.g., "2.23 MB")
@@ -91,16 +98,19 @@ Each tab displays a count badge showing the number of files in that status.
 #### File Actions (Buttons)
 
 Available for all files:
+
 - **Download**: Downloads the original uploaded file
   - Icon: Download icon
   - Opens file in new tab via `/api/files/{id}/download`
 
 Available only for failed files:
+
 - **Retry**: Re-initiates processing for a failed file
   - Icon: Refresh icon
   - Changes file status back to "processing" with 0% progress
 
 Always available:
+
 - **Delete**: Removes the file and its data from the system
   - Icon: Trash icon
   - Permanently deletes file metadata and stored file
@@ -108,20 +118,25 @@ Always available:
 ### 6. Empty States
 
 #### No Uploads State
+
 **Displayed when**: No files have ever been uploaded
+
 - **Title**: "No files uploaded yet"
 - **Description**: "Upload a file to start processing it into a book. Completed uploads will link to the created book."
 - **Call to Action**: "Use the upload button to begin"
 
 #### No Filtered Results State
+
 **Displayed when**: Files exist but current filter/search returns no results
 
 For search query:
+
 - **Title**: 'No matches for "{query}"'
 - **Description**: "Try a different search term, or clear the search."
 - **Action Button**: "Clear search"
 
 For status filters:
+
 - **Processing Filter**: "No files are currently processing."
 - **Completed Filter**: "No completed uploads yet."
 - **Failed Filter**: "No failed uploads."
@@ -129,6 +144,7 @@ For status filters:
 ## User Workflows
 
 ### Uploading a New File
+
 1. Navigate to `/uploads`
 2. Select a `.txt` file using the dropzone (drag-and-drop or click)
 3. Preview shows "Ready to upload: {filename}"
@@ -140,12 +156,14 @@ For status filters:
 9. Once complete, status changes to "Completed" and book link appears
 
 ### Finding a Specific File
+
 1. Use the search bar to filter by filename
 2. Or select a status filter tab (All/Processing/Completed/Failed)
 3. Or use the sort dropdown to reorder results
 4. Combine search, filter, and sort for precise results
 
 ### Handling Failed Uploads
+
 1. Failed files show red "Failed" badge
 2. Error message explains why processing failed
 3. Click "Retry" button to re-process the file
@@ -153,16 +171,19 @@ For status filters:
 5. Or click "Delete" to remove the failed upload
 
 ### Accessing Processed Books
+
 1. Find completed files (green "Completed" badge)
 2. Click on the book link below the filename
 3. Redirects to `/reader/{bookId}` to read the book
 
 ### Downloading Original Files
+
 1. Locate any file in the list
 2. Click the download button (download icon)
 3. Original uploaded file opens in new tab for download
 
 ### Deleting Files
+
 1. Click the delete button (trash icon) on any file
 2. File is immediately removed from the list
 3. File metadata and stored file are deleted from the system
@@ -170,6 +191,7 @@ For status filters:
 ## Technical Details
 
 ### Data Model
+
 ```typescript
 type UploadedFile = {
   id: string;
@@ -185,16 +207,19 @@ type UploadedFile = {
 ```
 
 ### Database Collections
+
 - **files**: Stores file metadata, status, and processing progress
 - **books**: Created when file processing completes successfully
 - Files and books are linked via `fileId` reference
 
 ### Server Actions
+
 - `uploadFileAction(formData)`: Handles file upload
 - `deleteFileAction(id)`: Handles file deletion
 - Both actions revalidate the `/uploads` path to refresh the page
 
 ### File Processing Flow
+
 1. User uploads file → Saved to storage
 2. File metadata inserted into database with "pending" status
 3. Worker picks up pending file and begins processing
@@ -203,11 +228,13 @@ type UploadedFile = {
 6. On failure: Status → "failed", Error message stored
 
 ## Responsive Design
+
 - **Mobile**: Single column layout, simplified view
 - **Desktop**: Grid layout with proper column alignment
 - Search and sort controls stack vertically on mobile
 - File rows show all information but reformatted for small screens
 
 ## Future Enhancements (Currently Disabled)
+
 - Shop page for purchasing pre-processed books (button shows "Soon" badge)
 - Additional file format support (currently only `.txt`)

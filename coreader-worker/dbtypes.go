@@ -12,11 +12,12 @@ import (
 )
 
 type ChunkEntityRef struct {
-	TempName                string `bson:"tempName" json:"tempName"`
-	Type                    string `bson:"type" json:"type"`
-	StartOffset             int    `bson:"startOffset" json:"startOffset"`
-	EndOffset               int    `bson:"endOffset" json:"endOffset"`
-	IsIntroducedInThisChunk bool   `bson:"isIntroducedInThisChunk" json:"isIntroducedInThisChunk"`
+	EntityID                primitive.ObjectID `bson:"entityId,omitempty" json:"entityId,omitempty"`
+	Name                    string             `bson:"name" json:"name"`
+	Type                    string             `bson:"type" json:"type"`
+	StartOffset             int                `bson:"startOffset" json:"startOffset"`
+	EndOffset               int                `bson:"endOffset" json:"endOffset"`
+	IsIntroducedInThisChunk bool               `bson:"isIntroducedInThisChunk" json:"isIntroducedInThisChunk"`
 }
 
 type ChunkLLMMetadata struct {
@@ -26,7 +27,7 @@ type ChunkLLMMetadata struct {
 	ChapterNumber   string           `bson:"chapterNumber,omitempty" json:"chapterNumber,omitempty"`
 }
 
-type BookChunkDoc struct {
+type BookChunksDoc struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
@@ -56,14 +57,14 @@ type BooksDoc struct {
 	Source      string             `bson:"source" json:"source"`
 }
 
-type EntityDescriptionDoc struct {
+type EntityDescriptionsDoc struct {
 	ID                     primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	CreatedAt              time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt              time.Time          `bson:"updatedAt" json:"updatedAt"`
 	BookID                 primitive.ObjectID `bson:"bookId" json:"bookId"`
 	Name                   string             `bson:"name" json:"name"`
 	Type                   string             `bson:"type" json:"type"`
-	Summary                string             `bson:"summary" json:"summary"`
+	Summary                string             `bson:"summary,omitempty" json:"summary,omitempty"`
 	Role                   string             `bson:"role,omitempty" json:"role,omitempty"`
 	Traits                 []string           `bson:"traits,omitempty" json:"traits,omitempty"`
 	ImportantLocations     []string           `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`

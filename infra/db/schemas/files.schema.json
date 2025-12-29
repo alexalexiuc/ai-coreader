@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/files.schema.json",
-  "title": "files",
+  "title": "FilesDoc",
   "description": "Represents a stored file and its processing status",
   "type": "object",
   "additionalProperties": false,

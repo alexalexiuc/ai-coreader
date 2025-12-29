@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/entity-descriptions.schema.json",
-  "title": "entityDescriptions",
+  "title": "EntityDescriptionsDoc",
   "description": "LLM-generated description of a book entity (character, place, spell, etc.)",
   "type": "object",
   "additionalProperties": false,
@@ -9,10 +9,9 @@
     "createdAt",
     "updatedAt",
     "bookId",
-    "entityId",
+    "bookChunkId",
     "name",
-    "type",
-    "summary"
+    "type"
   ],
   "properties": {
     "_id": {

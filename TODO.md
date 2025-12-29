@@ -11,3 +11,7 @@
 -[coreader-app]: Add shopping cart functionality.
 
 -[coreader-app]: Add Admin Dashboard for managing users and shops
+
+-[coreader-app]: Implement Book deletion feature with confirmation dialog(maybe put it under a ⋯ menu next to the pin icon)
+
+-[coreader-app]: Add confirmation dialog before deleting an uploaded file.

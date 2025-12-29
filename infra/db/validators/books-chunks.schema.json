@@ -1,5 +1,5 @@
 {
-  "title": "BookChunkDoc",
+  "title": "BookChunksDoc",
   "additionalProperties": false,
   "required": [
     "createdAt",
@@ -55,14 +55,18 @@
             "title": "ChunkEntityRef",
             "additionalProperties": false,
             "required": [
-              "tempName",
+              "name",
               "type",
               "startOffset",
               "endOffset",
               "isIntroducedInThisChunk"
             ],
             "properties": {
-              "tempName": {
+              "entityId": {
+                "description": "Entity ID from EntityDescriptions collection",
+                "bsonType": "objectId"
+              },
+              "name": {
                 "bsonType": "string"
               },
               "type": {
