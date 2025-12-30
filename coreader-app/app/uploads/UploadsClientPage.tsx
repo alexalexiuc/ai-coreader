@@ -37,8 +37,23 @@ type UploadsClientPageProps = {
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
   const [, startTransition] = useTransition();
-  const { files, setFiles, query, setQuery, filter, setFilter, sort, setSort, counts, filtered, isEmptyAll, isEmptyFiltered, retryFile, deleteFile, addFile } =
-    useFiles(initialFiles);
+  const {
+    files,
+    setFiles,
+    query,
+    setQuery,
+    filter,
+    setFilter,
+    sort,
+    setSort,
+    counts,
+    filtered,
+    isEmptyAll,
+    isEmptyFiltered,
+    retryFile,
+    deleteFile,
+    addFile,
+  } = useFiles(initialFiles);
   const shouldPoll = files.some((file) => file.status === 'processing');
 
   useEffect(() => {

@@ -207,6 +207,22 @@ export interface FilesDoc {
    * Processing status of the file
    */
   status: 'pending' | 'processing' | 'processed' | 'failed';
+  /**
+   * Raw error message if processing failed
+   */
+  rawErrorMessage?: string;
+  /**
+   * User-friendly error message if processing failed
+   */
+  errorMessage?: string;
+  /**
+   * Timestamp when processing started
+   */
+  processingStartedAt?: Date;
+  /**
+   * Timestamp when processing was completed
+   */
+  processedAt?: Date;
 }
 
 /**

@@ -43,8 +43,23 @@ type LibraryClientPageProps = {
 };
 
 export default function LibraryClientPage({ initialBooks }: LibraryClientPageProps) {
-  const { books, setBooks, query, setQuery, filter, setFilter, sort, setSort, view, setView, counts, filtered, isEmptyAll, isEmptyFiltered, togglePin } =
-    useLibrary(initialBooks);
+  const {
+    books,
+    setBooks,
+    query,
+    setQuery,
+    filter,
+    setFilter,
+    sort,
+    setSort,
+    view,
+    setView,
+    counts,
+    filtered,
+    isEmptyAll,
+    isEmptyFiltered,
+    togglePin,
+  } = useLibrary(initialBooks);
   const shouldPoll = books.some((book) => book.processed !== true);
 
   useEffect(() => {

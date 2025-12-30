@@ -70,6 +70,24 @@
         "processed",
         "failed"
       ]
+    },
+    "rawErrorMessage": {
+      "type": "string",
+      "description": "Raw error message if processing failed"
+    },
+    "errorMessage": {
+      "type": "string",
+      "description": "User-friendly error message if processing failed"
+    },
+    "processingStartedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when processing started"
+    },
+    "processedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when processing was completed"
     }
   }
 }

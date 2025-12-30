@@ -88,3 +88,6 @@ Thumbs.db
 
 test-results
 test-results/**
+
+llm_logs/
+llm_logs/**

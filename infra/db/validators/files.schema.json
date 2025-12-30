@@ -64,6 +64,22 @@
         "failed"
       ],
       "bsonType": "string"
+    },
+    "rawErrorMessage": {
+      "description": "Raw error message if processing failed",
+      "bsonType": "string"
+    },
+    "errorMessage": {
+      "description": "User-friendly error message if processing failed",
+      "bsonType": "string"
+    },
+    "processingStartedAt": {
+      "description": "Timestamp when processing started",
+      "bsonType": "date"
+    },
+    "processedAt": {
+      "description": "Timestamp when processing was completed",
+      "bsonType": "date"
     }
   },
   "bsonType": "object"

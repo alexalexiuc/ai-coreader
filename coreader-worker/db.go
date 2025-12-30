@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"coreader-worker/llm"
 	"fmt"
 	"log"
 	"time"
@@ -135,7 +136,7 @@ func (db *DB) Close() {
 	db.Client.Disconnect(context.TODO())
 }
 
-func WatchFilesCollectionChanges(db *DB, llm *LLMClient) {
+func WatchFilesCollectionChanges(db *DB, llmClient llm.Client) {
 	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
 	log.Println("Polling files collection for pending files...")
 	for {
@@ -148,7 +149,7 @@ func WatchFilesCollectionChanges(db *DB, llm *LLMClient) {
 		for _, file := range files {
 			start := time.Now()
 			log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
-			if err := ProcessFile(db, &file, llm); err != nil {
+			if err := ProcessFile(db, &file, llmClient); err != nil {
 				log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
 				continue
 			}
@@ -217,6 +218,24 @@ func (db *DB) SetFileProgress(fileID primitive.ObjectID, percentage float64) err
 	return err
 }
 
+func (db *DB) SetFileProcessingStarted(fileID primitive.ObjectID) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"processingStartedAt": time.Now().UTC()})
+	return err
+}
+
+func (db *DB) SetFileProcessingCompleted(fileID primitive.ObjectID) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"processedAt": time.Now().UTC()})
+	return err
+}
+
+func (db *DB) SetFileError(fileID primitive.ObjectID, rawError string, userMessage string) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{
+		"rawErrorMessage": rawError,
+		"errorMessage":    userMessage,
+	})
+	return err
+}
+
 func (db *DB) CreateBookDoc(book *BooksDoc) (*BooksDoc, error) {
 	fmt.Printf("Creating BookDoc %+v\n", book)
 	book, err := InsertOneWithMeta(context.TODO(), db.BooksCollection, book)
@@ -237,10 +256,10 @@ func (db *DB) CreateBookChunkDoc(chunk *BookChunksDoc) (*BookChunksDoc, error) {
 	return chunk, err
 }
 
-func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, llmMetadata *ChunkLLMMetadata) (*mongo.UpdateResult, error) {
+func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, entities []ChunkEntityRef, llmMetadata *llm.ChunkLLMMetadata) (*mongo.UpdateResult, error) {
 	updateFields := bson.M{
 		"llmProcessed":    true,
-		"entities":        llmMetadata.Entities,
+		"entities":        entities,
 		"hasChapterStart": llmMetadata.HasChapterStart,
 		"chapterTitle":    llmMetadata.ChapterTitle,
 		"chapterNumber":   llmMetadata.ChapterNumber,

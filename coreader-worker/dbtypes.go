@@ -70,16 +70,20 @@ type EntityDescriptionsDoc struct {
 }
 
 type FilesDoc struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
-	OriginalName string             `bson:"originalName" json:"originalName"`
-	MimeType     string             `bson:"mimeType" json:"mimeType"`
-	Size         int                `bson:"size" json:"size"`
-	StoragePath  string             `bson:"storagePath" json:"storagePath"`
-	StorageName  string             `bson:"storageName" json:"storageName"`
-	Percentage   float64            `bson:"percentage,omitempty" json:"percentage,omitempty"`
-	Status       string             `bson:"status" json:"status"`
+	ID                  primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt           time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt           time.Time          `bson:"updatedAt" json:"updatedAt"`
+	OriginalName        string             `bson:"originalName" json:"originalName"`
+	MimeType            string             `bson:"mimeType" json:"mimeType"`
+	Size                int                `bson:"size" json:"size"`
+	StoragePath         string             `bson:"storagePath" json:"storagePath"`
+	StorageName         string             `bson:"storageName" json:"storageName"`
+	Percentage          float64            `bson:"percentage,omitempty" json:"percentage,omitempty"`
+	Status              string             `bson:"status" json:"status"`
+	RawErrorMessage     string             `bson:"rawErrorMessage,omitempty" json:"rawErrorMessage,omitempty"`
+	ErrorMessage        string             `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
+	ProcessingStartedAt time.Time          `bson:"processingStartedAt,omitempty" json:"processingStartedAt,omitempty"`
+	ProcessedAt         time.Time          `bson:"processedAt,omitempty" json:"processedAt,omitempty"`
 }
 
 type UsersDoc struct {
