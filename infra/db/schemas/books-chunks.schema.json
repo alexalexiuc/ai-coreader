@@ -59,14 +59,12 @@
         "$ref": "#/$defs/ChunkEntityRef"
       }
     },
-    "hasChapterStart": {
-      "type": "boolean"
-    },
-    "chapterTitle": {
-      "type": "string"
-    },
-    "chapterNumber": {
-      "type": "string"
+    "chapters": {
+      "type": "array",
+      "description": "All chapter headings found inside this chunk",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "$defs": {

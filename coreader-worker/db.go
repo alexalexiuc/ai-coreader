@@ -259,11 +259,9 @@ func (db *DB) CreateBookChunkDoc(chunk *BookChunksDoc) (*BookChunksDoc, error) {
 
 func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, entities []ChunkEntityRef, llmMetadata *llm.ChunkLLMMetadata) (*mongo.UpdateResult, error) {
 	updateFields := bson.M{
-		"llmProcessed":    true,
-		"entities":        entities,
-		"hasChapterStart": llmMetadata.HasChapterStart,
-		"chapterTitle":    llmMetadata.ChapterTitle,
-		"chapterNumber":   llmMetadata.ChapterNumber,
+		"llmProcessed": true,
+		"entities":     entities,
+		"chapters":     llmMetadata.Chapters,
 	}
 	return UpdateOneWithMeta(context.TODO(), db.BooksChunksCollection, chunkID, updateFields)
 }

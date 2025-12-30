@@ -250,9 +250,7 @@ const bookChunks = [
         isIntroducedInThisChunk: true,
       },
     ],
-    hasChapterStart: true,
-    chapterTitle: "Prologue",
-    chapterNumber: "1",
+    chapters: ["Prologue"],
   },
   {
     _id: chunkIds.emberArchiveField,
@@ -274,7 +272,7 @@ const bookChunks = [
         isIntroducedInThisChunk: true,
       },
     ],
-    hasChapterStart: false,
+    chapters: [],
   },
   {
     _id: chunkIds.atlasNotesOverview,
@@ -296,7 +294,7 @@ const bookChunks = [
         isIntroducedInThisChunk: true,
       },
     ],
-    hasChapterStart: false,
+    chapters: [],
   },
 ];
 
