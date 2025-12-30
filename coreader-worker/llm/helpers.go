@@ -78,13 +78,11 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 func AnalyzeBookHeader(ctx context.Context, session Session, chunk string) (*BookHeaderMetadata, error) {
 	if strings.TrimSpace(chunk) == "" {
 		return &BookHeaderMetadata{
-			HasHeader:       false,
-			HeaderEndOffset: 0,
+			HasHeader: false,
 		}, nil
 	}
 
 	prompt := buildBookHeaderPrompt(chunk)
-	fmt.Println(prompt)
 
 	options := Options{
 		Temperature: 0.1,
@@ -99,11 +97,6 @@ func AnalyzeBookHeader(ctx context.Context, session Session, chunk string) (*Boo
 	var meta BookHeaderMetadata
 	if err := json.Unmarshal([]byte(response), &meta); err != nil {
 		return nil, fmt.Errorf("parse llm JSON: %w\nraw=%s", err, response)
-	}
-
-	// Some normalization
-	if meta.HeaderEndOffset < 0 {
-		meta.HeaderEndOffset = 0
 	}
 
 	return &meta, nil
@@ -124,21 +117,14 @@ func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
 		bookPart = fmt.Sprintf(" from the book \"%s\"", in.BookTitle)
 	}
 
-	return fmt.Sprintf(`
-You are an assistant that summarises entities in books.
-
-Your task:
-- Read the context.
-- Describe the entity "%s"%s.
-- Use ONLY the information in the context.
-- DO NOT invent details that are not supported by the context.
-
-Context:
----
-%s
----
-
-Return STRICTLY a JSON object with this schema (no extra text):
+	setup := "You are an assistant that summarizes entities in books."
+	tasks := []string{
+		"Read the context.",
+		fmt.Sprintf("Describe the entity \"%s\"%s.", entityLabel, bookPart),
+		"Use ONLY the information in the context.",
+		"DO NOT invent details that are not supported by the context.",
+	}
+	schema := `STRICTLY a JSON object with this schema (no extra text):
 
 {
   "name": string,
@@ -147,16 +133,17 @@ Return STRICTLY a JSON object with this schema (no extra text):
   "traits": string[],
   "importantLocations": string[],
   "importantRelationships": string[]
-}
+}`
+	rules := []string{
+		"\"summary\" is a short neutral description (2-4 sentences max).",
+		"\"role\" is a short phrase like \"main protagonist\", \"supporting character\", \"antagonist\", \"location\", etc.",
+		"\"traits\" is a list of key attributes (e.g. [\"brave\",\"impulsive\"]).",
+		"\"importantLocations\" is a list of place names strongly tied to this entity.",
+		"\"importantRelationships\" is a list of important people or entities they are connected to.",
+		"If some fields are unknown, use empty string or empty array.",
+	}
 
-Rules:
-- "summary" is a short neutral description (2-4 sentences max).
-- "role" is a short phrase like "main protagonist", "supporting character", "antagonist", "location", etc.
-- "traits" is a list of key attributes (e.g. ["brave","impulsive"]).
-- "importantLocations" is a list of place names strongly tied to this entity.
-- "importantRelationships" is a list of important people or entities they are connected to.
-- If some fields are unknown, use empty string or empty array.
-`, entityLabel, bookPart, in.Context)
+	return buildPrompt(setup, tasks, PromptChunk{Label: "Context", Text: in.Context}, schema, rules)
 }
 
 func buildChunkAnalysisPrompt(bookTitle, text string) string {
@@ -165,21 +152,14 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 		bookPart = fmt.Sprintf(" from the book \"%s\"", bookTitle)
 	}
 
-	return fmt.Sprintf(`
-You are an assistant that analyzes a single chunk of text%[1]s.
-
-Your task:
-- Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, OTHER.
-- Work ONLY within this chunk. You do NOT have the rest of the book.
-- Mark whether each entity appears to be introduced for the first time in THIS CHUNK (local, not global to the book).
-- If this chunk looks like it starts a new chapter (e.g. "Chapter 3", "Capitolul 2", etc.), mark that and extract the chapter number/title.
-
-Chunk:
----
-%[2]s
----
-
-Return STRICTLY a JSON object with this structure (no extra text):
+	setup := fmt.Sprintf("You are an assistant that analyzes a single chunk of text%s.", bookPart)
+	tasks := []string{
+		"Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, ORGANIZATIONS, WORKS (book titles), ANIMALS, PLANTS, EVENTS, and OTHER notable things.",
+		"Work ONLY within this chunk. You do NOT have the rest of the book.",
+		"Mark whether each entity appears to be introduced for the first time in THIS CHUNK (local, not global to the book).",
+		"If this chunk looks like it starts a new chapter (e.g. \"Chapter 3\", \"Capitolul 2\", etc.), mark that and extract the chapter.",
+	}
+	schema := `STRICTLY a JSON object with this structure (no extra text):
 
 {
   "entities": [
@@ -194,30 +174,24 @@ Return STRICTLY a JSON object with this structure (no extra text):
   "hasChapterStart": boolean,
   "chapterTitle": string,
   "chapterNumber": string
-}
+}`
+	rules := []string{
+		"\"startOffset\" and \"endOffset\" are 0-based character indices into the given chunk text.",
+		"\"endOffset\" is exclusive.",
+		"If you are not sure about offsets, approximate as best as you can.",
+		"If no entities are found, use an empty array for \"entities\".",
+		"If there is no chapter start, \"hasChapterStart\" must be false and title/number can be empty strings.",
+	}
 
-Rules:
-- "startOffset" and "endOffset" are 0-based character indices into the given chunk text.
-- "endOffset" is exclusive.
-- If you are not sure about offsets, approximate as best as you can.
-- If no entities are found, use an empty array for "entities".
-- If there is no chapter start, "hasChapterStart" must be false and title/number can be empty strings.
-`, bookPart, text)
+	return buildPrompt(setup, tasks, PromptChunk{Label: "Chunk", Text: text}, schema, rules)
 }
 
 func buildBookHeaderPrompt(chunkText string) string {
-	return fmt.Sprintf(`
-You analyze the beginning of a book text. It may contain a header/antet with metadata and a table of contents.
-
-Your task:
-- Detect if there is a book header (with title, author, edition, publisher. etc.).
-
-Chunk:
----
-%s
----
-
-Return ONLY valid JSON with this structure:
+	setup := "You analyze the beginning of a book text. It may contain a header/antet with metadata and a table of contents."
+	tasks := []string{
+		"Detect if there is a book header (with title, author, edition, publisher, language etc.).",
+	}
+	schema := `ONLY valid JSON with this structure:
 
 {
   "hasHeader": boolean,
@@ -226,14 +200,51 @@ Return ONLY valid JSON with this structure:
   "subtitle": string,
   "edition": string,
   "publisher": string,
-  "series": string,
-  "language": string,
-  "headerEndOffset": number
+  "language": string
+}`
+	rules := []string{
+		"If you are not sure about a field, use an empty string.",
+	}
+
+	return buildPrompt(setup, tasks, PromptChunk{Label: "Chunk", Text: chunkText}, schema, rules)
 }
 
+type PromptChunk struct {
+	Label string
+	Text  string
+}
+
+func buildPrompt(setup string, tasks []string, chunk PromptChunk, schema string, rules []string) string {
+	return fmt.Sprintf(`
+%s
+
+Your task:
+%s
+
+%s:
+---
+%s
+---
+
+Return %s
+
 Rules:
-- If you are not sure about a field, use an empty string.
-- "headerEndOffset" is the 0-based character index in the given chunk where the main book content begins.
-- If there is NO header and the text begins immediately with the story, set "hasHeader" = false and "headerEndOffset" = 0.
-`, chunkText)
+%s
+`, strings.TrimSpace(setup), formatBulletList(tasks), chunk.Label, chunk.Text, strings.TrimSpace(schema), formatBulletList(rules))
+}
+
+func formatBulletList(items []string) string {
+	if len(items) == 0 {
+		return ""
+	}
+
+	var builder strings.Builder
+	for i, item := range items {
+		if i > 0 {
+			builder.WriteString("\n")
+		}
+		builder.WriteString("- ")
+		builder.WriteString(strings.TrimSpace(item))
+	}
+	return builder.String()
 }

@@ -24,16 +24,16 @@ type EntityDescription struct {
 
 // BookHeaderMetadata represents metadata extracted from the book header.
 type BookHeaderMetadata struct {
-	HasHeader       bool     `json:"hasHeader"`
-	Title           string   `json:"title"`
-	Author          string   `json:"author"`
-	Subtitle        string   `json:"subtitle"`
-	Edition         string   `json:"edition"`
-	Publisher       string   `json:"publisher"`
-	Series          string   `json:"series"`
-	Language        string   `json:"language"`
-	TableOfContents []string `json:"tableOfContents"` // raw chapter lines if found
-	HeaderEndOffset int      `json:"headerEndOffset"` // char index where main story starts in this chunk
+	HasHeader bool   `json:"hasHeader"`
+	Title     string `json:"title"`
+	Author    string `json:"author"`
+	Subtitle  string `json:"subtitle"`
+	Edition   string `json:"edition"`
+	Publisher string `json:"publisher"`
+	// Series            string   `json:"series"`
+	Language string `json:"language"`
+	// TableOfContents   []string `json:"tableOfContents"`   // raw chapter lines if found
+	// HeaderStartOffset int      `json:"headerStartOffset"` // char index where main story starts in this chunk
 }
 
 // ChunkEntityRef represents an entity reference found in a chunk.

@@ -73,7 +73,7 @@ func (l *Logger) LogRequest(prompt string, options *Options, response string, re
 	}
 
 	// Create filename with timestamp
-	filename := fmt.Sprintf("request_%d.json", time.Now().UnixNano())
+	filename := fmt.Sprintf("request_%d.log", time.Now().UnixNano())
 	filepath := filepath.Join(logDir, filename)
 
 	// Write to file

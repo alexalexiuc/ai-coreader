@@ -82,7 +82,6 @@ func (s *OllamaSession) doRequest(ctx context.Context, prompt string, options Op
 		},
 	}
 
-	// Set format if specified (e.g., "json")
 	if options.Format != nil {
 		req.Format = json.RawMessage(`"json"`)
 	}

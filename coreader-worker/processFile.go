@@ -211,5 +211,5 @@ func generateSessionID(filename string) string {
 	name := sanitized[:len(sanitized)-len(ext)]
 
 	timestamp := time.Now().Format("20060102_150405")
-	return fmt.Sprintf("%s_%s", name, timestamp)
+	return fmt.Sprintf("%s_%s", timestamp, name)
 }
