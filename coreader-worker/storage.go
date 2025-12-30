@@ -1,12 +1,13 @@
 package main
 
 import (
+	utils "coreader-worker/utils"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-var /* const */ FILE_STORAGE_ROOT = GetEnvWithPanic("FILE_STORAGE_ROOT")
+var /* const */ FILE_STORAGE_ROOT = utils.GetEnvWithPanic("FILE_STORAGE_ROOT")
 
 // Read File
 func ReadFile(storagePath string, fileName string) ([]byte, error) {

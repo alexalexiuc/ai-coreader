@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	utils "coreader-worker/utils"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,14 +13,6 @@ import (
 	"github.com/cecil-the-coder/ai-provider-kit/pkg/factory"
 	"github.com/cecil-the-coder/ai-provider-kit/pkg/types"
 )
-
-func getEnvWithDefault(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
 
 var SupportedClients = map[string]bool{"ollama": true, "openai": true}
 
@@ -35,8 +28,8 @@ type AISession struct {
 }
 
 func NewClientFromEnv() (Client, error) {
-	clientType := strings.ToLower(strings.TrimSpace(getEnvWithDefault("AI_CLIENT", "ollama")))
-	loggingEnabled := getEnvWithDefault("LLM_LOGGING_ENABLED", "true") == "true"
+	clientType := strings.ToLower(strings.TrimSpace(utils.GetEnv("AI_CLIENT", "ollama")))
+	loggingEnabled := utils.GetEnv("LLM_LOGGING_ENABLED", "true") == "true"
 
 	if ok, supported := SupportedClients[clientType]; !supported || !ok {
 		return nil, fmt.Errorf("unsupported AI_CLIENT: %s", clientType)
@@ -71,8 +64,8 @@ func NewClientFromEnv() (Client, error) {
 			Type:         "openai",
 			Name:         "openai-primary",
 			APIKey:       apiKey,
-			DefaultModel: getEnvWithDefault("OPENAI_MODEL", "gpt-4.1-mini"),
-			Timeout:      10 & time.Minute,
+			DefaultModel: utils.GetEnv("OPENAI_MODEL", "gpt-4.1-mini"),
+			Timeout:      10 * time.Minute,
 		}
 		provider, err = newProvider(config)
 	default:

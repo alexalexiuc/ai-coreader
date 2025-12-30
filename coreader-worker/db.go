@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"coreader-worker/llm"
+	utils "coreader-worker/utils"
 	"fmt"
 	"log"
 	"time"
@@ -101,7 +102,7 @@ const (
 )
 
 func InitDB() *DB {
-	MONGODB_URI := GetEnvWithPanic("MONGODB_URI")
+	MONGODB_URI := utils.GetEnvWithPanic("MONGODB_URI")
 
 	clientOptions := options.Client().ApplyURI(MONGODB_URI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -114,7 +115,7 @@ func InitDB() *DB {
 
 	log.Println("Connected to MongoDB!")
 
-	MONGODB_DB_NAME := GetEnvWithPanic("MONGODB_DB_NAME")
+	MONGODB_DB_NAME := utils.GetEnvWithPanic("MONGODB_DB_NAME")
 	llmDatabase := client.Database(MONGODB_DB_NAME)
 	filesCollection := llmDatabase.Collection(FilesCollectionName)
 	booksCollection := llmDatabase.Collection(BooksCollectionName)

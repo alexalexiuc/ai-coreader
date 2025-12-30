@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	utils "coreader-worker/utils"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -31,9 +32,9 @@ type OllamaSession struct {
 
 // NewOllamaClient creates a new Ollama client from environment variables.
 func NewOllamaClient() Client {
-	baseURL := getEnvWithDefault("OLLAMA_BASE_URL", "http://llm:11434")
-	model := getEnvWithDefault("OLLAMA_MODEL", defaultOllamaModel)
-	loggingEnabled := getEnvWithDefault("LLM_LOGGING_ENABLED", "true") == "true"
+	baseURL := utils.GetEnv("OLLAMA_BASE_URL", "http://llm:11434")
+	model := utils.GetEnv("OLLAMA_MODEL", defaultOllamaModel)
+	loggingEnabled := utils.GetEnv("LLM_LOGGING_ENABLED", "true") == "true"
 
 	// Parse base URL
 	parsedURL, err := url.Parse(baseURL)
