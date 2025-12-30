@@ -42,8 +42,8 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 	if strings.TrimSpace(chunk) == "" {
 		// empty chunk → no entities
 		return &ChunkLLMMetadata{
-			Entities:        []ChunkEntityRef{},
-			HasChapterStart: false,
+			Entities: []ChunkEntityRef{},
+			Chapters: []string{},
 		}, nil
 	}
 
@@ -68,6 +68,9 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 	// Normalize nil slice
 	if meta.Entities == nil {
 		meta.Entities = []ChunkEntityRef{}
+	}
+	if meta.Chapters == nil {
+		meta.Chapters = []string{}
 	}
 
 	return &meta, nil
@@ -157,7 +160,7 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 		"Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, ORGANIZATIONS, WORKS (book titles), ANIMALS, PLANTS, EVENTS, and OTHER notable things.",
 		"Work ONLY within this chunk. You do NOT have the rest of the book.",
 		"Mark whether each entity appears to be introduced for the first time in THIS CHUNK (local, not global to the book).",
-		"If this chunk looks like it starts a new chapter (e.g. \"Chapter 3\", \"Capitolul 2\", etc.), mark that and extract the chapter.",
+		"Detect every chapter heading present in the chunk (e.g. \"Chapter 3\", \"Capitolul 2\", \"Part II\", or similar). Include all chapter headings found, not just the first.",
 	}
 	schema := `STRICTLY a JSON object with this structure (no extra text):
 
@@ -171,16 +174,14 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
       "isIntroducedInThisChunk": boolean
     }
   ],
-  "hasChapterStart": boolean,
-  "chapterTitle": string,
-  "chapterNumber": string
+  "chapters": string[]
 }`
 	rules := []string{
 		"\"startOffset\" and \"endOffset\" are 0-based character indices into the given chunk text.",
 		"\"endOffset\" is exclusive.",
 		"If you are not sure about offsets, approximate as best as you can.",
 		"If no entities are found, use an empty array for \"entities\".",
-		"If there is no chapter start, \"hasChapterStart\" must be false and title/number can be empty strings.",
+		"If there are no chapter headings, return an empty array for \"chapters\".",
 	}
 
 	return buildPrompt(setup, tasks, PromptChunk{Label: "Chunk", Text: text}, schema, rules)

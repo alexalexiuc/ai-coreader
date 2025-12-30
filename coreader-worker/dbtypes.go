@@ -7,9 +7,8 @@ Do not modify it by hand
 package main
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type ChunkEntityRef struct {
@@ -22,19 +21,17 @@ type ChunkEntityRef struct {
 }
 
 type BookChunksDoc struct {
-	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt       time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt       time.Time          `bson:"updatedAt" json:"updatedAt"`
-	BookID          primitive.ObjectID `bson:"bookId" json:"bookId"`
-	Index           int                `bson:"index" json:"index"`
-	StartChar       int                `bson:"startChar" json:"startChar"`
-	EndChar         int                `bson:"endChar" json:"endChar"`
-	Text            string             `bson:"text" json:"text"`
-	LlmProcessed    bool               `bson:"llmProcessed" json:"llmProcessed"`
-	Entities        []ChunkEntityRef   `bson:"entities,omitempty" json:"entities,omitempty"`
-	HasChapterStart bool               `bson:"hasChapterStart,omitempty" json:"hasChapterStart,omitempty"`
-	ChapterTitle    string             `bson:"chapterTitle,omitempty" json:"chapterTitle,omitempty"`
-	ChapterNumber   string             `bson:"chapterNumber,omitempty" json:"chapterNumber,omitempty"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
+	BookID       primitive.ObjectID `bson:"bookId" json:"bookId"`
+	Index        int                `bson:"index" json:"index"`
+	StartChar    int                `bson:"startChar" json:"startChar"`
+	EndChar      int                `bson:"endChar" json:"endChar"`
+	Text         string             `bson:"text" json:"text"`
+	LlmProcessed bool               `bson:"llmProcessed" json:"llmProcessed"`
+	Entities     []ChunkEntityRef   `bson:"entities,omitempty" json:"entities,omitempty"`
+	Chapters     []string           `bson:"chapters,omitempty" json:"chapters,omitempty"`
 }
 
 type BooksDoc struct {

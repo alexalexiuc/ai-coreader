@@ -11,9 +11,7 @@ export type BookChunkDTO = {
   endChar: number;
   llmProcessed: boolean;
   entities?: BookChunkDoc['entities'];
-  hasChapterStart?: BookChunkDoc['hasChapterStart'];
-  chapterTitle?: BookChunkDoc['chapterTitle'];
-  chapterNumber?: BookChunkDoc['chapterNumber'];
+  chapters?: BookChunkDoc['chapters'];
 };
 
 function toDTO(doc: BookChunkDoc): BookChunkDTO {
@@ -30,9 +28,7 @@ function toDTO(doc: BookChunkDoc): BookChunkDTO {
     endChar: doc.endChar,
     llmProcessed: doc.llmProcessed,
     entities: doc.entities,
-    hasChapterStart: doc.hasChapterStart,
-    chapterTitle: doc.chapterTitle,
-    chapterNumber: doc.chapterNumber,
+    chapters: doc.chapters,
   };
 }
 

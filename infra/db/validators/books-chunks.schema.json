@@ -86,14 +86,12 @@
       },
       "bsonType": "array"
     },
-    "hasChapterStart": {
-      "bsonType": "bool"
-    },
-    "chapterTitle": {
-      "bsonType": "string"
-    },
-    "chapterNumber": {
-      "bsonType": "string"
+    "chapters": {
+      "description": "All chapter headings found inside this chunk",
+      "items": {
+        "bsonType": "string"
+      },
+      "bsonType": "array"
     }
   },
   "bsonType": "object"

@@ -28,9 +28,10 @@ export interface BookChunksDoc {
   text: string;
   llmProcessed: boolean;
   entities?: ChunkEntityRef[];
-  hasChapterStart?: boolean;
-  chapterTitle?: string;
-  chapterNumber?: string;
+  /**
+   * All chapter headings found inside this chunk
+   */
+  chapters?: string[];
 }
 export interface ChunkEntityRef {
   /**

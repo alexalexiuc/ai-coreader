@@ -44,7 +44,7 @@ func InferJSONSchemaFromPrompt(prompt string) *JSONSchemaFormat {
 	}
 
 	// Chunk analysis prompt
-	if strings.Contains(p, `"haschapterstart"`) && strings.Contains(p, `"entities"`) && strings.Contains(p, `"startoffset"`) {
+	if strings.Contains(p, `"chapters"`) && strings.Contains(p, `"entities"`) && strings.Contains(p, `"startoffset"`) {
 		return ChunkMetadataFormat()
 	}
 
@@ -94,9 +94,7 @@ func chunkMetadataSchema() any {
 		"additionalProperties": false,
 		"required": []string{
 			"entities",
-			"hasChapterStart",
-			"chapterTitle",
-			"chapterNumber",
+			"chapters",
 		},
 		"properties": map[string]any{
 			"entities": map[string]any{
@@ -129,9 +127,12 @@ func chunkMetadataSchema() any {
 					},
 				},
 			},
-			"hasChapterStart": map[string]any{"type": "boolean"},
-			"chapterTitle":    map[string]any{"type": "string"},
-			"chapterNumber":   map[string]any{"type": "string"},
+			"chapters": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "string",
+				},
+			},
 		},
 	}
 }

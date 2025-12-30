@@ -48,10 +48,8 @@ type ChunkEntityRef struct {
 
 // ChunkLLMMetadata represents metadata extracted from analyzing a chunk.
 type ChunkLLMMetadata struct {
-	Entities        []ChunkEntityRef `json:"entities,omitempty"`
-	HasChapterStart bool             `json:"hasChapterStart,omitempty"`
-	ChapterTitle    string           `json:"chapterTitle,omitempty"`
-	ChapterNumber   string           `json:"chapterNumber,omitempty"`
+	Entities []ChunkEntityRef `json:"entities,omitempty"`
+	Chapters []string         `json:"chapters,omitempty"`
 }
 
 // Client is the interface for interacting with language models.
