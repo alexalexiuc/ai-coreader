@@ -26,7 +26,7 @@ const (
 	3. Send each chunk to LLM to find any entities.
 */
 
-func ProcessFile(db *DB, file *FilesDoc, llmClient llm.Client) error {
+func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client) error {
 	llmSession := llmClient.NewSession(generateSessionID(file.StorageName))
 	// Set processing started timestamp
 	if err := db.SetFileProcessingStarted(file.ID); err != nil {
@@ -55,6 +55,13 @@ func ProcessFile(db *DB, file *FilesDoc, llmClient llm.Client) error {
 	}
 	log.Printf("Processing file id=%s name=%q sizeBytes=%d bookId=%s", file.ID.Hex(), file.OriginalName, file.Size, book.ID.Hex())
 	isFirstChunk := true
+
+	if ctx.Err() != nil {
+		log.Println("Shutdown signal received; aborting file processing.")
+		_ = db.SetFileStatus(file.ID, "failed")
+		return ctx.Err()
+	}
+
 	err = db.SetFileStatus(file.ID, "processing")
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to set file status: %v", err)
@@ -66,6 +73,12 @@ func ProcessFile(db *DB, file *FilesDoc, llmClient llm.Client) error {
 		MinChars:          CHUNK_SIZE_CHARS,
 		MaxLookaheadChars: MAX_ENDING_SEARCH_CHARS,
 	}) {
+		if ctx.Err() != nil {
+			log.Println("Shutdown signal received; stopping chunk processing.")
+			_ = db.SetFileStatus(file.ID, "failed")
+			return ctx.Err()
+		}
+
 		fmt.Printf("Appending %d chars\n", len(logicalChunk.Text))
 		currentChunkLength := len(logicalChunk.Text)
 		totalChars += currentChunkLength
@@ -90,7 +103,7 @@ func ProcessFile(db *DB, file *FilesDoc, llmClient llm.Client) error {
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")
 			isFirstChunk = false
-			bookHeaderMetadata, err := llm.AnalyzeBookHeader(context.TODO(), llmSession, logicalChunk.Text)
+			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, llmSession, logicalChunk.Text)
 			if err != nil {
 				errMsg := fmt.Sprintf("Failed to analyze book header: %v", err)
 				log.Printf("Error: %s", errMsg)
@@ -111,7 +124,7 @@ func ProcessFile(db *DB, file *FilesDoc, llmClient llm.Client) error {
 				book.Title = bookHeaderMetadata.Title
 			}
 		}
-		chunkEntities, err := llm.AnalyzeChunk(context.TODO(), llmSession, book.Title, logicalChunk.Text)
+		chunkEntities, err := llm.AnalyzeChunk(ctx, llmSession, book.Title, logicalChunk.Text)
 		if err != nil {
 			errMsg := fmt.Sprintf("Failed to analyze chunk %d: %v", totalChunks-1, err)
 			log.Printf("Error: %s", errMsg)
