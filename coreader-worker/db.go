@@ -137,26 +137,42 @@ func (db *DB) Close() {
 	db.Client.Disconnect(context.TODO())
 }
 
-func WatchFilesCollectionChanges(db *DB, llmClient llm.Client) {
+func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.Client) {
 	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
 	log.Println("Polling files collection for pending files...")
+
 	for {
+		if ctx.Err() != nil {
+			log.Println("Shutdown signal received; stopping poller.")
+			return
+		}
+
 		files, err := queryPendingFiles(db)
 		if err != nil {
 			log.Printf("Polling error: %v", err)
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		for _, file := range files {
-			start := time.Now()
-			log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
-			if err := ProcessFile(db, &file, llmClient); err != nil {
-				log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
-				continue
+		} else {
+			for _, file := range files {
+				if ctx.Err() != nil {
+					log.Println("Shutdown signal received; stopping file processing loop.")
+					return
+				}
+
+				start := time.Now()
+				log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
+				if err := ProcessFile(db, &file, llmClient); err != nil {
+					log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
+					continue
+				}
+				log.Printf("Successfully processed file %s in %s", file.ID.Hex(), time.Since(start))
 			}
-			log.Printf("Successfully processed file %s in %s", file.ID.Hex(), time.Since(start))
 		}
-		time.Sleep(5 * time.Second)
+
+		select {
+		case <-ctx.Done():
+			log.Println("Shutdown signal received; stopping poller.")
+			return
+		case <-time.After(5 * time.Second):
+		}
 	}
 }
 
