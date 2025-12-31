@@ -46,7 +46,7 @@ func NewClientFromEnv() (Client, error) {
 		// config := types.ProviderConfig{
 		// 	Type:         "ollama",
 		// 	Name:         "ollama-primary",
-		// 	BaseURL:      getEnvWithDefault("OLLAMA_BASE_URL", "http://localhost:11434"),
+		// 	BaseURL:      getEnvWithDefault("LLM_BASE_URL", "http://localhost:11434"),
 		// 	DefaultModel: getEnvWithDefault("OLLAMA_MODEL", "phi4-mini"),
 		// 	Timeout:      10 * time.Minute,
 		// 	ProviderConfig: map[string]any{

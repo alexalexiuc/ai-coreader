@@ -16,7 +16,7 @@ Worker-specific guidance (inherits root AGENTS.md).
 ## LLM client
 
 - package llm abstracts LLM calls; switch clients via `AI_CLIENT` env var (`ollama` only for now).
-- Ollama defaults: `OLLAMA_BASE_URL` (default `http://llm:11434`), `OLLAMA_MODEL` (default `phi4:mini`). Requests live in `llm/helpers.go` with JSON-only responses; keep prompts deterministic where possible.
+- Ollama defaults: `LLM_BASE_URL` (default `http://llm:11434`), `OLLAMA_MODEL` (default `phi4:mini`). Requests live in `llm/helpers.go` with JSON-only responses; keep prompts deterministic where possible.
 
 ## Coding standards
 

@@ -32,14 +32,14 @@ type OllamaSession struct {
 
 // NewOllamaClient creates a new Ollama client from environment variables.
 func NewOllamaClient() Client {
-	baseURL := utils.GetEnv("OLLAMA_BASE_URL", "http://llm:11434")
+	baseURL := utils.GetEnv("LLM_BASE_URL", "http://localhost:11434")
 	model := utils.GetEnv("OLLAMA_MODEL", defaultOllamaModel)
 	loggingEnabled := utils.GetEnv("LLM_LOGGING_ENABLED", "true") == "true"
 
 	// Parse base URL
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
-		panic(fmt.Sprintf("invalid OLLAMA_BASE_URL: %v", err))
+		panic(fmt.Sprintf("invalid LLM_BASE_URL: %v", err))
 	}
 
 	// Create Ollama client
