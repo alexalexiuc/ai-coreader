@@ -14,10 +14,32 @@ export type Book = {
   chapters: Chapter[];
 };
 
+export type EntityDescription = {
+  id: string;
+  name: string;
+  type: string;
+  summary?: string;
+  role?: string;
+  traits?: string[];
+  importantLocations?: string[];
+  importantRelationships?: string[];
+};
+
+export type BlockEntity = {
+  id: string;
+  entityId: string;
+  name: string;
+  type: string;
+  start: number;
+  length: number;
+  description?: EntityDescription;
+};
+
 export type Block = {
   id: string; // used as DOM id for scrolling
   text: string;
   chapterId?: string;
+  entities?: BlockEntity[];
 };
 
 export type Highlight = {
