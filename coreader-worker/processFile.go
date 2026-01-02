@@ -20,6 +20,13 @@ const (
 	MAX_ENDING_SEARCH_CHARS = 300
 )
 
+// ErrorInfo contains both technical and user-friendly error information
+type ErrorInfo struct {
+	RawError        error
+	FriendlyMessage string
+	BookID          *primitive.ObjectID
+}
+
 /*
 	File processing.
 	1. Read file
@@ -27,25 +34,50 @@ const (
 	3. Send each chunk to LLM to find any entities.
 */
 
+// ProcessFile orchestrates file processing and handles error recording
 func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client) error {
-	llmSession := llmClient.NewSession(generateSessionID(file.StorageName))
-	// Set processing started timestamp
 	if err := db.SetFileProcessingStarted(file.ID); err != nil {
 		log.Printf("Failed to set processing start time: %v", err)
 	}
 
-	fileChunkChan := ReadFileInChunks(file.StoragePath, file.StorageName, CHUNK_SIZE_BYTES) // 1MB chunks
-	var processedData []byte
-	var totalChars int
-	var totalChunks int
-	var processedBytes int
+	// Call the actual processing logic
+	err := processFileInternal(ctx, db, file, llmClient)
+
+	// Handle the result - update DB regardless of success or failure
+	if err != nil {
+		log.Printf("File processing failed for id=%s: %v", file.ID.Hex(), err)
+		if err.BookID != nil {
+			if cleanupErr := db.DeleteBookData(*err.BookID); cleanupErr != nil {
+				log.Printf("Failed to cleanup book data for file id=%s bookId=%s: %v", file.ID.Hex(), err.BookID.Hex(), cleanupErr)
+			}
+		}
+		// Append error to the error history array
+		_ = db.AppendFileError(file.ID, err.RawError.Error(), err.FriendlyMessage)
+		_ = db.SetFileStatus(file.ID, "failed")
+		return err.RawError
+	}
+
+	// Set processing completed timestamp
+	if err := db.SetFileProcessingCompleted(file.ID); err != nil {
+		log.Printf("Failed to set processing end time: %v", err)
+	}
+
+	log.Printf("Successfully completed processing file id=%s", file.ID.Hex())
+	return nil
+}
+
+// processFileInternal contains the core file processing logic without error handling
+func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client) *ErrorInfo {
+	llmSession := llmClient.NewSession(generateSessionID(file.StorageName))
+
 	type entityRecord struct {
 		Name string
 		Type string
 		ID   primitive.ObjectID
 	}
 	insertedEntities := make([]entityRecord, 0)
-	// create book with known info, additional will be added later
+
+	// Create book with known info, additional will be added later
 	book, err := db.CreateBookDoc(&BooksDoc{
 		FileID:      file.ID,
 		Processed:   false,
@@ -54,36 +86,40 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 		Source:      "user_upload",
 	})
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to create book document: %v", err)
-		log.Printf("Error: %s", errMsg)
-		_ = db.SetFileError(file.ID, err.Error(), "Failed to create book record. Please try again.")
-		_ = db.SetFileStatus(file.ID, "failed")
-		return err
+		return &ErrorInfo{
+			RawError:        fmt.Errorf("failed to create book document: %w", err),
+			FriendlyMessage: "Failed to create book document",
+		}
 	}
+	bookID := book.ID
+
 	log.Printf("Processing file id=%s name=%q sizeBytes=%d bookId=%s", file.ID.Hex(), file.OriginalName, file.Size, book.ID.Hex())
-	isFirstChunk := true
 
 	if ctx.Err() != nil {
-		log.Println("Shutdown signal received; aborting file processing.")
-		_ = db.SetFileStatus(file.ID, "failed")
-		return ctx.Err()
+		return &ErrorInfo{
+			RawError:        fmt.Errorf("shutdown signal before chunk processing: %w", ctx.Err()),
+			FriendlyMessage: "Processing was interrupted",
+			BookID:          &bookID,
+		}
 	}
 
-	err = db.SetFileStatus(file.ID, "processing")
-	if err != nil {
-		errMsg := fmt.Sprintf("Failed to set file status: %v", err)
-		log.Printf("Error: %s", errMsg)
-		_ = db.SetFileError(file.ID, err.Error(), "Failed to update processing status.")
-		return err
-	}
+	fileChunkChan := ReadFileInChunks(file.StoragePath, file.StorageName, CHUNK_SIZE_BYTES)
+	var processedData []byte
+	var totalChars int
+	var totalChunks int
+	var processedBytes int
+	isFirstChunk := true
+
 	for logicalChunk := range ReadLogicalChunks(fileChunkChan, ChunkingOptions{
 		MinChars:          CHUNK_SIZE_CHARS,
 		MaxLookaheadChars: MAX_ENDING_SEARCH_CHARS,
 	}) {
 		if ctx.Err() != nil {
-			log.Println("Shutdown signal received; stopping chunk processing.")
-			_ = db.SetFileStatus(file.ID, "failed")
-			return ctx.Err()
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("shutdown signal during chunk processing: %w", ctx.Err()),
+				FriendlyMessage: "Processing was interrupted",
+				BookID:          &bookID,
+			}
 		}
 
 		fmt.Printf("Appending %d chars\n", len(logicalChunk.Text))
@@ -100,23 +136,24 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 			LlmProcessed: false,
 		})
 		if err != nil {
-			errMsg := fmt.Sprintf("Failed to create chunk %d: %v", totalChunks-1, err)
-			log.Printf("Error: %s", errMsg)
-			_ = db.SetFileError(file.ID, err.Error(), "Failed to process file chunks.")
-			_ = db.SetFileStatus(file.ID, "failed")
-			return err
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to create chunk %d: %w", totalChunks-1, err),
+				FriendlyMessage: "Failed to create chunk",
+				BookID:          &bookID,
+			}
 		}
 		log.Printf("Chunk %d created (chars=%d)", totalChunks-1, currentChunkLength)
+
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")
 			isFirstChunk = false
 			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, llmSession, logicalChunk.Text)
 			if err != nil {
-				errMsg := fmt.Sprintf("Failed to analyze book header: %v", err)
-				log.Printf("Error: %s", errMsg)
-				_ = db.SetFileError(file.ID, err.Error(), "Failed to analyze book header.")
-				_ = db.SetFileStatus(file.ID, "failed")
-				return err
+				return &ErrorInfo{
+					RawError:        fmt.Errorf("failed to analyze book header: %w", err),
+					FriendlyMessage: "Failed to analyze book header",
+					BookID:          &bookID,
+				}
 			}
 			log.Printf("Book header metadata: %+v", bookHeaderMetadata)
 			if bookHeaderMetadata.HasHeader {
@@ -125,19 +162,24 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 					"title":  bookHeaderMetadata.Title,
 				})
 				if err != nil {
-					return err
+					return &ErrorInfo{
+						RawError:        fmt.Errorf("failed to update book metadata: %w", err),
+						FriendlyMessage: "Failed to update book metadata",
+						BookID:          &bookID,
+					}
 				}
 				book.Author = bookHeaderMetadata.Author
 				book.Title = bookHeaderMetadata.Title
 			}
 		}
+
 		chunkEntities, err := llm.AnalyzeChunk(ctx, llmSession, book.Title, logicalChunk.Text)
 		if err != nil {
-			errMsg := fmt.Sprintf("Failed to analyze chunk %d: %v", totalChunks-1, err)
-			log.Printf("Error: %s", errMsg)
-			_ = db.SetFileError(file.ID, err.Error(), "Failed to analyze text chunks.")
-			_ = db.SetFileStatus(file.ID, "failed")
-			return err
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to analyze chunk %d: %w", totalChunks-1, err),
+				FriendlyMessage: "Failed to analyze chunk",
+				BookID:          &bookID,
+			}
 		}
 		log.Printf("Found %d entities in chunk %d", len(chunkEntities.Entities), totalChunks-1)
 
@@ -160,7 +202,11 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 					Summary:     "", // Will be filled later with more detailed analysis
 				})
 				if err != nil {
-					return err
+					return &ErrorInfo{
+						RawError:        fmt.Errorf("failed to create entity description: %w", err),
+						FriendlyMessage: "Failed to create entity description",
+						BookID:          &bookID,
+					}
 				}
 				entityID = createdEntity.ID
 				insertedEntities = append(insertedEntities, entityRecord{
@@ -170,12 +216,16 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 				})
 				log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
 			}
-			// Convert llm.ChunkEntityRef to dbtypes ChunkEntityRef
+
+			startOffsets := llmEntity.StartOffsets
+			if startOffsets == nil {
+				startOffsets = []int{}
+			}
 			dbEntity := ChunkEntityRef{
 				EntityID:     entityID,
 				Name:         llmEntity.Name,
 				Type:         llmEntity.Type,
-				StartOffsets: llmEntity.StartOffsets,
+				StartOffsets: startOffsets,
 			}
 			entitiesWithIDs = append(entitiesWithIDs, dbEntity)
 		}
@@ -183,7 +233,11 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 		// Update book chunk with LLM metadata
 		_, err = db.AddLLMDataToBookChunk(chunk.ID, entitiesWithIDs, chunkEntities)
 		if err != nil {
-			return err
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to add LLM data to book chunk: %w", err),
+				FriendlyMessage: "Failed to add LLM data to book chunk",
+				BookID:          &bookID,
+			}
 		}
 
 		processedData = append(processedData, []byte(logicalChunk.Text)...)
@@ -195,7 +249,11 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 			}
 			err = db.SetFileProgress(file.ID, progressPct)
 			if err != nil {
-				return err
+				return &ErrorInfo{
+					RawError:        fmt.Errorf("failed to set file progress: %w", err),
+					FriendlyMessage: "Failed to update file progress",
+					BookID:          &bookID,
+				}
 			}
 			log.Printf("Progress %0.f%% (chunk %d)", progressPct, totalChunks-1)
 		}
@@ -204,35 +262,53 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 	if file.Size > 0 {
 		err = db.SetFileProgress(file.ID, 100)
 		if err != nil {
-			return err
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to set final progress: %w", err),
+				FriendlyMessage: "Failed to update final progress",
+				BookID:          &bookID,
+			}
 		}
 	}
 
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
-	// Update file status in DB
-	err = db.SetFileStatus(file.ID, "processed")
-	if err != nil {
-		errMsg := fmt.Sprintf("Failed to set final status: %v", err)
-		log.Printf("Error: %s", errMsg)
-		_ = db.SetFileError(file.ID, err.Error(), "Failed to finalize processing status.")
-		return err
-	}
 
 	_, err = db.SetBookProcessed(book.ID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to mark book as processed: %v", err)
-		log.Printf("Error: %s", errMsg)
-		_ = db.SetFileError(file.ID, err.Error(), "Failed to finalize book record.")
-		return err
+		return &ErrorInfo{
+			RawError:        fmt.Errorf("failed to mark book as processed: %w", err),
+			FriendlyMessage: "Failed to finalize book record",
+			BookID:          &bookID,
+		}
 	}
 
-	// Set processing completed timestamp
-	if err := db.SetFileProcessingCompleted(file.ID); err != nil {
-		log.Printf("Failed to set processing end time: %v", err)
+	// Update file status in DB
+	err = db.SetFileStatus(file.ID, "processed")
+	if err != nil {
+		return &ErrorInfo{
+			RawError:        fmt.Errorf("failed to set final status: %w", err),
+			FriendlyMessage: "Failed to finalize processing status",
+			BookID:          &bookID,
+		}
 	}
 
 	log.Printf("Successfully completed processing file id=%s with bookId=%s", file.ID.Hex(), book.ID.Hex())
 	return nil
+}
+
+// contains checks if a string contains a substring (case-insensitive helper)
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) &&
+		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+			containsSubstring(s, substr)))
+}
+
+func containsSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateSessionID creates a unique session ID for a file processing event

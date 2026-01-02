@@ -66,8 +66,11 @@
       "bsonType": "string"
     },
     "rawErrorMessage": {
-      "description": "Raw error message if processing failed",
-      "bsonType": "string"
+      "items": {
+        "bsonType": "string"
+      },
+      "description": "Array of raw error messages from processing attempts",
+      "bsonType": "array"
     },
     "errorMessage": {
       "description": "User-friendly error message if processing failed",

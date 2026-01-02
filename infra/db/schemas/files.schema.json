@@ -72,8 +72,11 @@
       ]
     },
     "rawErrorMessage": {
-      "type": "string",
-      "description": "Raw error message if processing failed"
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of raw error messages from processing attempts"
     },
     "errorMessage": {
       "type": "string",

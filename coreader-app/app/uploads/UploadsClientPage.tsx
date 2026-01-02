@@ -2,7 +2,7 @@
 
 import { useFiles } from '@/hooks';
 import type { FilterKey, SortKey, UploadedFile } from '@/app/uploads/types';
-import { deleteFileAction, listFilesAction } from '@/app/uploads/actions';
+import { deleteFileAction, listFilesAction, reprocessFileAction } from '@/app/uploads/actions';
 import { FileRow } from '@/app/uploads/FileRow';
 import { EmptyFiltered, EmptyUploads } from '@/app/uploads/UploadEmptyStates';
 import { UploadDropzone } from '@/app/uploads/UploadDropzone';
@@ -50,7 +50,6 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
     filtered,
     isEmptyAll,
     isEmptyFiltered,
-    retryFile,
     deleteFile,
     addFile,
   } = useFiles(initialFiles);
@@ -83,6 +82,20 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
         deleteFile(id);
       } catch (err) {
         console.error('Failed to delete file', err);
+      }
+    });
+  };
+
+  const onRetry = (id: string) => {
+    startTransition(async () => {
+      try {
+        await reprocessFileAction(id);
+        // Fetch fresh file data from server instead of just updating client state
+        const nextFiles = await listFilesAction();
+        console.log('Refreshed files after retry', nextFiles);
+        setFiles(nextFiles.map(toUploadedFile));
+      } catch (err) {
+        console.error('Failed to reprocess file', err);
       }
     });
   };
@@ -158,7 +171,7 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
 
             <div className="divide-y divide-slate-800">
               {filtered.map((f) => (
-                <FileRow key={f.id} file={f} onRetry={retryFile} onDelete={onDelete} onDownload={onDownload} />
+                <FileRow key={f.id} file={f} onRetry={onRetry} onDelete={onDelete} onDownload={onDownload} />
               ))}
             </div>
           </div>

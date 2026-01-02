@@ -101,8 +101,18 @@ export async function listFilesWithBooks(): Promise<FileWithBookDTO[]> {
       {
         $lookup: {
           from: collections.BOOKS,
-          localField: '_id',
-          foreignField: 'fileId',
+          let: { fileId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$fileId', '$$fileId'],
+                },
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 },
+          ],
           as: 'book',
         },
       },
@@ -135,4 +145,23 @@ export async function deleteFileById(id: string): Promise<FilesDoc | null> {
 
   await coll.deleteOne({ _id: doc._id });
   return doc;
+}
+
+export async function resetFileForReprocessing(id: string): Promise<void> {
+  const db = await getDb();
+  const now = new Date();
+
+  await withMongoValidation(() =>
+    db.collection<FilesDoc>(collections.FILES).updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          status: 'pending',
+          percentage: 0,
+          errorMessage: '',
+          updatedAt: now,
+        },
+      },
+    ),
+  );
 }

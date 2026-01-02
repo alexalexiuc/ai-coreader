@@ -75,7 +75,7 @@ type FilesDoc struct {
 	StorageName         string             `bson:"storageName" json:"storageName"`
 	Percentage          float64            `bson:"percentage,omitempty" json:"percentage,omitempty"`
 	Status              string             `bson:"status" json:"status"`
-	RawErrorMessage     string             `bson:"rawErrorMessage,omitempty" json:"rawErrorMessage,omitempty"`
+	RawErrorMessage     []string           `bson:"rawErrorMessage,omitempty" json:"rawErrorMessage,omitempty"`
 	ErrorMessage        string             `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
 	ProcessingStartedAt time.Time          `bson:"processingStartedAt,omitempty" json:"processingStartedAt,omitempty"`
 	ProcessedAt         time.Time          `bson:"processedAt,omitempty" json:"processedAt,omitempty"`

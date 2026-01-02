@@ -207,9 +207,9 @@ export interface FilesDoc {
    */
   status: 'pending' | 'processing' | 'processed' | 'failed';
   /**
-   * Raw error message if processing failed
+   * Array of raw error messages from processing attempts
    */
-  rawErrorMessage?: string;
+  rawErrorMessage?: string[];
   /**
    * User-friendly error message if processing failed
    */

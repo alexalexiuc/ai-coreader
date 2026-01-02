@@ -236,7 +236,7 @@ func (db *DB) SetFileProgress(fileID primitive.ObjectID, percentage float64) err
 }
 
 func (db *DB) SetFileProcessingStarted(fileID primitive.ObjectID) error {
-	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"processingStartedAt": time.Now().UTC()})
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"processingStartedAt": time.Now().UTC(), "status": "processing"})
 	return err
 }
 
@@ -250,6 +250,16 @@ func (db *DB) SetFileError(fileID primitive.ObjectID, rawError string, userMessa
 		"rawErrorMessage": rawError,
 		"errorMessage":    userMessage,
 	})
+	return err
+}
+
+// AppendFileError appends a new error to the rawErrorMessage array and updates errorMessage
+func (db *DB) AppendFileError(fileID primitive.ObjectID, rawError string, userMessage string) error {
+	update := bson.M{
+		"$push": bson.M{"rawErrorMessage": rawError},
+		"$set":  bson.M{"errorMessage": userMessage, "updatedAt": time.Now().UTC()},
+	}
+	_, err := db.FilesCollection.UpdateByID(context.TODO(), fileID, update)
 	return err
 }
 
@@ -302,4 +312,20 @@ func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*E
 func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*EntityDescriptionsDoc, error) {
 	entityDesc, err := InsertOneWithMeta(context.TODO(), db.EntityDescriptionsCollection, entityDesc)
 	return entityDesc, err
+}
+
+func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if _, err := db.EntityDescriptionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
+		return err
+	}
+	if _, err := db.BooksChunksCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
+		return err
+	}
+	if _, err := db.BooksCollection.DeleteOne(ctx, bson.M{"_id": bookID}); err != nil {
+		return err
+	}
+	return nil
 }

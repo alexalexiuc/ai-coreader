@@ -109,7 +109,9 @@ function splitIntoParagraphs(text: string): ParagraphInfo[] {
   return paragraphs;
 }
 
-function normalizeParagraph(rawText: string): { text: string; trimStart: number; trimEnd: number; offsetMapper: (rawOffset: number) => number } | null {
+function normalizeParagraph(
+  rawText: string,
+): { text: string; trimStart: number; trimEnd: number; offsetMapper: (rawOffset: number) => number } | null {
   const trimStart = findFirstContentIndex(rawText);
   const trimEnd = findLastContentIndex(rawText);
 

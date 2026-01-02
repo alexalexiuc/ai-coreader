@@ -50,7 +50,10 @@ export async function findEntityDescriptionsByIds(ids: string[]): Promise<Entity
   if (objectIds.length === 0) return [];
 
   const db = await getDb();
-  const docs = await db.collection<EntityDescriptionsDoc>(collections.ENTITY_DESCRIPTIONS).find({ _id: { $in: objectIds } }).toArray();
+  const docs = await db
+    .collection<EntityDescriptionsDoc>(collections.ENTITY_DESCRIPTIONS)
+    .find({ _id: { $in: objectIds } })
+    .toArray();
 
   return docs.map(toDTO);
 }

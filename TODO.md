@@ -10,3 +10,6 @@
 - [coreader-app]: Replace uploads/library polling refresh with websockets for status updates.
 - [coreader-app]: Restore page jump input in Reader side panel.
 - [worker]: Add retry if LLM response is not a valid JSON.
+- [worker]: When analyzing chunk entities, LLM returns author, title, publisher, etc. We need to post-process the response and remove these from entities.
+- [worker]: When file processing fails, instead of removing the book entirely, mark it as failed and allow users to retry processing(same as we retry file processing). But remove chunks and entities. And make sure on next file process iteration, we reuse existing book document if it exist.
+- [worker]: Hanlde chapters. If LLM returns chapters in chunk analysis, we need to store them in the DB and later use them to build book TOC.

@@ -161,7 +161,7 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 
 	setup := fmt.Sprintf("You are an assistant that analyzes a single chunk of text%s.", bookPart)
 	tasks := []string{
-		"Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, ORGANIZATIONS, WORKS (book titles), ANIMALS, PLANTS, EVENTS, and OTHER notable things.",
+		"Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, ORGANIZATIONS, WORKS (book titles), ANIMALS, PLANTS, EVENTS and any additional notable entities not covered above.",
 		"Work ONLY within this chunk. You do NOT have the rest of the book.",
 		"Detect every chapter heading present in the chunk (e.g. \"Chapter 3\", \"Capitolul 2\", \"Part II\", or similar). Include all chapter headings found, not just the first.",
 	}
@@ -171,13 +171,14 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	"entities": [
     {
       "name": string,
-      "type": "character" | "place" | "spell" | "song" | "artifact" | "other",
+      "type": "character" | "place" | "spell" | "song" | "artifact" | "other" | "organization" | "work" | "animal" | "plant" | "event",
       "startOffsets": number[]
     }
   ],
   "chapters": string[]
 }`
 	rules := []string{
+		"type MUST be exactly one of the allowed strings above. If unsure, set type = \"other\"",
 		"\"startOffsets\" is a list of 0-based character indices into the given chunk text for EACH encounter of the entity name.",
 		"Always include all occurrences of the entity name you can find in this chunk.",
 		"If no entities are found, use an empty array for \"entities\".",

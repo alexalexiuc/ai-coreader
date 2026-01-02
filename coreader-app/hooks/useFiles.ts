@@ -61,21 +61,6 @@ export default function useFiles(initialFiles: UploadedFile[] = []) {
   const isEmptyAll = files.length === 0;
   const isEmptyFiltered = !isEmptyAll && filtered.length === 0;
 
-  const retryFile = useCallback((id: string) => {
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? {
-              ...f,
-              status: 'processing',
-              progressPct: 0,
-              errorMessage: undefined,
-            }
-          : f,
-      ),
-    );
-  }, []);
-
   const deleteFile = useCallback((id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
@@ -100,7 +85,6 @@ export default function useFiles(initialFiles: UploadedFile[] = []) {
     filtered,
     isEmptyAll,
     isEmptyFiltered,
-    retryFile,
     deleteFile,
     addFile,
   } as const;

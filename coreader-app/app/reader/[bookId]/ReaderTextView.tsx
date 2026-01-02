@@ -100,7 +100,7 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-base font-semibold text-amber-100">{activeEntity.entity.name}</div>
-              <div className="text-xs uppercase tracking-wide text-amber-200/80">{activeEntity.entity.type}</div>
+              <div className="text-xs tracking-wide text-amber-200/80 uppercase">{activeEntity.entity.type}</div>
             </div>
             <button
               type="button"
@@ -151,9 +151,7 @@ function BlockContent({ block, hoveredEntityId, onHover, onEntityClick }: BlockC
   );
 }
 
-type TextSegment =
-  | { key: string; type: 'text'; text: string }
-  | { key: string; type: 'entity'; text: string; entity: BlockEntity };
+type TextSegment = { key: string; type: 'text'; text: string } | { key: string; type: 'entity'; text: string; entity: BlockEntity };
 
 function buildSegments(block: Block): TextSegment[] {
   const segments: TextSegment[] = [];
@@ -237,7 +235,7 @@ function renderList(label: string, items?: string[]) {
   if (!items || items.length === 0) return null;
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-amber-200/80">{label}</div>
+      <div className="text-xs tracking-wide text-amber-200/80 uppercase">{label}</div>
       <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-100">
         {items.map((item) => (
           <li key={item}>{item}</li>
