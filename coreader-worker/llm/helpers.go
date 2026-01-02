@@ -124,12 +124,12 @@ func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
 		bookPart = fmt.Sprintf(" from the book \"%s\"", in.BookTitle)
 	}
 
-	setup := "You are an assistant that summarizes entities in books."
+	setup := "You are an assistant that summarizes entities in books. Entities can be characters, places, songs, artifacts, organizations, events, works, or other notable concepts."
 	tasks := []string{
-		"Read the context.",
+		"Read the provided context carefully.",
 		fmt.Sprintf("Describe the entity \"%s\"%s.", entityLabel, bookPart),
-		"Use ONLY the information in the context.",
-		"DO NOT invent details that are not supported by the context.",
+		"Focus on what this entity is, why it matters, and how it is portrayed in the context.",
+		"Use ONLY the information in the context; do not add outside knowledge or guesses.",
 	}
 	schema := `STRICTLY a JSON object with this schema (no extra text):
 
@@ -142,11 +142,11 @@ func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
   "importantRelationships": string[]
 }`
 	rules := []string{
-		"\"summary\" is a short neutral description (2-4 sentences max).",
-		"\"role\" is a short phrase like \"main protagonist\", \"supporting character\", \"antagonist\", \"location\", etc.",
-		"\"traits\" is a list of key attributes (e.g. [\"brave\",\"impulsive\"]).",
-		"\"importantLocations\" is a list of place names strongly tied to this entity.",
-		"\"importantRelationships\" is a list of important people or entities they are connected to.",
+		"\"summary\" is a concise, neutral description (2-4 sentences max) grounded in the context.",
+		"\"role\" is a short phrase capturing why the entity matters (e.g. \"main protagonist\", \"capital city\", \"anthem song\", \"legendary artifact\", \"secretive organization\").",
+		"\"traits\" lists key attributes or properties (for non-people, note defining qualities like \"ancient\", \"enchanted\", \"fortified\").",
+		"\"importantLocations\" lists places strongly tied to the entity (for locations, list notable sub-areas; for songs/artifacts/organizations, list places where they appear or are stored).",
+		"\"importantRelationships\" lists other entities meaningfully connected to this one (people, places, groups, or artifacts).",
 		"If some fields are unknown, use empty string or empty array.",
 	}
 
