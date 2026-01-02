@@ -35,8 +35,8 @@ func ReadFileInChunks(storagePath string, fileName string, chunkSize int) <-chan
 			return
 		}
 		defer file.Close()
-		buf := make([]byte, chunkSize)
 		for {
+			buf := make([]byte, chunkSize)
 			n, err := file.Read(buf)
 			fmt.Printf("Reading buffer of size %d, read %d bytes\n", chunkSize, n)
 			if n > 0 {

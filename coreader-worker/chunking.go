@@ -110,19 +110,26 @@ func ReadLogicalChunks(
 					}
 				}
 
-				chunkRunes := buffer[:boundary]
+				// Extend boundary to include all trailing whitespace
+				// This ensures all whitespace is attached to the end of the previous chunk
+				endBoundary := boundary
+				for endBoundary < len(buffer) && unicode.IsSpace(buffer[endBoundary]) {
+					endBoundary++
+				}
+
+				chunkRunes := buffer[:endBoundary]
 				text := string(chunkRunes)
 
 				out <- TextChunk{
 					Text:      text,
 					StartChar: chunkStartChar,
-					EndChar:   chunkStartChar + boundary,
+					EndChar:   chunkStartChar + endBoundary,
 					Error:     nil,
 				}
 
 				// advance buffer and global offset
-				buffer = buffer[boundary:]
-				chunkStartChar += boundary
+				buffer = buffer[endBoundary:]
+				chunkStartChar += endBoundary
 			}
 		}
 
