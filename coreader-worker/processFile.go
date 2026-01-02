@@ -172,12 +172,10 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 			}
 			// Convert llm.ChunkEntityRef to dbtypes ChunkEntityRef
 			dbEntity := ChunkEntityRef{
-				EntityID:                entityID,
-				Name:                    llmEntity.Name,
-				Type:                    llmEntity.Type,
-				StartOffset:             llmEntity.StartOffset,
-				EndOffset:               llmEntity.EndOffset,
-				IsIntroducedInThisChunk: llmEntity.IsIntroducedInThisChunk,
+				EntityID:     entityID,
+				Name:         llmEntity.Name,
+				Type:         llmEntity.Type,
+				StartOffsets: llmEntity.StartOffsets,
 			}
 			entitiesWithIDs = append(entitiesWithIDs, dbEntity)
 		}
