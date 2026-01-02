@@ -12,12 +12,10 @@ import (
 )
 
 type ChunkEntityRef struct {
-	EntityID                primitive.ObjectID `bson:"entityId" json:"entityId"`
-	Name                    string             `bson:"name" json:"name"`
-	Type                    string             `bson:"type" json:"type"`
-	StartOffset             int                `bson:"startOffset" json:"startOffset"`
-	EndOffset               int                `bson:"endOffset" json:"endOffset"`
-	IsIntroducedInThisChunk bool               `bson:"isIntroducedInThisChunk" json:"isIntroducedInThisChunk"`
+	EntityID     primitive.ObjectID `bson:"entityId" json:"entityId"`
+	Name         string             `bson:"name" json:"name"`
+	Type         string             `bson:"type" json:"type"`
+	StartOffsets []int              `bson:"startOffsets" json:"startOffsets"`
 }
 
 type BookChunksDoc struct {

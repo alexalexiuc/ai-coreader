@@ -77,9 +77,7 @@
         "entityId",
         "name",
         "type",
-        "startOffset",
-        "endOffset",
-        "isIntroducedInThisChunk"
+        "startOffsets"
       ],
       "properties": {
         "entityId": {
@@ -93,17 +91,13 @@
         "type": {
           "type": "string"
         },
-        "startOffset": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "relative to chunk.text"
-        },
-        "endOffset": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "isIntroducedInThisChunk": {
-          "type": "boolean"
+        "startOffsets": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "all occurrences relative to chunk.text"
         }
       }
     }

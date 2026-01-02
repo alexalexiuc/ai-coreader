@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"sort"
 	"strings"
 )
 
@@ -72,6 +74,8 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 	if meta.Chapters == nil {
 		meta.Chapters = []string{}
 	}
+
+	correctEntityOffsets(chunk, meta.Entities)
 
 	return &meta, nil
 }
@@ -159,27 +163,23 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	tasks := []string{
 		"Find all named entities of interest: CHARACTERS, PLACES, SPELLS, SONGS, ARTIFACTS, ORGANIZATIONS, WORKS (book titles), ANIMALS, PLANTS, EVENTS, and OTHER notable things.",
 		"Work ONLY within this chunk. You do NOT have the rest of the book.",
-		"Mark whether each entity appears to be introduced for the first time in THIS CHUNK (local, not global to the book).",
 		"Detect every chapter heading present in the chunk (e.g. \"Chapter 3\", \"Capitolul 2\", \"Part II\", or similar). Include all chapter headings found, not just the first.",
 	}
 	schema := `STRICTLY a JSON object with this structure (no extra text):
 
 {
-  "entities": [
+	"entities": [
     {
       "name": string,
       "type": "character" | "place" | "spell" | "song" | "artifact" | "other",
-      "startOffset": number,
-      "endOffset": number,
-      "isIntroducedInThisChunk": boolean
+      "startOffsets": number[]
     }
   ],
   "chapters": string[]
 }`
 	rules := []string{
-		"\"startOffset\" and \"endOffset\" are 0-based character indices into the given chunk text.",
-		"\"endOffset\" is exclusive.",
-		"If you are not sure about offsets, approximate as best as you can.",
+		"\"startOffsets\" is a list of 0-based character indices into the given chunk text for EACH encounter of the entity name.",
+		"Always include all occurrences of the entity name you can find in this chunk.",
 		"If no entities are found, use an empty array for \"entities\".",
 		"If there are no chapter headings, return an empty array for \"chapters\".",
 	}
@@ -232,6 +232,72 @@ Return %s
 Rules:
 %s
 `, strings.TrimSpace(setup), formatBulletList(tasks), chunk.Label, chunk.Text, strings.TrimSpace(schema), formatBulletList(rules))
+}
+
+func correctEntityOffsets(chunk string, entities []ChunkEntityRef) {
+	for i := range entities {
+		entity := &entities[i]
+		if entity.StartOffsets == nil {
+			entity.StartOffsets = []int{}
+		}
+
+		expected := findAllOccurrences(chunk, entity.Name)
+		reported := dedupeAndSort(entity.StartOffsets)
+
+		if !equalIntSlices(expected, reported) {
+			log.Printf("LLM offsets mismatch for entity %q: provided=%v corrected=%v", entity.Name, reported, expected)
+			entity.StartOffsets = expected
+		} else {
+			entity.StartOffsets = reported
+		}
+	}
+}
+
+func findAllOccurrences(text, needle string) []int {
+	if strings.TrimSpace(needle) == "" {
+		return []int{}
+	}
+	var positions []int
+	offset := 0
+	for {
+		idx := strings.Index(text[offset:], needle)
+		if idx == -1 {
+			break
+		}
+		positions = append(positions, offset+idx)
+		offset += idx + len(needle)
+	}
+	return positions
+}
+
+func dedupeAndSort(values []int) []int {
+	if len(values) == 0 {
+		return []int{}
+	}
+	unique := make(map[int]struct{}, len(values))
+	for _, v := range values {
+		if v >= 0 {
+			unique[v] = struct{}{}
+		}
+	}
+	result := make([]int, 0, len(unique))
+	for v := range unique {
+		result = append(result, v)
+	}
+	sort.Ints(result)
+	return result
+}
+
+func equalIntSlices(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func formatBulletList(items []string) string {

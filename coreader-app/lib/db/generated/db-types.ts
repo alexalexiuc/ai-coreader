@@ -41,11 +41,9 @@ export interface ChunkEntityRef {
   name: string;
   type: string;
   /**
-   * relative to chunk.text
+   * all occurrences relative to chunk.text
    */
-  startOffset: number;
-  endOffset: number;
-  isIntroducedInThisChunk: boolean;
+  startOffsets: number[];
 }
 
 /**

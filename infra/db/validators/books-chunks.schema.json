@@ -54,9 +54,7 @@
           "entityId",
           "name",
           "type",
-          "startOffset",
-          "endOffset",
-          "isIntroducedInThisChunk"
+          "startOffsets"
         ],
         "properties": {
           "entityId": {
@@ -69,17 +67,13 @@
           "type": {
             "bsonType": "string"
           },
-          "startOffset": {
-            "minimum": 0,
-            "description": "relative to chunk.text",
-            "bsonType": "int"
-          },
-          "endOffset": {
-            "minimum": 0,
-            "bsonType": "int"
-          },
-          "isIntroducedInThisChunk": {
-            "bsonType": "bool"
+          "startOffsets": {
+            "items": {
+              "minimum": 0,
+              "bsonType": "int"
+            },
+            "description": "all occurrences relative to chunk.text",
+            "bsonType": "array"
           }
         },
         "bsonType": "object"
