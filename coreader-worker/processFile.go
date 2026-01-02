@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -38,6 +39,12 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 	var totalChars int
 	var totalChunks int
 	var processedBytes int
+	type entityRecord struct {
+		Name string
+		Type string
+		ID   primitive.ObjectID
+	}
+	insertedEntities := make([]entityRecord, 0)
 	// create book with known info, additional will be added later
 	book, err := db.CreateBookDoc(&BooksDoc{
 		FileID:      file.ID,
@@ -137,19 +144,35 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 		// Store entities in the database collection and capture IDs on the chunk refs.
 		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, llmEntity := range chunkEntities.Entities {
-			createdEntity, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
-				BookID:      book.ID,
-				BookChunkID: chunk.ID,
-				Name:        llmEntity.Name,
-				Type:        llmEntity.Type,
-				Summary:     "", // Will be filled later with more detailed analysis
-			})
-			if err != nil {
-				return err
+			entityID := primitive.NilObjectID
+			for _, inserted := range insertedEntities {
+				if inserted.Name == llmEntity.Name && inserted.Type == llmEntity.Type {
+					entityID = inserted.ID
+					break
+				}
+			}
+			if entityID == primitive.NilObjectID {
+				createdEntity, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
+					BookID:      book.ID,
+					BookChunkID: chunk.ID,
+					Name:        llmEntity.Name,
+					Type:        llmEntity.Type,
+					Summary:     "", // Will be filled later with more detailed analysis
+				})
+				if err != nil {
+					return err
+				}
+				entityID = createdEntity.ID
+				insertedEntities = append(insertedEntities, entityRecord{
+					Name: llmEntity.Name,
+					Type: llmEntity.Type,
+					ID:   createdEntity.ID,
+				})
+				log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
 			}
 			// Convert llm.ChunkEntityRef to dbtypes ChunkEntityRef
 			dbEntity := ChunkEntityRef{
-				EntityID:                createdEntity.ID,
+				EntityID:                entityID,
 				Name:                    llmEntity.Name,
 				Type:                    llmEntity.Type,
 				StartOffset:             llmEntity.StartOffset,
@@ -157,7 +180,6 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 				IsIntroducedInThisChunk: llmEntity.IsIntroducedInThisChunk,
 			}
 			entitiesWithIDs = append(entitiesWithIDs, dbEntity)
-			log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
 		}
 
 		// Update book chunk with LLM metadata
