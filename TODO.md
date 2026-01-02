@@ -13,3 +13,4 @@
 - [worker]: When analyzing chunk entities, LLM returns author, title, publisher, etc. We need to post-process the response and remove these from entities.
 - [worker]: When file processing fails, instead of removing the book entirely, mark it as failed and allow users to retry processing(same as we retry file processing). But remove chunks and entities. And make sure on next file process iteration, we reuse existing book document if it exist.
 - [worker]: Hanlde chapters. If LLM returns chapters in chunk analysis, we need to store them in the DB and later use them to build book TOC.
+- [worker]: Unit tests for chunking functions show first chunk is NOT skipped (offset 0). If chunks appear to start in the middle, investigate actual file content and LLM processing, not chunking.
