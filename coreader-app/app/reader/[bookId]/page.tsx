@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import ReaderClientPage from './ReaderClientPage';
-import type { Block, Book } from './types';
+import type { Book } from './types';
+import { chunkToBlocks, fallbackBlocks } from './chunkUtils';
 import { findBookById } from '@/lib/db/books';
 import { countBookChunks, findBookChunkByIndex } from '@/lib/db/book-chunks';
+import { findEntityDescriptionsByIds } from '@/lib/db/entity-descriptions';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +31,11 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
   const pageIndex = safePageNumber - 1;
 
   const chunk = await findBookChunkByIndex(bookDto.id, pageIndex);
-  const blocks = chunk ? chunkToBlocks(chunk.text, pageIndex) : fallbackBlocks(pageIndex);
+  const entityIds = (chunk?.entities ?? []).map((e) => e.entityId);
+  const entityDescriptions = entityIds.length > 0 ? await findEntityDescriptionsByIds(entityIds) : [];
+  const entityMap = new Map(entityDescriptions.map((e) => [e.id, e]));
+
+  const blocks = chunk ? chunkToBlocks(chunk.text, pageIndex, chunk.entities ?? [], entityMap) : fallbackBlocks(pageIndex);
 
   const book: Book = {
     id: bookDto.id,
@@ -40,25 +46,4 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
   };
 
   return <ReaderClientPage book={book} blocks={blocks} pageNumber={safePageNumber} totalPages={totalPages} />;
-}
-
-function fallbackBlocks(pageIndex: number): Block[] {
-  return [{ id: `b-${pageIndex}-0`, text: 'No content available for this page.' }];
-}
-
-function chunkToBlocks(text: string, pageIndex: number): Block[] {
-  const normalized = text.replace(/\r\n/g, '\n');
-  const paragraphs = normalized.split(/\n{2,}/);
-  const blocks: Block[] = [];
-
-  for (const [idx, para] of paragraphs.entries()) {
-    // only replace new lines when between two lowercase letters (to avoid breaking lists, headings, etc)
-    const clean = para.replace(/\n+/g, ' ').trim();
-    if (!clean) continue;
-    blocks.push({ id: `b-${pageIndex}-${idx}`, text: clean });
-  }
-
-  console.log(`chunkToBlocks for pageIndex ${pageIndex}:`, blocks);
-
-  return blocks.length > 0 ? blocks : fallbackBlocks(pageIndex);
 }

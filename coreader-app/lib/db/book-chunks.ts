@@ -2,6 +2,13 @@ import { ObjectId } from 'mongodb';
 import { collections, getDb } from './mongo';
 import type { BookChunkDoc } from './generated/db-types';
 
+export type ChunkEntityRefDTO = {
+  entityId: string;
+  name: string;
+  type: string;
+  startOffsets: number[];
+};
+
 export type BookChunkDTO = {
   id: string;
   bookId: string;
@@ -10,7 +17,7 @@ export type BookChunkDTO = {
   startChar: number;
   endChar: number;
   llmProcessed: boolean;
-  entities?: BookChunkDoc['entities'];
+  entities?: ChunkEntityRefDTO[];
   chapters?: BookChunkDoc['chapters'];
 };
 
@@ -27,7 +34,12 @@ function toDTO(doc: BookChunkDoc): BookChunkDTO {
     startChar: doc.startChar,
     endChar: doc.endChar,
     llmProcessed: doc.llmProcessed,
-    entities: doc.entities,
+    entities: doc.entities?.map((e) => ({
+      entityId: e.entityId.toHexString(),
+      name: e.name,
+      type: e.type,
+      startOffsets: e.startOffsets,
+    })),
     chapters: doc.chapters,
   };
 }
