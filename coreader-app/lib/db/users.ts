@@ -70,3 +70,34 @@ export async function getUserById(id: string | ObjectId): Promise<UserDTO | null
   const user = await findUserById(id);
   return user ? toDTO(user) : null;
 }
+
+/**
+ * Update user password
+ */
+export async function updateUserPassword(id: string | ObjectId, passwordHash: string): Promise<void> {
+  const db = await getDb();
+  const _id = typeof id === 'string' ? new ObjectId(id) : id;
+
+  await withMongoValidation(() =>
+    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: { passwordHash, updatedAt: new Date() } }),
+  );
+}
+
+/**
+ * Update user profile (name)
+ */
+export async function updateUserProfile(id: string | ObjectId, updates: { firstName?: string; lastName?: string }): Promise<UserDTO> {
+  const db = await getDb();
+  const _id = typeof id === 'string' ? new ObjectId(id) : id;
+
+  await withMongoValidation(() =>
+    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: { ...updates, updatedAt: new Date() } }),
+  );
+
+  const updated = await db.collection<UsersDoc>(collections.USERS).findOne({ _id });
+  if (!updated) {
+    throw new Error('Failed to retrieve updated user');
+  }
+
+  return toDTO(updated);
+}

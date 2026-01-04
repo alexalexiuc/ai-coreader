@@ -51,3 +51,11 @@ export async function deleteSession(token: string): Promise<void> {
   const db = await getDb();
   await db.collection<Session>(collections.SESSIONS).deleteOne({ token });
 }
+
+/**
+ * Delete all sessions for a user (used when password is changed)
+ */
+export async function deleteAllUserSessions(userId: ObjectId): Promise<void> {
+  const db = await getDb();
+  await db.collection<Session>(collections.SESSIONS).deleteMany({ userId });
+}
