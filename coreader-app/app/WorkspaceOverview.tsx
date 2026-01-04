@@ -1,8 +1,10 @@
 import { Section } from '../ui/Section';
 import { Card } from '../ui/Card';
+import { AuthButtons } from '@/app/AuthButtons';
 
 type WorkspaceOverviewProps = {
   stats: WorkspaceStats;
+  isGuest?: boolean;
 };
 
 export type WorkspaceStats = {
@@ -13,31 +15,54 @@ export type WorkspaceStats = {
   lastRead: null | { description: string };
 };
 
-export function WorkspaceOverview({ stats }: WorkspaceOverviewProps) {
-  const dashboardItems = [
-    {
-      label: 'Total books',
-      value: stats.booksTotal > 0 ? `${stats.booksTotal} books` : 'No books yet',
-      description: 'Uploads + processed titles',
-    },
-    {
-      label: 'Last opened',
-      value: stats.lastOpened?.title ?? 'No recent books',
-      description: stats.lastOpened?.detail ?? 'Start reading to see progress here',
-    },
-    {
-      label: 'In progress',
-      value: stats.inProgressCount > 0 ? `${stats.inProgressCount} books` : 'No books',
-      description: stats.lastRead?.description ?? 'No recent reading',
-    },
-  ];
+export function WorkspaceOverview({ stats, isGuest = false }: WorkspaceOverviewProps) {
+  const dashboardItems = isGuest
+    ? [
+        {
+          label: 'Total books',
+          value: 'Create an account',
+          description: 'Sign up to save your library',
+        },
+        {
+          label: 'Last opened',
+          value: 'Log in to continue',
+          description: 'Pick up where you left off',
+        },
+        {
+          label: 'In progress',
+          value: 'Track your progress',
+          description: 'Create an account to track reading',
+        },
+      ]
+    : [
+        {
+          label: 'Total books',
+          value: stats.booksTotal > 0 ? `${stats.booksTotal} books` : 'No books yet',
+          description: 'Uploads + processed titles',
+        },
+        {
+          label: 'Last opened',
+          value: stats.lastOpened?.title ?? 'No recent books',
+          description: stats.lastOpened?.detail ?? 'Start reading to see progress here',
+        },
+        {
+          label: 'In progress',
+          value: stats.inProgressCount > 0 ? `${stats.inProgressCount} books` : 'No books',
+          description: stats.lastRead?.description ?? 'No recent reading',
+        },
+      ];
+
   return (
     <Section
       header={{
         label: 'Workspace',
         title: 'Your reading dashboard',
-        description: 'Pick up where you left off, check processing, or add new books to your library.',
-        actions: (
+        description: isGuest
+          ? 'Create an account or log in to track your reading progress and manage your library.'
+          : 'Pick up where you left off, check processing, or add new books to your library.',
+        actions: isGuest ? (
+          <AuthButtons variant="compact" />
+        ) : (
           <Card>
             <div className="flex items-center gap-3 text-sm text-slate-300">
               <span className={`h-2 w-2 rounded-full ${stats.processingCount > 0 ? 'bg-amber-400' : 'bg-emerald-400'}`} />

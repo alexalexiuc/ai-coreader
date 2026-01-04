@@ -2,6 +2,8 @@ import { IoCloudUploadOutline, IoLibraryOutline, IoPlayOutline, IoTimeOutline } 
 import { Card } from '../ui/Card';
 import { ActionCard } from '../ui/ActionCard';
 import { Section } from '../ui/Section';
+import Link from 'next/link';
+import { AuthButtons } from '@/app/AuthButtons';
 
 export type ContinueReadingEntry = {
   title: string;
@@ -12,17 +14,12 @@ export type ContinueReadingEntry = {
 
 export type ContinueReadingSectionProps = {
   continueReading: ContinueReadingEntry | null;
+  isGuest?: boolean;
 };
 
 // TODO: Cards should be actions
 
-export function ContinueReadingSection({ continueReading }: ContinueReadingSectionProps) {
-  // continueReading = {
-  //   title: 'Sample Book Title',
-  //   progressLabel: 'Chapter 4 › 38%',
-  //   ctaPath: '/reader/sample-book-id',
-  //   lastSession: 'Yesterday › 24 min',
-  // };
+export function ContinueReadingSection({ continueReading, isGuest = false }: ContinueReadingSectionProps) {
   return (
     <Section
       header={{
@@ -32,15 +29,16 @@ export function ContinueReadingSection({ continueReading }: ContinueReadingSecti
       className="lg:col-span-2"
       paddingClass="p-4"
     >
-      {/* <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Continue reading</h3>
-        <span className="rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-xs text-slate-400">
-          {continueReading ? 'Resume' : 'Get started'} //TODO: This about this
-        </span>
-      </div> */}
-
       <Card className="mt-4">
-        {!continueReading ? (
+        {isGuest ? (
+          <div>
+            <p className="text-sm font-semibold text-white">Sign in to sync reading progress</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Create an account to track your progress across devices and pick up where you left off.
+            </p>
+            <AuthButtons />
+          </div>
+        ) : !continueReading ? (
           <div>
             <p className="text-sm font-semibold text-white">No active book</p>
             <p className="mt-1 text-xs text-slate-400">Upload a book or pick one from your library to start reading.</p>
@@ -70,10 +68,13 @@ export function ContinueReadingSection({ continueReading }: ContinueReadingSecti
                 <IoTimeOutline /> {continueReading.lastSession}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200">
+            <Link
+              href={continueReading.ctaPath}
+              className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
+            >
               <IoPlayOutline className="-mt-0.5 mr-2 inline" />
               Resume
-            </div>
+            </Link>
           </div>
         )}
       </Card>

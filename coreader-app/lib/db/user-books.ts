@@ -196,3 +196,46 @@ export async function userOwnsFile(userId: string, fileId: string): Promise<bool
 
   return count > 0;
 }
+
+/**
+ * Get the most recently opened book for a user (for "Continue Reading")
+ */
+export async function getMostRecentUserBook(userId: string): Promise<UserBookDTO | null> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+
+  const doc = await db
+    .collection<UserBooksDoc>(collections.USER_BOOKS)
+    .find({ userId: userIdObj, lastOpenedAt: { $exists: true } })
+    .sort({ lastOpenedAt: -1 })
+    .limit(1)
+    .toArray();
+
+  return doc.length > 0 ? toDTO(doc[0]) : null;
+}
+
+/**
+ * Get count of user's books that are in progress (not finished)
+ */
+export async function getInProgressBooksCount(userId: string): Promise<number> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+
+  return db.collection<UserBooksDoc>(collections.USER_BOOKS).countDocuments({
+    userId: userIdObj,
+    finishedAt: { $exists: false },
+    lastOpenedAt: { $exists: true },
+  });
+}
+
+/**
+ * Get total count of user's books
+ */
+export async function getUserBooksCount(userId: string): Promise<number> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+
+  return db.collection<UserBooksDoc>(collections.USER_BOOKS).countDocuments({
+    userId: userIdObj,
+  });
+}
