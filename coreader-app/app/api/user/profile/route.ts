@@ -39,11 +39,17 @@ export async function PATCH(request: NextRequest) {
 
     // Update profile
     const updates: { firstName?: string; lastName?: string } = {};
+    
+    // Handle firstName: allow clearing by setting to undefined, or update with trimmed value
     if (firstName !== undefined) {
-      updates.firstName = firstName.trim() || undefined;
+      const trimmed = firstName.trim();
+      updates.firstName = trimmed || undefined;
     }
+    
+    // Handle lastName: allow clearing by setting to undefined, or update with trimmed value
     if (lastName !== undefined) {
-      updates.lastName = lastName.trim() || undefined;
+      const trimmed = lastName.trim();
+      updates.lastName = trimmed || undefined;
     }
 
     const updatedUser = await updateUserProfile(currentUser.id, updates);
