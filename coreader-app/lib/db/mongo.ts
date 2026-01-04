@@ -33,6 +33,7 @@ export const collections = {
   ENTITY_DESCRIPTIONS: 'entity-descriptions',
   USERS: 'users',
   SESSIONS: 'sessions',
+  USER_BOOKS: 'user-books',
 };
 
 type SchemaRuleDetail = {

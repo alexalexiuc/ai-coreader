@@ -52,6 +52,11 @@
       "type": "string",
       "description": "Internal storage file name"
     },
+    "userId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the user who uploaded this file"
+    },
     "percentage": {
       "type": [
         "number",

@@ -54,7 +54,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           id="firstName"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-1 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           placeholder="Enter your first name"
         />
       </div>
@@ -68,18 +68,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
           id="lastName"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-1 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           placeholder="Enter your last name"
         />
       </div>
 
-      {error && (
-        <div className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">{error}</div>
-      )}
+      {error && <div className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">{error}</div>}
 
-      {success && (
-        <div className="rounded-md border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-100">{success}</div>
-      )}
+      {success && <div className="rounded-md border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-100">{success}</div>}
 
       <button
         type="submit"

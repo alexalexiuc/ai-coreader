@@ -73,6 +73,7 @@ type FilesDoc struct {
 	Size                int                `bson:"size" json:"size"`
 	StoragePath         string             `bson:"storagePath" json:"storagePath"`
 	StorageName         string             `bson:"storageName" json:"storageName"`
+	UserID              primitive.ObjectID `bson:"userId,omitempty" json:"userId,omitempty"`
 	Percentage          float64            `bson:"percentage,omitempty" json:"percentage,omitempty"`
 	Status              string             `bson:"status" json:"status"`
 	RawErrorMessage     []string           `bson:"rawErrorMessage,omitempty" json:"rawErrorMessage,omitempty"`
@@ -87,6 +88,21 @@ type SessionsDoc struct {
 	UserID    primitive.ObjectID `bson:"userId" json:"userId"`
 	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
 	ExpiresAt time.Time          `bson:"expiresAt" json:"expiresAt"`
+}
+
+type UserBooksDoc struct {
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt       time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt       time.Time          `bson:"updatedAt" json:"updatedAt"`
+	UserID          primitive.ObjectID `bson:"userId" json:"userId"`
+	BookID          primitive.ObjectID `bson:"bookId" json:"bookId"`
+	LastOpenedAt    time.Time          `bson:"lastOpenedAt,omitempty" json:"lastOpenedAt,omitempty"`
+	LastPageIndex   int                `bson:"lastPageIndex,omitempty" json:"lastPageIndex,omitempty"`
+	LastChunkIndex  int                `bson:"lastChunkIndex,omitempty" json:"lastChunkIndex,omitempty"`
+	LastCharOffset  int                `bson:"lastCharOffset,omitempty" json:"lastCharOffset,omitempty"`
+	ProgressPercent float64            `bson:"progressPercent,omitempty" json:"progressPercent,omitempty"`
+	StartedAt       time.Time          `bson:"startedAt,omitempty" json:"startedAt,omitempty"`
+	FinishedAt      time.Time          `bson:"finishedAt,omitempty" json:"finishedAt,omitempty"`
 }
 
 type UsersDoc struct {

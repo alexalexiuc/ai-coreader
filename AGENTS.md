@@ -29,13 +29,22 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 - Validators: generated into `infra/db/validators/` by `npm run db:types`; applied/updated via migration `infra/db/migrations/20251221235500-init.js` run with `npm run db:migrate` (uses `infra/db/scripts/migrate.js`).
 - Types: `npm run db:types` runs `infra/db/scripts/generate-types.js` -> TypeScript types at `coreader-app/lib/db/generated/db-types.ts` and Go structs at `coreader-worker/dbtypes.go`, then formats (`npm run format` inside app, `go fmt`).
 - Conventions: ObjectId fields use `format: "objectId"`; timestamps use `format: "date-time"`; enums declared in schema (e.g., `files.status`, `books.source`); `additionalProperties: false` throughout; no custom indexes beyond `_id` unless added in migrations (none observed).
+- Collections:
+  - `files`: Stored files with processing status; includes `userId` to track uploader.
+  - `books`: Book metadata created by worker from files; `source` field indicates origin.
+  - `books-chunks`: Text chunks of books with LLM-analyzed entities.
+  - `entity-descriptions`: LLM-generated entity descriptions (characters, places, etc.).
+  - `users`: User authentication and profile data.
+  - `sessions`: User authentication sessions.
+  - `user-books`: Links users to books (ownership + reading progress); used for authorization and "My Library" queries. Has unique index on `(userId, bookId)`, indexes on `userId` and `bookId`.
 
 ## Core workflows (paths to change)
 
-- Upload -> file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc, status `pending`, revalidates `/uploads`).
-- Processing -> book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`.
-- Reading UI: Library listing `app/library/page.tsx` via `lib/db/books.ts`; Reader page `app/reader/[bookId]/page.tsx` pulls chunks via `lib/db/book-chunks.ts`; uploads list with book links via `lib/db/files.ts`.
-- Download: `/api/files/[id]/download/route.ts` streams stored file from `FILE_STORAGE_ROOT`.
+- Upload -> file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc with `userId` of uploader, status `pending`, revalidates `/uploads`).
+- Processing -> book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`. If file has `userId`, creates `user-books` link to establish ownership.
+- Reading UI: Library listing `app/library/page.tsx` via `lib/db/books.ts` filtered by user ownership (via `user-books`); Reader page `app/reader/[bookId]/page.tsx` checks ownership via `user-books`, pulls chunks via `lib/db/book-chunks.ts`, updates reading progress in `user-books`; uploads list with book links via `lib/db/files.ts`.
+- Download: `/api/files/[id]/download/route.ts` streams stored file from `FILE_STORAGE_ROOT` after checking ownership via `files.userId`.
+- Authorization: All book/file operations check ownership via `user-books` collection or `files.userId` field; unauthenticated users see empty lists.
 
 ## Pages & UX map (coreader-app)
 

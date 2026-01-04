@@ -1,0 +1,67 @@
+{
+  "title": "UserBooksDoc",
+  "description": "Links users to books and stores reading activity metadata (ownership + reading progress)",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "userId",
+    "bookId"
+  ],
+  "properties": {
+    "_id": {
+      "description": "User-book link unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "bsonType": "date"
+    },
+    "userId": {
+      "description": "Reference to the user who owns this book",
+      "bsonType": "objectId"
+    },
+    "bookId": {
+      "description": "Reference to the book",
+      "bsonType": "objectId"
+    },
+    "lastOpenedAt": {
+      "description": "Timestamp when the book was last opened",
+      "bsonType": "date"
+    },
+    "lastPageIndex": {
+      "minimum": 0,
+      "description": "0-based page index (UI pages)",
+      "bsonType": "int"
+    },
+    "lastChunkIndex": {
+      "minimum": 0,
+      "description": "0-based chunk index",
+      "bsonType": "int"
+    },
+    "lastCharOffset": {
+      "minimum": 0,
+      "description": "Absolute character offset within full book",
+      "bsonType": "int"
+    },
+    "progressPercent": {
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Reading progress percentage (0-100)",
+      "bsonType": "double"
+    },
+    "startedAt": {
+      "description": "Timestamp when the user first started reading the book",
+      "bsonType": "date"
+    },
+    "finishedAt": {
+      "description": "Timestamp when the user finished reading the book",
+      "bsonType": "date"
+    }
+  },
+  "bsonType": "object"
+}

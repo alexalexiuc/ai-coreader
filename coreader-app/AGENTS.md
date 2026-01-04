@@ -10,8 +10,9 @@ Frontend-specific guidance (inherits root AGENTS.md).
 ## Data access
 
 - Use generated types in `lib/db/generated/db-types.ts`; do not hand-roll duplicates. If schemas change, rerun `npm run db:types`.
-- Mongo helpers: use `lib/db/mongo.ts` for connection + validation-friendly error formatting; prefer the DTO mappers in `lib/db/books.ts`, `lib/db/files.ts`, `lib/db/book-chunks.ts`.
+- Mongo helpers: use `lib/db/mongo.ts` for connection + validation-friendly error formatting; prefer the DTO mappers in `lib/db/books.ts`, `lib/db/files.ts`, `lib/db/book-chunks.ts`, `lib/db/user-books.ts`.
 - Server actions (e.g., `app/uploads/actions.ts`) should revalidate relevant paths with `revalidatePath`.
+- Authorization: Use `getCurrentUser()` from `lib/auth/cookies.ts` to get current user; check ownership via `userOwnsBook()`, `userOwnsFile()` from `lib/db/user-books.ts` before allowing read/write operations.
 
 ## Routing & UX cues
 
