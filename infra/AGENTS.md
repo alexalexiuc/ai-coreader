@@ -8,6 +8,7 @@ Infra-specific guidance (inherits root AGENTS.md).
   - TS types → `coreader-app/lib/db/generated/db-types.ts`
   - Go types → `coreader-worker/dbtypes.go`
 - Apply/create collections: `npm run db:migrate` (uses `infra/db/scripts/migrate.js` + migrations under `infra/db/migrations/`). Migration `20251221235500-init.js` reads validators to enforce schemas.
+- Custom indexes: Added via separate migrations (e.g., `20260104000000-add-users-email-index.js` for unique email, `20260104135000-add-user-books-collection.js` for user-books indexes).
 - Reset/seed helpers: `npm run db:reset` (drop + migrate), `npm run db:seed`, `npm run db:drop`. Ensure `MONGODB_URI` and `MONGODB_DB_NAME` are set (dotenv handled via `dotenv-mono`).
 
 ## When editing infra

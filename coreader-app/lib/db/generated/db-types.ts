@@ -199,6 +199,10 @@ export interface FilesDoc {
    */
   storageName: string;
   /**
+   * Reference to the user who uploaded this file
+   */
+  userId?: ObjectId;
+  /**
    * Processing completion percentage (0-100)
    */
   percentage?: number;
@@ -248,6 +252,60 @@ export interface SessionsDoc {
    * Session expiration timestamp
    */
   expiresAt: Date;
+}
+
+/**
+ * Links users to books and stores reading activity metadata (ownership + reading progress)
+ */
+export interface UserBooksDoc {
+  /**
+   * User-book link unique identifier
+   */
+  _id?: ObjectId;
+  /**
+   * Creation timestamp
+   */
+  createdAt: Date;
+  /**
+   * Last update timestamp
+   */
+  updatedAt: Date;
+  /**
+   * Reference to the user who owns this book
+   */
+  userId: ObjectId;
+  /**
+   * Reference to the book
+   */
+  bookId: ObjectId;
+  /**
+   * Timestamp when the book was last opened
+   */
+  lastOpenedAt?: Date;
+  /**
+   * 0-based page index (UI pages)
+   */
+  lastPageIndex?: number;
+  /**
+   * 0-based chunk index
+   */
+  lastChunkIndex?: number;
+  /**
+   * Absolute character offset within full book
+   */
+  lastCharOffset?: number;
+  /**
+   * Reading progress percentage (0-100)
+   */
+  progressPercent?: number;
+  /**
+   * Timestamp when the user first started reading the book
+   */
+  startedAt?: Date;
+  /**
+   * Timestamp when the user finished reading the book
+   */
+  finishedAt?: Date;
 }
 
 /**

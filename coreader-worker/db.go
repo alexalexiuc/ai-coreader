@@ -72,6 +72,18 @@ func (b *BookChunksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
+func (u *UserBooksDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        u.ID,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}
+}
+
+func (u *UserBooksDoc) SetDocID(id primitive.ObjectID) {
+	u.ID = id
+}
+
 func query(coll *mongo.Collection, filter interface{}, result interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -91,6 +103,7 @@ type DB struct {
 	BooksChunksCollection        *mongo.Collection
 	EntityDescriptionsCollection *mongo.Collection
 	UsersCollection              *mongo.Collection
+	UserBooksCollection          *mongo.Collection
 }
 
 const (
@@ -99,6 +112,7 @@ const (
 	BooksChunksCollectionName        = "books-chunks"
 	EntityDescriptionsCollectionName = "entity-descriptions"
 	UsersCollectionName              = "users"
+	UserBooksCollectionName          = "user-books"
 )
 
 func InitDB() *DB {
@@ -122,6 +136,7 @@ func InitDB() *DB {
 	booksChunksCollection := llmDatabase.Collection(BooksChunksCollectionName)
 	entityDescriptionsCollection := llmDatabase.Collection(EntityDescriptionsCollectionName)
 	usersCollection := llmDatabase.Collection(UsersCollectionName)
+	userBooksCollection := llmDatabase.Collection(UserBooksCollectionName)
 	return &DB{
 		Client:                       client,
 		LLMDatabase:                  llmDatabase,
@@ -130,6 +145,7 @@ func InitDB() *DB {
 		BooksChunksCollection:        booksChunksCollection,
 		EntityDescriptionsCollection: entityDescriptionsCollection,
 		UsersCollection:              usersCollection,
+		UserBooksCollection:          userBooksCollection,
 	}
 }
 
@@ -328,4 +344,46 @@ func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 		return err
 	}
 	return nil
+}
+
+// CreateOrUpdateUserBook creates a new user-book link or updates existing one (upsert)
+// This establishes ownership and can initialize reading metadata
+func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive.ObjectID) (*UserBooksDoc, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	now := time.Now().UTC()
+	filter := bson.M{"userId": userID, "bookId": bookID}
+
+	// Check if link already exists
+	var existing UserBooksDoc
+	err := db.UserBooksCollection.FindOne(ctx, filter).Decode(&existing)
+
+	if err == nil {
+		// Link exists, just update the timestamp
+		_, err := UpdateOneWithMeta(ctx, db.UserBooksCollection, existing.ID, bson.M{})
+		if err != nil {
+			return nil, err
+		}
+		return &existing, nil
+	}
+
+	if err != mongo.ErrNoDocuments {
+		return nil, err
+	}
+
+	// Create new link
+	userBook := &UserBooksDoc{
+		UserID:    userID,
+		BookID:    bookID,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	result, err := InsertOneWithMeta(ctx, db.UserBooksCollection, userBook)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

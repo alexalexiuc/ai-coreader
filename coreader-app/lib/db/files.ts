@@ -15,6 +15,7 @@ export interface FileDTO {
   createdAt: string;
   status: FileStatus;
   percentage?: number;
+  userId?: string;
 }
 
 export interface FileWithBookDTO extends FileDTO {
@@ -43,6 +44,7 @@ function toDTO(doc: FilesDoc): FileDTO {
     createdAt: doc.createdAt.toISOString(),
     status: doc.status,
     percentage,
+    userId: doc.userId?.toHexString(),
   };
 }
 
@@ -60,6 +62,7 @@ export async function insertFileMetadata(params: Omit<FilesDoc, '_id' | 'created
     status: params.status ?? 'pending',
     storagePath: params.storagePath,
     percentage: clampPct(params.percentage ?? 0),
+    userId: params.userId,
   });
 
   const result = await withMongoValidation(() =>
@@ -73,6 +76,7 @@ export async function insertFileMetadata(params: Omit<FilesDoc, '_id' | 'created
       status: params.status ?? 'pending',
       storagePath: params.storagePath,
       percentage: clampPct(params.percentage ?? 0),
+      userId: params.userId,
     }),
   );
 

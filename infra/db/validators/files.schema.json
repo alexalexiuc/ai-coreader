@@ -46,6 +46,10 @@
       "description": "Internal storage file name",
       "bsonType": "string"
     },
+    "userId": {
+      "description": "Reference to the user who uploaded this file",
+      "bsonType": "objectId"
+    },
     "percentage": {
       "minimum": 0,
       "maximum": 100,

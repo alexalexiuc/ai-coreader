@@ -95,6 +95,17 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 
 	log.Printf("Processing file id=%s name=%q sizeBytes=%d bookId=%s", file.ID.Hex(), file.OriginalName, file.Size, book.ID.Hex())
 
+	// Create user-book link if file has a userId (user-uploaded file)
+	if !file.UserID.IsZero() {
+		_, err := db.CreateOrUpdateUserBook(file.UserID, book.ID)
+		if err != nil {
+			log.Printf("Warning: Failed to create user-book link for userId=%s bookId=%s: %v", file.UserID.Hex(), book.ID.Hex(), err)
+			// Non-fatal: continue processing even if link creation fails
+		} else {
+			log.Printf("Created user-book link for userId=%s bookId=%s", file.UserID.Hex(), book.ID.Hex())
+		}
+	}
+
 	if ctx.Err() != nil {
 		return &ErrorInfo{
 			RawError:        fmt.Errorf("shutdown signal before chunk processing: %w", ctx.Err()),

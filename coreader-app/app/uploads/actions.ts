@@ -7,9 +7,12 @@ import {
   insertFileMetadata,
   listFilesWithBooks,
   resetFileForReprocessing,
+  getFileById,
   type FileDTO,
   type FileWithBookDTO,
 } from '@/lib/db/files';
+import { getCurrentUser } from '@/lib/auth/cookies';
+import { ObjectId } from 'mongodb';
 
 export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
   const file = formData.get('file') as File | null;
@@ -17,6 +20,10 @@ export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
   if (!file || file.size === 0) {
     throw new Error('No file uploaded');
   }
+
+  // Get current user
+  const user = await getCurrentUser();
+  const userId = user ? new ObjectId(user.id) : undefined;
 
   const { storageName, storagePath, size } = await saveUploadedFile(file, FOLDERS.FILES);
 
@@ -27,6 +34,7 @@ export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
     storagePath,
     storageName,
     status: 'pending',
+    userId,
   });
 
   // Revalidate listing page
@@ -36,8 +44,17 @@ export async function uploadFileAction(formData: FormData): Promise<FileDTO> {
 }
 
 export async function deleteFileAction(id: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('Unauthorized: Please log in');
+  }
+
   const doc = await deleteFileById(id);
   if (doc) {
+    // Check ownership
+    if (doc.userId && doc.userId.toHexString() !== user.id) {
+      throw new Error('Unauthorized: You do not own this file');
+    }
     await deleteStoredFile(doc.storagePath, doc.storageName);
   }
 
@@ -45,10 +62,31 @@ export async function deleteFileAction(id: string) {
 }
 
 export async function listFilesAction(): Promise<FileWithBookDTO[]> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return []; // Return empty list for unauthenticated users
+  }
+
+  // TODO: Filter to only return files belonging to the user
   return listFilesWithBooks();
 }
 
 export async function reprocessFileAction(id: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('Unauthorized: Please log in');
+  }
+
+  const file = await getFileById(id);
+  if (!file) {
+    throw new Error('File not found');
+  }
+
+  // Check ownership
+  if (file.userId && file.userId.toHexString() !== user.id) {
+    throw new Error('Unauthorized: You do not own this file');
+  }
+
   await resetFileForReprocessing(id);
   revalidatePath('/uploads');
 }

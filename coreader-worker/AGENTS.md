@@ -12,6 +12,7 @@ Worker-specific guidance (inherits root AGENTS.md).
 - Types come from the generated `dbtypes.go` (regen via root `npm run db:types` when schemas change). Do not hand-edit the file.
 - Mongo helpers: use `db.go` helpers (`InsertOneWithMeta`, `UpdateOneWithMeta`) to keep `createdAt`/`updatedAt` aligned with schema requirements.
 - Status flow: file `status` transitions `pending → processing → processed` (or `failed` if you add error handling); book `processed` flag is set at the end of `ProcessFile`.
+- Ownership: When processing a file with `userId` set, worker creates a `user-books` link via `CreateOrUpdateUserBook()` to establish ownership for authorization checks.
 
 ## LLM client
 

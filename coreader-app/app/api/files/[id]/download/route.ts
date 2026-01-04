@@ -3,13 +3,25 @@ import path from 'path';
 import type { NextRequest } from 'next/server';
 import { getFileById } from '@/lib/db/files';
 import { getStorageRoot } from '@/lib/files/storage';
+import { getCurrentUser } from '@/lib/auth/cookies';
 
 export const runtime = 'nodejs';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  // Check authentication
+  const user = await getCurrentUser();
+  if (!user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const file = await getFileById(params.id);
   if (!file?._id) {
     return new Response('File not found', { status: 404 });
+  }
+
+  // Check ownership
+  if (file.userId && file.userId.toHexString() !== user.id) {
+    return new Response('Forbidden: You do not have access to this file', { status: 403 });
   }
 
   try {

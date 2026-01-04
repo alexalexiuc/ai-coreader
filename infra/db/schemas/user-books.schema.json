@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/user-books.schema.json",
+  "title": "UserBooksDoc",
+  "description": "Links users to books and stores reading activity metadata (ownership + reading progress)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "userId",
+    "bookId"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "User-book link unique identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "userId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the user who owns this book"
+    },
+    "bookId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the book"
+    },
+    "lastOpenedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the book was last opened"
+    },
+    "lastPageIndex": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based page index (UI pages)"
+    },
+    "lastChunkIndex": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based chunk index"
+    },
+    "lastCharOffset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Absolute character offset within full book"
+    },
+    "progressPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Reading progress percentage (0-100)"
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user first started reading the book"
+    },
+    "finishedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user finished reading the book"
+    }
+  }
+}

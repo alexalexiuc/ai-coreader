@@ -96,10 +96,10 @@ export async function updateUserProfile(id: string | ObjectId, updates: { firstN
   const db = await getDb();
   const _id = typeof id === 'string' ? new ObjectId(id) : id;
 
-  const updateFields: Partial<Pick<UsersDoc, 'firstName' | 'lastName' | 'updatedAt'>> = { 
-    updatedAt: new Date() 
+  const updateFields: Partial<Pick<UsersDoc, 'firstName' | 'lastName' | 'updatedAt'>> = {
+    updatedAt: new Date(),
   };
-  
+
   // Only include fields that are explicitly provided
   if (updates.firstName !== undefined) {
     updateFields.firstName = updates.firstName;
@@ -108,9 +108,7 @@ export async function updateUserProfile(id: string | ObjectId, updates: { firstN
     updateFields.lastName = updates.lastName;
   }
 
-  await withMongoValidation(() =>
-    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: updateFields }),
-  );
+  await withMongoValidation(() => db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: updateFields }));
 
   const updated = await db.collection<UsersDoc>(collections.USERS).findOne({ _id });
   if (!updated) {

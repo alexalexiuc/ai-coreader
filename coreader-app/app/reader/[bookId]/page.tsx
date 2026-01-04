@@ -1,10 +1,12 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import ReaderClientPage from './ReaderClientPage';
 import type { Book } from './types';
 import { chunkToBlocks, fallbackBlocks } from './chunkUtils';
 import { findBookById } from '@/lib/db/books';
 import { countBookChunks, findBookChunkByIndex } from '@/lib/db/book-chunks';
 import { findEntityDescriptionsByIds } from '@/lib/db/entity-descriptions';
+import { getCurrentUser } from '@/lib/auth/cookies';
+import { userOwnsBook, updateReadingProgress } from '@/lib/db/user-books';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +19,22 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   console.log('ReaderPage params:', resolvedParams, 'searchParams:', resolvedSearchParams);
+
+  // Check authentication
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect('/login');
+  }
+
   const bookDto = await findBookById(resolvedParams.bookId);
   if (!bookDto) {
     notFound();
+  }
+
+  // Check ownership
+  const hasAccess = await userOwnsBook(user.id, bookDto.id);
+  if (!hasAccess) {
+    throw new Error('Unauthorized: You do not have access to this book');
   }
 
   const chunkCount = await countBookChunks(bookDto.id);
@@ -36,6 +51,14 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
   const entityMap = new Map(entityDescriptions.map((e) => [e.id, e]));
 
   const blocks = chunk ? chunkToBlocks(chunk.text, pageIndex, chunk.entities ?? [], entityMap) : fallbackBlocks(pageIndex);
+
+  // Update reading progress
+  const progressPercent = totalPages > 0 ? Math.round((safePageNumber / totalPages) * 100) : 0;
+  await updateReadingProgress(user.id, bookDto.id, {
+    lastPageIndex: pageIndex,
+    lastChunkIndex: pageIndex,
+    progressPercent,
+  });
 
   const book: Book = {
     id: bookDto.id,
