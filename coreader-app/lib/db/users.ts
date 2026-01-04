@@ -27,14 +27,20 @@ export async function createUser(params: { email: string; passwordHash: string; 
   const db = await getDb();
   const now = new Date();
 
-  const userDoc: Omit<UsersDoc, '_id'> = {
+  const userDoc: any = {
     email: params.email,
     passwordHash: params.passwordHash,
-    firstName: params.firstName,
-    lastName: params.lastName,
     createdAt: now,
     updatedAt: now,
   };
+
+  // Only include optional fields if they have values
+  if (params.firstName) {
+    userDoc.firstName = params.firstName;
+  }
+  if (params.lastName) {
+    userDoc.lastName = params.lastName;
+  }
 
   const result = await withMongoValidation(() => db.collection<UsersDoc>(collections.USERS).insertOne(userDoc as UsersDoc));
 
@@ -90,8 +96,18 @@ export async function updateUserProfile(id: string | ObjectId, updates: { firstN
   const db = await getDb();
   const _id = typeof id === 'string' ? new ObjectId(id) : id;
 
+  const updateFields: any = { updatedAt: new Date() };
+  
+  // Only include fields that are explicitly provided
+  if (updates.firstName !== undefined) {
+    updateFields.firstName = updates.firstName;
+  }
+  if (updates.lastName !== undefined) {
+    updateFields.lastName = updates.lastName;
+  }
+
   await withMongoValidation(() =>
-    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: { ...updates, updatedAt: new Date() } }),
+    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: updateFields }),
   );
 
   const updated = await db.collection<UsersDoc>(collections.USERS).findOne({ _id });
