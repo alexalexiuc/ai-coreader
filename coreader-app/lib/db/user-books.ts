@@ -206,9 +206,9 @@ export async function getMostRecentUserBook(userId: string): Promise<UserBookDTO
 
   const doc = await db
     .collection<UserBooksDoc>(collections.USER_BOOKS)
-    .find({ 
-      userId: userIdObj, 
-      lastOpenedAt: { $ne: null } 
+    .find({
+      userId: userIdObj,
+      lastOpenedAt: { $ne: null },
     })
     .sort({ lastOpenedAt: -1 })
     .limit(1)

@@ -20,7 +20,9 @@ export default defineConfig(
     rules: {
       // Let Prettier handle indentation/formatting
       indent: 'off',
-      '@typescript-eslint/no-explicit-any': 'off', //TODO: Remove
+
+      // Performance: Disable slow rule (takes 77% of lint time)
+      'react-hooks/static-components': 'off',
 
       // Imports
       'import/no-unresolved': 'error',

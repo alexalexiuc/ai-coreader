@@ -58,7 +58,7 @@
       "description": "Absolute character offset within full book"
     },
     "progressPercent": {
-      "type": "number",
+      "type": "integer",
       "minimum": 0,
       "maximum": 100,
       "description": "Reading progress percentage (0-100)"

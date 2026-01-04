@@ -52,7 +52,7 @@
       "minimum": 0,
       "maximum": 100,
       "description": "Reading progress percentage (0-100)",
-      "bsonType": "double"
+      "bsonType": "int"
     },
     "startedAt": {
       "description": "Timestamp when the user first started reading the book",

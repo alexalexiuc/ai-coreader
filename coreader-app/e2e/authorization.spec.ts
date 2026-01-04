@@ -5,7 +5,10 @@ test.describe('Authorization Guards', () => {
     test('should allow access to owned book', async ({ page }) => {
       // Login as test user
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -32,10 +35,13 @@ test.describe('Authorization Guards', () => {
     test('should deny access to non-owned book', async ({ page, request }) => {
       // First, we need to find a book that is NOT owned by testuser@example.com
       // From seeds, "Dune" and "The Ember Archive" are NOT linked to test user
-      
+
       // Login as test user
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -44,25 +50,26 @@ test.describe('Authorization Guards', () => {
       // Try to access a book that exists but is not owned (using known ID from seeds)
       // Book ID for "Dune" from seeds: 66f000000000000000000503
       const nonOwnedBookId = '66f000000000000000000503';
-      
+
       // Try to navigate directly to this book
       const response = await page.goto(`/reader/${nonOwnedBookId}`);
-      
+
       // Should either:
       // 1. Redirect to home/library (403/401 handling)
       // 2. Show error message
       // 3. Show 404 (book not found for this user)
-      
+
       // Check if we're redirected or see an error
       const currentUrl = page.url();
       if (currentUrl.includes('/reader/')) {
         // If still on reader page, should show error or empty state
         const bodyText = await page.locator('body').textContent();
-        const hasError = bodyText?.includes('not found') || 
-                        bodyText?.includes('access denied') ||
-                        bodyText?.includes('permission') ||
-                        bodyText?.includes('unauthorized');
-        
+        const hasError =
+          bodyText?.includes('not found') ||
+          bodyText?.includes('access denied') ||
+          bodyText?.includes('permission') ||
+          bodyText?.includes('unauthorized');
+
         expect(hasError).toBeTruthy();
       } else {
         // Should be redirected away from reader
@@ -73,7 +80,10 @@ test.describe('Authorization Guards', () => {
     test('should not show non-owned books in library', async ({ page }) => {
       // Login as test user
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -99,7 +109,10 @@ test.describe('Authorization Guards', () => {
     test('should show only owned files in uploads', async ({ page }) => {
       // Login as test user
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -123,7 +136,10 @@ test.describe('Authorization Guards', () => {
     test('should deny download of non-owned file', async ({ page }) => {
       // Login as test user
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -132,10 +148,10 @@ test.describe('Authorization Guards', () => {
       // Try to download a file not owned by test user
       // File ID for "ember-archive.pdf" from seeds: 66f000000000000000000001 (no userId)
       const nonOwnedFileId = '66f000000000000000000001';
-      
+
       // Try to access download endpoint
       const response = await page.goto(`/api/files/${nonOwnedFileId}/download`);
-      
+
       // Should return 403 or 404
       expect(response?.status()).not.toBe(200);
     });
@@ -150,7 +166,7 @@ test.describe('Authorization Guards', () => {
       // Should show empty state or prompt to login
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toContain('Your books');
-      
+
       // Should not show any actual books
       expect(bodyText).not.toContain('Foundation');
       expect(bodyText).not.toContain('Dune');
@@ -164,7 +180,7 @@ test.describe('Authorization Guards', () => {
       // Should show empty state or prompt to login
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toContain('Files');
-      
+
       // Should not show any actual files
       expect(bodyText).not.toContain('foundation.txt');
       expect(bodyText).not.toContain('ember-archive.pdf');
@@ -173,19 +189,20 @@ test.describe('Authorization Guards', () => {
     test('should deny guest access to reader', async ({ page }) => {
       // Try to access a book reader as guest
       const bookId = '66f000000000000000000501'; // Foundation book ID
-      
+
       const response = await page.goto(`/reader/${bookId}`);
-      
+
       // Should either redirect or show error
       const currentUrl = page.url();
       if (currentUrl.includes('/reader/')) {
         // If still on reader page, should show error or empty state
         const bodyText = await page.locator('body').textContent();
-        const hasError = bodyText?.includes('not found') || 
-                        bodyText?.includes('sign in') ||
-                        bodyText?.includes('login') ||
-                        bodyText?.includes('unauthorized');
-        
+        const hasError =
+          bodyText?.includes('not found') ||
+          bodyText?.includes('sign in') ||
+          bodyText?.includes('login') ||
+          bodyText?.includes('unauthorized');
+
         expect(hasError).toBeTruthy();
       } else {
         // Should be redirected away from reader
@@ -198,7 +215,7 @@ test.describe('Authorization Guards', () => {
     test('should protect dashboard API for guest', async ({ request }) => {
       // Try to access dashboard API without authentication
       const response = await request.get('/api/dashboard');
-      
+
       // Should return guest state (not error, but empty data)
       expect(response.status()).toBe(200);
       const data = await response.json();
@@ -210,7 +227,10 @@ test.describe('Authorization Guards', () => {
     test('should return user data from dashboard API when authenticated', async ({ page, request }) => {
       // Login first to get session cookie
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.getByRole('button', { name: /Sign In/i }).click();
@@ -218,14 +238,14 @@ test.describe('Authorization Guards', () => {
 
       // Get cookies from page context
       const cookies = await page.context().cookies();
-      
+
       // Make API request with cookies
       const response = await request.get('/api/dashboard', {
         headers: {
-          Cookie: cookies.map(c => `${c.name}=${c.value}`).join('; ')
-        }
+          Cookie: cookies.map((c) => `${c.name}=${c.value}`).join('; '),
+        },
       });
-      
+
       expect(response.status()).toBe(200);
       const data = await response.json();
       expect(data.isGuest).toBe(false);

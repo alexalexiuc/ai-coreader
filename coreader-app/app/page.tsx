@@ -5,11 +5,7 @@ import { TipsList } from '@/ui/TipsList';
 import { WorkspaceOverview, type WorkspaceStats } from '@/app/WorkspaceOverview';
 import { PageContainer } from '@/ui/PageContainer';
 import { getCurrentUser } from '@/lib/auth/cookies';
-import {
-  getUserBooksCount,
-  getMostRecentUserBook,
-  getInProgressBooksCount,
-} from '@/lib/db/user-books';
+import { getUserBooksCount, getMostRecentUserBook, getInProgressBooksCount } from '@/lib/db/user-books';
 import { getRecentFilesWithBooks, getProcessingFilesCount } from '@/lib/db/files';
 import { findBookById } from '@/lib/db/books';
 import { getTimeSince } from '@/lib/utils/time';
@@ -35,13 +31,7 @@ export default async function Home() {
     };
   } else {
     // Authenticated user - fetch real data
-    const [
-      booksTotal,
-      processingCount,
-      inProgressCount,
-      mostRecentUserBook,
-      recentFiles,
-    ] = await Promise.all([
+    const [booksTotal, processingCount, inProgressCount, mostRecentUserBook, recentFiles] = await Promise.all([
       getUserBooksCount(user.id),
       getProcessingFilesCount(user.id),
       getInProgressBooksCount(user.id),
@@ -56,7 +46,7 @@ export default async function Home() {
       if (book) {
         const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt));
         const progressPercent = mostRecentUserBook.progressPercent ?? 0;
-        
+
         lastOpened = {
           title: book.title ?? 'Untitled',
           detail: timeSince,

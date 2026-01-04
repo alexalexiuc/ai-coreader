@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/cookies';
-import {
-  getUserBooksCount,
-  getMostRecentUserBook,
-  getInProgressBooksCount,
-} from '@/lib/db/user-books';
+import { getUserBooksCount, getMostRecentUserBook, getInProgressBooksCount } from '@/lib/db/user-books';
 import { getRecentFilesWithBooks, getProcessingFilesCount } from '@/lib/db/files';
 import { findBookById } from '@/lib/db/books';
 import { getTimeSince } from '@/lib/utils/time';
@@ -29,13 +25,7 @@ export async function GET(_request: NextRequest) {
     }
 
     // Fetch all data in parallel for authenticated users
-    const [
-      booksTotal,
-      processingCount,
-      inProgressCount,
-      mostRecentUserBook,
-      recentFiles,
-    ] = await Promise.all([
+    const [booksTotal, processingCount, inProgressCount, mostRecentUserBook, recentFiles] = await Promise.all([
       getUserBooksCount(user.id),
       getProcessingFilesCount(user.id),
       getInProgressBooksCount(user.id),
@@ -51,7 +41,7 @@ export async function GET(_request: NextRequest) {
       if (book) {
         const progressPercent = mostRecentUserBook.progressPercent ?? 0;
         const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt));
-        
+
         continueReading = {
           bookId: book.id,
           title: book.title ?? 'Untitled',
@@ -62,7 +52,7 @@ export async function GET(_request: NextRequest) {
           lastPageIndex: mostRecentUserBook.lastPageIndex,
           lastChunkIndex: mostRecentUserBook.lastChunkIndex,
         };
-        
+
         lastOpened = {
           title: book.title ?? 'Untitled',
           detail: timeSince,
@@ -94,9 +84,6 @@ export async function GET(_request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Dashboard API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
   }
 }

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function FilesPage() {
   const user = await getCurrentUser();
-  
+
   // Only show files if user is authenticated
   const files = user ? await listFilesWithBooks(new ObjectId(user.id)) : [];
   const uploads = files.map(toUploadedFile);

@@ -99,10 +99,7 @@ export async function getUserBooks(userId: string): Promise<BookDTO[]> {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$bookId', '$$bookId'] },
-                    { $eq: ['$userId', userIdObj] },
-                  ],
+                  $and: [{ $eq: ['$bookId', '$$bookId'] }, { $eq: ['$userId', userIdObj] }],
                 },
               },
             },

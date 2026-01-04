@@ -100,7 +100,7 @@ type UserBooksDoc struct {
 	LastPageIndex   int                `bson:"lastPageIndex,omitempty" json:"lastPageIndex,omitempty"`
 	LastChunkIndex  int                `bson:"lastChunkIndex,omitempty" json:"lastChunkIndex,omitempty"`
 	LastCharOffset  int                `bson:"lastCharOffset,omitempty" json:"lastCharOffset,omitempty"`
-	ProgressPercent float64            `bson:"progressPercent,omitempty" json:"progressPercent,omitempty"`
+	ProgressPercent int                `bson:"progressPercent,omitempty" json:"progressPercent,omitempty"`
 	StartedAt       time.Time          `bson:"startedAt,omitempty" json:"startedAt,omitempty"`
 	FinishedAt      time.Time          `bson:"finishedAt,omitempty" json:"finishedAt,omitempty"`
 }

@@ -5,12 +5,14 @@ This directory contains end-to-end tests for the application.
 ## Test Files
 
 ### Core Features
+
 - **home.spec.ts** - Basic test for home page
 - **uploads.spec.ts** - Comprehensive E2E test suite with 36 tests covering all uploads page functionality
 - **library.spec.ts** - Comprehensive E2E test suite with 42 tests covering all library page functionality
 - **reader.spec.ts** - Tests for the book reader interface
 
 ### Authentication & Authorization
+
 - **auth.spec.ts** - Registration, login, and logout flows
 - **account.spec.ts** - Personal cabinet and password change functionality
 - **dashboard.spec.ts** - Guest and authenticated dashboard views with real data
@@ -54,7 +56,7 @@ This command will:
 # Authentication tests
 npm run e2e -- auth.spec.ts
 
-# Dashboard tests  
+# Dashboard tests
 npm run e2e -- dashboard.spec.ts
 
 # Personal cabinet tests
@@ -113,8 +115,9 @@ Tests automatically apply seed data from `/infra/db/seeds/20250201000000-sample-
 ## Test Status
 
 All test scenarios have been implemented and cover the following:
+
 - ✅ Guest and authenticated dashboard views
-- ✅ Registration, login, and logout flows  
+- ✅ Registration, login, and logout flows
 - ✅ Personal cabinet and password change functionality
 - ✅ Authorization guards for books, files, and API endpoints
 

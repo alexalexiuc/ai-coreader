@@ -72,7 +72,8 @@ const users = [
     createdAt: testUserCreatedAt,
     updatedAt: testUserCreatedAt,
     email: "testuser@example.com",
-    passwordHash: "$2b$10$9H9U5BPM4ty2VyF8hHJaie9Q5Rk7FV6nBQ.I2b1hd61RL9eLJco3S",
+    passwordHash:
+      "$2b$10$9H9U5BPM4ty2VyF8hHJaie9Q5Rk7FV6nBQ.I2b1hd61RL9eLJco3S",
     firstName: "Test",
     lastName: "User",
   },
@@ -385,7 +386,7 @@ const userBooks = [
     lastPageIndex: new Int32(12),
     lastChunkIndex: new Int32(25),
     lastCharOffset: new Int32(30000),
-    progressPercent: new Double(25.5),
+    progressPercent: new Int32(25),
     startedAt: mockFoundationAddedAt,
   },
   {
@@ -398,7 +399,7 @@ const userBooks = [
     lastPageIndex: new Int32(5),
     lastChunkIndex: new Int32(10),
     lastCharOffset: new Int32(12000),
-    progressPercent: new Double(8.0),
+    progressPercent: new Int32(8),
     startedAt: mockMartianAddedAt,
   },
 ];

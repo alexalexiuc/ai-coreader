@@ -13,7 +13,10 @@ test.describe('Personal Cabinet', () => {
     test('should allow authenticated user to access personal cabinet', async ({ page }) => {
       // Login first
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
@@ -32,12 +35,15 @@ test.describe('Personal Cabinet', () => {
     test.beforeEach(async ({ page }) => {
       // Login before each test
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
-      
+
       // Go to account page
       await page.goto('/account');
     });
@@ -45,7 +51,7 @@ test.describe('Personal Cabinet', () => {
     test('should display user email and account creation date', async ({ page }) => {
       // Check email is displayed
       await expect(page.getByText('testuser@example.com')).toBeVisible();
-      
+
       // Check account creation date section exists
       await expect(page.getByText(/Account Created/i)).toBeVisible();
     });
@@ -61,12 +67,15 @@ test.describe('Personal Cabinet', () => {
     test.beforeEach(async ({ page }) => {
       // Login before each test
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
-      
+
       // Go to account page and switch to password tab
       await page.goto('/account');
       await page.getByRole('button', { name: /Change Password/i }).click();
@@ -170,7 +179,10 @@ test.describe('Personal Cabinet', () => {
       await page.waitForTimeout(500);
 
       // Try to login with new password
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill(newPassword);
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
@@ -201,7 +213,10 @@ test.describe('Personal Cabinet', () => {
       await page.waitForTimeout(500);
 
       // Try to login with old password
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
@@ -228,7 +243,7 @@ test.describe('Personal Cabinet', () => {
       // Current session should remain valid (page should still work)
       await page.goto('/');
       await expect(page.getByText(/Your reading dashboard/i)).toBeVisible();
-      
+
       // User should still be logged in
       const loginButton = page.getByRole('button', { name: /Log in/i }).first();
       await expect(loginButton).not.toBeVisible();

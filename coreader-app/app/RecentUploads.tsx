@@ -35,9 +35,9 @@ export function RecentUploads({ recentUploads, isGuest = false }: { recentUpload
               key={`${upload.title}-${idx}`}
               className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 px-4 py-3"
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{upload.title}</p>
-                <div className="flex items-center gap-2 mt-1">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-white">{upload.title}</p>
+                <div className="mt-1 flex items-center gap-2">
                   <p className="text-xs text-slate-400 capitalize">{upload.status}</p>
                   {upload.status === 'processing' && upload.percentage !== undefined && (
                     <p className="text-xs text-slate-400">• {Math.round(upload.percentage)}%</p>
@@ -50,7 +50,7 @@ export function RecentUploads({ recentUploads, isGuest = false }: { recentUpload
                 </div>
               </div>
               <span
-                className={`rounded-full border px-2 py-0.5 text-[11px] ml-2 ${
+                className={`ml-2 rounded-full border px-2 py-0.5 text-[11px] ${
                   upload.status === 'processed'
                     ? 'border-emerald-800 bg-emerald-900/30 text-emerald-300'
                     : upload.status === 'processing'

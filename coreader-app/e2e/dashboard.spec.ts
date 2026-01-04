@@ -29,11 +29,11 @@ test.describe('Dashboard Page', () => {
 
       // Guest should not see actual book titles or progress
       const bodyText = await page.locator('body').textContent();
-      
+
       // Should NOT contain test user's books
       expect(bodyText).not.toContain('Foundation');
       expect(bodyText).not.toContain('Martian Chronicles');
-      
+
       // Total books should show guest message
       await expect(page.getByText(/Create an account/i)).toBeVisible();
     });
@@ -43,7 +43,10 @@ test.describe('Dashboard Page', () => {
     test.beforeEach(async ({ page }) => {
       // Login before each test
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();
@@ -93,7 +96,7 @@ test.describe('Dashboard Page', () => {
 
       // Should navigate to reader page
       await page.waitForURL(/\/reader\/[a-f0-9]+/);
-      
+
       // Reader page should load
       await expect(page.locator('body')).toContainText('Foundation');
     });
@@ -103,7 +106,7 @@ test.describe('Dashboard Page', () => {
 
       // Recent uploads section should be visible
       const bodyText = await page.locator('body').textContent();
-      
+
       // Should show both files from seed
       expect(bodyText).toContain('foundation.txt');
       expect(bodyText).toContain('i_robot.txt');
@@ -114,7 +117,7 @@ test.describe('Dashboard Page', () => {
 
       // Look for foundation.txt which is processed
       await expect(page.getByText(/foundation\.txt/i)).toBeVisible();
-      
+
       // Processed files should have a link/indication they can be read
       // The book title "Foundation" should appear near the file
       const bodyText = await page.locator('body').textContent();
@@ -126,7 +129,7 @@ test.describe('Dashboard Page', () => {
 
       // Look for i_robot.txt which is processing at 45%
       await expect(page.getByText(/i_robot\.txt/i)).toBeVisible();
-      
+
       // Should show processing status or percentage
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toMatch(/45|processing/i);
@@ -137,7 +140,7 @@ test.describe('Dashboard Page', () => {
 
       // Workspace overview should show processing indicator
       await expect(page.getByText(/processing/i)).toBeVisible();
-      
+
       // Should show count of processing files (1 from seed: I, Robot)
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toMatch(/1\s+processing/i);
@@ -147,7 +150,7 @@ test.describe('Dashboard Page', () => {
       // This test would need a different seed state or we skip it
       // For now, we expect processing indicator since we have i_robot.txt processing
       await page.goto('/');
-      
+
       // With current seed, should show "1 processing"
       await expect(page.getByText(/1\s+processing/i)).toBeVisible();
     });
@@ -157,7 +160,10 @@ test.describe('Dashboard Page', () => {
     test.beforeEach(async ({ page }) => {
       // Login before each test
       await page.goto('/');
-      await page.getByRole('button', { name: /Log in/i }).first().click();
+      await page
+        .getByRole('button', { name: /Log in/i })
+        .first()
+        .click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
       await page.locator('form').getByRole('button', { name: /Login/i }).click();

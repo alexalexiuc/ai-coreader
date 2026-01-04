@@ -19,3 +19,6 @@
 - [worker]: When file processing fails, instead of removing the book entirely, mark it as failed and allow users to retry processing(same as we retry file processing). But remove chunks and entities. And make sure on next file process iteration, we reuse existing book document if it exist.
 - [worker]: Hanlde chapters. If LLM returns chapters in chunk analysis, we need to store them in the DB and later use them to build book TOC.
 - [worker]: Unit tests for chunking functions show first chunk is NOT skipped (offset 0). If chunks appear to start in the middle, investigate actual file content and LLM processing, not chunking.
+- [coreader-app]: After register/login/logout, Main page does not refreshes with new messages (as per guest vs logged in user). Fix this.
+- [coreader-app]: Use button component for Login/Register (create a new button variant if needed).
+- [coreader-app]: If book has no name, but it is being processed, show "Processing..." instead of "Untitled".
