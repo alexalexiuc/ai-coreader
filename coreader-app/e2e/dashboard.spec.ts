@@ -46,7 +46,7 @@ test.describe('Dashboard Page', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
     });
 
@@ -160,7 +160,7 @@ test.describe('Dashboard Page', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
     });
 

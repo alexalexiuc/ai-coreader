@@ -6,10 +6,10 @@ test.describe('Authentication Flows', () => {
       await page.goto('/');
 
       // Open registration modal
-      await page.getByRole('button', { name: /Register/i }).first().click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).first().click();
 
       // Wait for modal to be visible
-      await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Register' })).toBeVisible();
 
       // Fill registration form with unique email
       const uniqueEmail = `test${Date.now()}@example.com`;
@@ -19,7 +19,7 @@ test.describe('Authentication Flows', () => {
       await page.getByLabel(/Last Name/i).fill('User');
 
       // Submit form
-      await page.getByRole('button', { name: /Sign Up/i }).click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).click();
 
       // Wait for registration to complete and user to be logged in
       await page.waitForTimeout(1000);
@@ -29,7 +29,7 @@ test.describe('Authentication Flows', () => {
       await expect(page.getByText(/Your reading dashboard/i)).toBeVisible();
       
       // Should NOT see guest CTAs anymore
-      const registerButton = page.getByRole('button', { name: /Register/i }).first();
+      const registerButton = page.locator('form').getByRole('button', { name: /Register/i }).first();
       await expect(registerButton).not.toBeVisible();
     });
 
@@ -37,7 +37,7 @@ test.describe('Authentication Flows', () => {
       await page.goto('/');
 
       // Open registration modal
-      await page.getByRole('button', { name: /Register/i }).first().click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).first().click();
 
       // Try to register with existing test user email
       await page.getByLabel(/Email/i).fill('testuser@example.com');
@@ -46,7 +46,7 @@ test.describe('Authentication Flows', () => {
       await page.getByLabel(/Last Name/i).fill('User');
 
       // Submit form
-      await page.getByRole('button', { name: /Sign Up/i }).click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).click();
 
       // Wait for error message
       await page.waitForTimeout(500);
@@ -59,7 +59,7 @@ test.describe('Authentication Flows', () => {
       await page.goto('/');
 
       // Open registration modal
-      await page.getByRole('button', { name: /Register/i }).first().click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).first().click();
 
       // Try to register with short password
       await page.getByLabel(/Email/i).fill('shortpass@example.com');
@@ -68,7 +68,7 @@ test.describe('Authentication Flows', () => {
       await page.getByLabel(/Last Name/i).fill('Pass');
 
       // Submit form
-      await page.getByRole('button', { name: /Sign Up/i }).click();
+      await page.locator('form').getByRole('button', { name: /Register/i }).click();
 
       // Wait for error message
       await page.waitForTimeout(500);
@@ -86,14 +86,14 @@ test.describe('Authentication Flows', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
 
       // Wait for modal to be visible
-      await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
 
       // Fill login form with test user
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
 
       // Submit form
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
 
       // Wait for login to complete
       await page.waitForTimeout(1000);
@@ -117,7 +117,7 @@ test.describe('Authentication Flows', () => {
       await page.getByLabel(/Password/i).fill('WrongPassword123!');
 
       // Submit form
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
 
       // Wait for error message
       await page.waitForTimeout(500);
@@ -133,7 +133,7 @@ test.describe('Authentication Flows', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
 
       // Reload page
@@ -155,7 +155,7 @@ test.describe('Authentication Flows', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
 
       // Click logout (in user menu or header)
@@ -183,7 +183,7 @@ test.describe('Authentication Flows', () => {
 
       // Should be back to guest state
       await expect(page.getByRole('button', { name: /Log in/i }).first()).toBeVisible();
-      await expect(page.getByRole('button', { name: /Register/i }).first()).toBeVisible();
+      await expect(page.locator('form').getByRole('button', { name: /Register/i }).first()).toBeVisible();
       
       // Dashboard should show guest messaging
       await expect(page.getByText(/Create an account/i)).toBeVisible();

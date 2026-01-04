@@ -16,7 +16,7 @@ test.describe('Personal Cabinet', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
 
       // Navigate to account page
@@ -35,7 +35,7 @@ test.describe('Personal Cabinet', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
       
       // Go to account page
@@ -64,7 +64,7 @@ test.describe('Personal Cabinet', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
       
       // Go to account page and switch to password tab
@@ -173,7 +173,7 @@ test.describe('Personal Cabinet', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill(newPassword);
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(1000);
 
       // Should be logged in successfully
@@ -204,7 +204,7 @@ test.describe('Personal Cabinet', () => {
       await page.getByRole('button', { name: /Log in/i }).first().click();
       await page.getByLabel(/Email/i).fill('testuser@example.com');
       await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
+      await page.locator('form').getByRole('button', { name: /Login/i }).click();
       await page.waitForTimeout(500);
 
       // Should show error - old password no longer works
