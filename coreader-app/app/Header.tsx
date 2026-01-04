@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IoPersonCircleOutline } from 'react-icons/io5';
 import { useAuth } from './contexts/AuthContext';
 import { LoginModal } from './auth/LoginModal';
@@ -12,6 +12,24 @@ export const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   const handleLogout = async () => {
     try {
@@ -46,7 +64,7 @@ export const Header = () => {
               </div>
             </div>
           ) : user ? (
-            <div>
+            <div ref={menuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 rounded-full border border-gray-800 bg-gray-900/70 px-3 py-1 shadow-sm transition hover:bg-gray-800"
