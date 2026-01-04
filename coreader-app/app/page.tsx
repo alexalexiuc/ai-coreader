@@ -51,10 +51,10 @@ export default async function Home() {
 
     // Build stats and continue reading from most recent book
     let lastOpened = null;
-    if (mostRecentUserBook) {
+    if (mostRecentUserBook && mostRecentUserBook.lastOpenedAt) {
       const book = await findBookById(mostRecentUserBook.bookId);
       if (book) {
-        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
+        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt));
         const progressPercent = mostRecentUserBook.progressPercent ?? 0;
         
         lastOpened = {

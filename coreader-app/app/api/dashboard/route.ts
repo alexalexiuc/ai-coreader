@@ -46,11 +46,11 @@ export async function GET(_request: NextRequest) {
     // Get book details for most recent book (for both continueReading and lastOpened)
     let continueReading = null;
     let lastOpened = null;
-    if (mostRecentUserBook) {
+    if (mostRecentUserBook && mostRecentUserBook.lastOpenedAt) {
       const book = await findBookById(mostRecentUserBook.bookId);
       if (book) {
         const progressPercent = mostRecentUserBook.progressPercent ?? 0;
-        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
+        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt));
         
         continueReading = {
           bookId: book.id,
