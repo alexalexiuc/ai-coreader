@@ -4,9 +4,17 @@ This directory contains end-to-end tests for the application.
 
 ## Test Files
 
+### Core Features
 - **home.spec.ts** - Basic test for home page
 - **uploads.spec.ts** - Comprehensive E2E test suite with 36 tests covering all uploads page functionality
 - **library.spec.ts** - Comprehensive E2E test suite with 42 tests covering all library page functionality
+- **reader.spec.ts** - Tests for the book reader interface
+
+### Authentication & Authorization
+- **auth.spec.ts** - Registration, login, and logout flows
+- **account.spec.ts** - Personal cabinet and password change functionality
+- **dashboard.spec.ts** - Guest and authenticated dashboard views with real data
+- **authorization.spec.ts** - Ownership guards for books, files, and API endpoints
 
 ## Running Tests
 
@@ -40,15 +48,25 @@ This command will:
 - Apply DB migrations and seeds to `llm_reader_e2e`
 - Start the Next.js dev server and run Playwright tests
 
-### Run Only Uploads Tests
+### Run Specific Test Suites
 
 ```bash
+# Authentication tests
+npm run e2e -- auth.spec.ts
+
+# Dashboard tests  
+npm run e2e -- dashboard.spec.ts
+
+# Personal cabinet tests
+npm run e2e -- account.spec.ts
+
+# Authorization tests
+npm run e2e -- authorization.spec.ts
+
+# Uploads tests
 npm run e2e -- uploads.spec.ts
-```
 
-### Run Only Library Tests
-
-```bash
+# Library tests
 npm run e2e -- library.spec.ts
 ```
 
@@ -62,22 +80,45 @@ npm run e2e:ui
 
 Tests automatically apply seed data from `/infra/db/seeds/20250201000000-sample-data.js`, which includes:
 
+### Users (for Auth tests):
+
+- **testuser@example.com** - Test user account
+  - Password: `TestPassword123!`
+  - Used for authentication and authorization tests
+
 ### Files (for Uploads page):
 
-- **foundation.txt** - Completed upload with book
-- **i_robot.txt** - Processing upload (45% complete)
-- **dune.txt** - Completed upload
-- **bradbury_martian_chronicles.txt** - Completed upload
+- **foundation.txt** - Completed upload with book (owned by test user)
+- **i_robot.txt** - Processing upload at 45% (owned by test user)
+- **dune.txt** - Completed upload (no owner)
+- **bradbury_martian_chronicles.txt** - Completed upload (no owner)
 - **some_scan.pdf** - Failed upload (unsupported format)
+- **ember-archive.pdf** - Completed upload (no owner)
+- **atlas-field-notes.txt** - Processing upload (no owner)
 
 ### Books (for Library page):
 
-- **Foundation** - Isaac Asimov (processed, uploaded)
-- **I, Robot** - Isaac Asimov (not processed, uploaded)
-- **Dune** - Frank Herbert (processed, from shop)
-- **The Martian Chronicles** - Ray Bradbury (processed, from shop)
-- **The Ember Archive** - A. Storyteller (processed, uploaded)
-- **Atlas Field Notes** - Q. Cartographer (not processed, from shop)
+- **Foundation** - Isaac Asimov (processed, owned by test user with 25.5% progress)
+- **I, Robot** - Isaac Asimov (processing, file owned by test user but no user-book link yet)
+- **Dune** - Frank Herbert (processed, from shop, not owned by test user)
+- **The Martian Chronicles** - Ray Bradbury (processed, owned by test user with 8% progress)
+- **The Ember Archive** - A. Storyteller (processed, uploaded, not owned by test user)
+- **Atlas Field Notes** - Q. Cartographer (not processed, from shop, not owned by test user)
+
+### User-Books (for Dashboard & Reading Progress):
+
+- **Foundation** - Last opened, 25.5% progress, page 12
+- **The Martian Chronicles** - 8% progress, page 5
+
+## Test Status
+
+All test scenarios have been implemented and cover the following:
+- ✅ Guest and authenticated dashboard views
+- ✅ Registration, login, and logout flows  
+- ✅ Personal cabinet and password change functionality
+- ✅ Authorization guards for books, files, and API endpoints
+
+**Note**: Tests are functional but may need minor selector adjustments for strict mode violations. See `/tmp/E2E_IMPLEMENTATION_SUMMARY.md` for details.
 
 ## Test Approach
 

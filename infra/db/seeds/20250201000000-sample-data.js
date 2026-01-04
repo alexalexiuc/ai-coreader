@@ -1,5 +1,10 @@
 const { Double, Int32, ObjectId } = require("mongodb");
 
+// Test user IDs
+const userIds = {
+  testUser: new ObjectId("66f000000000000000000601"),
+};
+
 const fileIds = {
   emberArchive: new ObjectId("66f000000000000000000001"),
   atlasNotes: new ObjectId("66f000000000000000000002"),
@@ -23,6 +28,11 @@ const mockBookIds = {
   iRobot: new ObjectId("66f000000000000000000502"),
   dune: new ObjectId("66f000000000000000000503"),
   martianChronicles: new ObjectId("66f000000000000000000504"),
+};
+
+const userBookIds = {
+  foundation: new ObjectId("66f000000000000000000701"),
+  martianChronicles: new ObjectId("66f000000000000000000702"),
 };
 
 const chunkIds = {
@@ -50,6 +60,23 @@ const mockRobotOpenedAt = new Date("2025-12-11T18:40:00.000Z");
 const mockDuneAddedAt = new Date("2025-12-15T09:10:00.000Z");
 const mockMartianAddedAt = new Date("2025-11-28T09:10:00.000Z");
 const mockMartianOpenedAt = new Date("2025-12-01T07:10:00.000Z");
+const testUserCreatedAt = new Date("2025-12-01T10:00:00.000Z");
+const foundationUserBookUpdatedAt = new Date("2025-12-18T20:30:00.000Z");
+const martianUserBookUpdatedAt = new Date("2025-12-01T08:00:00.000Z");
+
+// Test users for E2E auth tests
+// Password for testuser@example.com: TestPassword123!
+const users = [
+  {
+    _id: userIds.testUser,
+    createdAt: testUserCreatedAt,
+    updatedAt: testUserCreatedAt,
+    email: "testuser@example.com",
+    passwordHash: "$2b$10$9H9U5BPM4ty2VyF8hHJaie9Q5Rk7FV6nBQ.I2b1hd61RL9eLJco3S",
+    firstName: "Test",
+    lastName: "User",
+  },
+];
 
 const files = [
   {
@@ -87,6 +114,7 @@ const files = [
     storageName: "foundation.txt",
     percentage: new Double(100),
     status: "processed",
+    userId: userIds.testUser,
   },
   {
     _id: mockFileIds.iRobot,
@@ -99,6 +127,7 @@ const files = [
     storageName: "i_robot.txt",
     percentage: new Double(45),
     status: "processing",
+    userId: userIds.testUser,
   },
   {
     _id: mockFileIds.dune,
@@ -344,11 +373,43 @@ const entityDescriptions = [
   },
 ];
 
+// User-books entries linking test user to books with reading progress
+const userBooks = [
+  {
+    _id: userBookIds.foundation,
+    userId: userIds.testUser,
+    bookId: mockBookIds.foundation,
+    createdAt: mockFoundationAddedAt,
+    updatedAt: foundationUserBookUpdatedAt,
+    lastOpenedAt: mockFoundationOpenedAt,
+    lastPageIndex: new Int32(12),
+    lastChunkIndex: new Int32(25),
+    lastCharOffset: new Int32(30000),
+    progressPercent: new Double(25.5),
+    startedAt: mockFoundationAddedAt,
+  },
+  {
+    _id: userBookIds.martianChronicles,
+    userId: userIds.testUser,
+    bookId: mockBookIds.martianChronicles,
+    createdAt: mockMartianAddedAt,
+    updatedAt: martianUserBookUpdatedAt,
+    lastOpenedAt: mockMartianOpenedAt,
+    lastPageIndex: new Int32(5),
+    lastChunkIndex: new Int32(10),
+    lastCharOffset: new Int32(12000),
+    progressPercent: new Double(8.0),
+    startedAt: mockMartianAddedAt,
+  },
+];
+
 module.exports.seed = async (db) => {
+  await db.collection("users").insertMany(users, { ordered: true });
   await db.collection("files").insertMany(files, { ordered: true });
   await db.collection("books").insertMany(books, { ordered: true });
   await db.collection("books-chunks").insertMany(bookChunks, { ordered: true });
   await db
     .collection("entity-descriptions")
     .insertMany(entityDescriptions, { ordered: true });
+  await db.collection("user-books").insertMany(userBooks, { ordered: true });
 };
