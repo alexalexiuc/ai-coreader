@@ -27,14 +27,20 @@ export async function createUser(params: { email: string; passwordHash: string; 
   const db = await getDb();
   const now = new Date();
 
-  const userDoc: Omit<UsersDoc, '_id'> = {
+  const userDoc: Partial<Omit<UsersDoc, '_id'>> = {
     email: params.email,
     passwordHash: params.passwordHash,
-    firstName: params.firstName,
-    lastName: params.lastName,
     createdAt: now,
     updatedAt: now,
   };
+
+  // Only include optional fields if they have values
+  if (params.firstName) {
+    userDoc.firstName = params.firstName;
+  }
+  if (params.lastName) {
+    userDoc.lastName = params.lastName;
+  }
 
   const result = await withMongoValidation(() => db.collection<UsersDoc>(collections.USERS).insertOne(userDoc as UsersDoc));
 
@@ -69,4 +75,47 @@ export async function findUserById(id: string | ObjectId): Promise<UsersDoc | nu
 export async function getUserById(id: string | ObjectId): Promise<UserDTO | null> {
   const user = await findUserById(id);
   return user ? toDTO(user) : null;
+}
+
+/**
+ * Update user password
+ */
+export async function updateUserPassword(id: string | ObjectId, passwordHash: string): Promise<void> {
+  const db = await getDb();
+  const _id = typeof id === 'string' ? new ObjectId(id) : id;
+
+  await withMongoValidation(() =>
+    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: { passwordHash, updatedAt: new Date() } }),
+  );
+}
+
+/**
+ * Update user profile (name)
+ */
+export async function updateUserProfile(id: string | ObjectId, updates: { firstName?: string; lastName?: string }): Promise<UserDTO> {
+  const db = await getDb();
+  const _id = typeof id === 'string' ? new ObjectId(id) : id;
+
+  const updateFields: Partial<Pick<UsersDoc, 'firstName' | 'lastName' | 'updatedAt'>> = { 
+    updatedAt: new Date() 
+  };
+  
+  // Only include fields that are explicitly provided
+  if (updates.firstName !== undefined) {
+    updateFields.firstName = updates.firstName;
+  }
+  if (updates.lastName !== undefined) {
+    updateFields.lastName = updates.lastName;
+  }
+
+  await withMongoValidation(() =>
+    db.collection<UsersDoc>(collections.USERS).updateOne({ _id }, { $set: updateFields }),
+  );
+
+  const updated = await db.collection<UsersDoc>(collections.USERS).findOne({ _id });
+  if (!updated) {
+    throw new Error('Failed to retrieve updated user');
+  }
+
+  return toDTO(updated);
 }

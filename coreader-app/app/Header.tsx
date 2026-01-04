@@ -78,9 +78,16 @@ export const Header = () => {
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 rounded-lg border border-gray-800 bg-gray-900 shadow-xl">
+                  <Link
+                    href="/account"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block w-full rounded-t-lg px-4 py-2 text-left text-sm text-white transition hover:bg-gray-800"
+                  >
+                    Account Settings
+                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full rounded-lg px-4 py-2 text-left text-sm text-white transition hover:bg-gray-800"
+                    className="w-full rounded-b-lg px-4 py-2 text-left text-sm text-white transition hover:bg-gray-800"
                   >
                     Logout
                   </button>
