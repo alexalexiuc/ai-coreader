@@ -97,12 +97,16 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 
 	// Create user-book link if file has a userId (user-uploaded file)
 	if !file.UserID.IsZero() {
-		_, err := db.CreateOrUpdateUserBook(file.UserID, book.ID)
+		_, created, err := db.CreateOrUpdateUserBook(file.UserID, book.ID)
 		if err != nil {
 			log.Printf("Warning: Failed to create user-book link for userId=%s bookId=%s: %v", file.UserID.Hex(), book.ID.Hex(), err)
 			// Non-fatal: continue processing even if link creation fails
 		} else {
-			log.Printf("Created user-book link for userId=%s bookId=%s", file.UserID.Hex(), book.ID.Hex())
+			action := "Updated"
+			if created {
+				action = "Created"
+			}
+			log.Printf("%s user-book link for userId=%s bookId=%s", action, file.UserID.Hex(), book.ID.Hex())
 		}
 	}
 

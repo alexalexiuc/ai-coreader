@@ -108,18 +108,15 @@ export async function updateReadingProgress(
   const userIdObj = new ObjectId(userId);
   const bookIdObj = new ObjectId(bookId);
 
-  const updateFields: Partial<UserBooksDoc> = {
+  const baseFields = {
     lastOpenedAt: now,
     updatedAt: now,
-    ...progress,
   };
 
-  // Remove undefined fields
-  Object.keys(updateFields).forEach((key) => {
-    if (updateFields[key as keyof typeof updateFields] === undefined) {
-      delete updateFields[key as keyof typeof updateFields];
-    }
-  });
+  // Only include defined progress fields
+  const updateFields = Object.fromEntries(
+    Object.entries({ ...baseFields, ...progress }).filter(([_, value]) => value !== undefined),
+  ) as Partial<UserBooksDoc>;
 
   await withMongoValidation(() =>
     db.collection<UserBooksDoc>(collections.USER_BOOKS).updateOne(

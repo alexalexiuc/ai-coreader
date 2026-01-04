@@ -67,8 +67,8 @@ export async function listFilesAction(): Promise<FileWithBookDTO[]> {
     return []; // Return empty list for unauthenticated users
   }
 
-  // TODO: Filter to only return files belonging to the user
-  return listFilesWithBooks();
+  // Filter to only return files belonging to the user
+  return listFilesWithBooks(new ObjectId(user.id));
 }
 
 export async function reprocessFileAction(id: string) {

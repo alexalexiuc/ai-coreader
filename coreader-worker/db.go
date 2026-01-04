@@ -348,7 +348,8 @@ func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 
 // CreateOrUpdateUserBook creates a new user-book link or updates existing one (upsert)
 // This establishes ownership and can initialize reading metadata
-func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive.ObjectID) (*UserBooksDoc, error) {
+// Returns the user-book doc and a boolean indicating if it was created (true) or updated (false)
+func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive.ObjectID) (*UserBooksDoc, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -363,13 +364,13 @@ func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive
 		// Link exists, just update the timestamp
 		_, err := UpdateOneWithMeta(ctx, db.UserBooksCollection, existing.ID, bson.M{})
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		return &existing, nil
+		return &existing, false, nil
 	}
 
 	if err != mongo.ErrNoDocuments {
-		return nil, err
+		return nil, false, err
 	}
 
 	// Create new link
@@ -382,8 +383,8 @@ func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive
 
 	result, err := InsertOneWithMeta(ctx, db.UserBooksCollection, userBook)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return result, nil
+	return result, true, nil
 }

@@ -96,11 +96,13 @@ export async function listFiles(): Promise<FileDTO[]> {
   return docs.map(toDTO);
 }
 
-export async function listFilesWithBooks(): Promise<FileWithBookDTO[]> {
+export async function listFilesWithBooks(userId?: ObjectId): Promise<FileWithBookDTO[]> {
   const db = await getDb();
+  const filter = userId ? { userId } : {};
   const docs = await db
     .collection<FilesDoc>(collections.FILES)
     .aggregate<FileWithBookDoc>([
+      { $match: filter },
       { $sort: { createdAt: -1 } },
       {
         $lookup: {
