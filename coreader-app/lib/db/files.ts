@@ -171,3 +171,62 @@ export async function resetFileForReprocessing(id: string): Promise<void> {
     ),
   );
 }
+
+/**
+ * Get recent files with books for a user (limited)
+ */
+export async function getRecentFilesWithBooks(userId: string, limit: number = 5): Promise<FileWithBookDTO[]> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+  const docs = await db
+    .collection<FilesDoc>(collections.FILES)
+    .aggregate<FileWithBookDoc>([
+      { $match: { userId: userIdObj } },
+      { $sort: { createdAt: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: collections.BOOKS,
+          let: { fileId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$fileId', '$$fileId'],
+                },
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 },
+          ],
+          as: 'book',
+        },
+      },
+      {
+        $unwind: {
+          path: '$book',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ])
+    .toArray();
+
+  return docs.map((doc) => ({
+    ...toDTO(doc),
+    bookId: doc.book?._id.toHexString(),
+    bookTitle: doc.book?.title,
+  }));
+}
+
+/**
+ * Get count of files currently being processed for a user
+ */
+export async function getProcessingFilesCount(userId: string): Promise<number> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+
+  return db.collection<FilesDoc>(collections.FILES).countDocuments({
+    userId: userIdObj,
+    status: 'processing',
+  });
+}
