@@ -42,12 +42,15 @@ export async function GET(_request: NextRequest) {
       getRecentFilesWithBooks(user.id, 5),
     ]);
 
-    // Get book details for most recent book
+    // Get book details for most recent book (for both continueReading and lastOpened)
     let continueReading = null;
+    let lastOpened = null;
     if (mostRecentUserBook) {
       const book = await findBookById(mostRecentUserBook.bookId);
       if (book) {
         const progressPercent = mostRecentUserBook.progressPercent ?? 0;
+        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
+        
         continueReading = {
           bookId: book.id,
           title: book.title ?? 'Untitled',
@@ -57,6 +60,11 @@ export async function GET(_request: NextRequest) {
           lastOpenedAt: mostRecentUserBook.lastOpenedAt,
           lastPageIndex: mostRecentUserBook.lastPageIndex,
           lastChunkIndex: mostRecentUserBook.lastChunkIndex,
+        };
+        
+        lastOpened = {
+          title: book.title ?? 'Untitled',
+          detail: timeSince,
         };
       }
     }
@@ -71,19 +79,6 @@ export async function GET(_request: NextRequest) {
       bookTitle: file.bookTitle,
       createdAt: file.createdAt,
     }));
-
-    // Build last opened info
-    let lastOpened = null;
-    if (mostRecentUserBook) {
-      const book = await findBookById(mostRecentUserBook.bookId);
-      if (book) {
-        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
-        lastOpened = {
-          title: book.title ?? 'Untitled',
-          detail: timeSince,
-        };
-      }
-    }
 
     return NextResponse.json({
       isGuest: false,

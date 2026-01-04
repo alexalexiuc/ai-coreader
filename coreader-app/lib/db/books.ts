@@ -80,3 +80,46 @@ export async function findBookById(bookId: string): Promise<BookDTO | null> {
 
 // Backward-compatible alias
 export const fetchBooks = listBooks;
+
+/**
+ * Get books owned by a specific user (via user-books collection)
+ */
+export async function getUserBooks(userId: string): Promise<BookDTO[]> {
+  const db = await getDb();
+  const userIdObj = new ObjectId(userId);
+
+  const books = await db
+    .collection<BooksDoc>(collections.BOOKS)
+    .aggregate<BooksDoc>([
+      {
+        $lookup: {
+          from: collections.USER_BOOKS,
+          let: { bookId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$bookId', '$$bookId'] },
+                    { $eq: ['$userId', userIdObj] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'userBook',
+        },
+      },
+      {
+        $match: {
+          userBook: { $ne: [] },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ])
+    .toArray();
+
+  return books.map(toDTO);
+}
