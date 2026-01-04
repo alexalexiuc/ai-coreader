@@ -1,6 +1,6 @@
 'use server';
 
-import { listBooks, type BookDTO } from '@/lib/db/books';
+import { type BookDTO } from '@/lib/db/books';
 import { getCurrentUser } from '@/lib/auth/cookies';
 import { getUserBooks } from '@/lib/db/user-books';
 import { getDb, collections } from '@/lib/db/mongo';
