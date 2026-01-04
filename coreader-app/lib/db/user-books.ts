@@ -208,7 +208,7 @@ export async function getMostRecentUserBook(userId: string): Promise<UserBookDTO
     .collection<UserBooksDoc>(collections.USER_BOOKS)
     .find({ 
       userId: userIdObj, 
-      lastOpenedAt: { $ne: null, $exists: true } 
+      lastOpenedAt: { $ne: null } 
     })
     .sort({ lastOpenedAt: -1 })
     .limit(1)
@@ -227,7 +227,7 @@ export async function getInProgressBooksCount(userId: string): Promise<number> {
   return db.collection<UserBooksDoc>(collections.USER_BOOKS).countDocuments({
     userId: userIdObj,
     finishedAt: { $exists: false },
-    lastOpenedAt: { $ne: null, $exists: true },
+    lastOpenedAt: { $ne: null },
   });
 }
 

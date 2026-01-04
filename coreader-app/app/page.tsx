@@ -82,7 +82,7 @@ export default async function Home() {
     // Build recent uploads
     recentUploads = recentFiles.map((file) => ({
       title: file.originalName,
-      status: file.status as 'processing' | 'processed' | 'failed',
+      status: file.status,
       percentage: file.percentage,
       bookId: file.bookId,
       bookTitle: file.bookTitle,
