@@ -72,7 +72,13 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
                 'selection:bg-slate-200/20',
               )}
             >
-              <BlockContent block={b} onHover={setHoveredEntityId} hoveredEntityId={hoveredEntityId} onEntityClick={onEntityClick} />
+              <BlockContent
+                block={b}
+                onHover={setHoveredEntityId}
+                hoveredEntityId={hoveredEntityId}
+                activeEntityId={activeEntity?.entity.id ?? null}
+                onEntityClick={onEntityClick}
+              />
             </p>
           ))}
         </div>
@@ -125,11 +131,12 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
 type BlockContentProps = {
   block: Block;
   hoveredEntityId: string | null;
+  activeEntityId: string | null;
   onHover: (entityId: string | null) => void;
   onEntityClick: (entity: BlockEntity, rect: DOMRect) => void;
 };
 
-function BlockContent({ block, hoveredEntityId, onHover, onEntityClick }: BlockContentProps) {
+function BlockContent({ block, hoveredEntityId, activeEntityId, onHover, onEntityClick }: BlockContentProps) {
   const segments = useMemo(() => buildSegments(block), [block]);
 
   return (
@@ -141,7 +148,7 @@ function BlockContent({ block, hoveredEntityId, onHover, onEntityClick }: BlockC
           <EntityToken
             key={segment.key}
             segment={segment}
-            isActive={hoveredEntityId === segment.entity.entityId}
+            isActive={hoveredEntityId === segment.entity.id || activeEntityId === segment.entity.id}
             onHover={onHover}
             onClick={onEntityClick}
           />
@@ -155,11 +162,11 @@ type TextSegment = { key: string; type: 'text'; text: string } | { key: string; 
 
 function buildSegments(block: Block): TextSegment[] {
   const segments: TextSegment[] = [];
-  const entities = block.entities ?? [];
+  const entities = [...(block.entities ?? [])].sort((a, b) => a.start - b.start);
   let cursor = 0;
 
   for (const entity of entities) {
-    const start = Math.max(0, Math.min(entity.start, block.text.length));
+    const start = Math.max(cursor, Math.min(entity.start, block.text.length));
     const end = Math.max(start, Math.min(entity.start + entity.length, block.text.length));
 
     if (start > cursor) {
@@ -167,11 +174,12 @@ function buildSegments(block: Block): TextSegment[] {
     }
 
     if (end > start) {
+      const normalizedEntity: BlockEntity = { ...entity, start, length: end - start };
       segments.push({
         key: `${block.id}:entity:${entity.id}`,
         type: 'entity',
         text: block.text.slice(start, end),
-        entity,
+        entity: normalizedEntity,
       });
     }
 
@@ -199,12 +207,12 @@ type EntityTokenProps = {
 function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) {
   return (
     <span
-      data-entity-id={segment.entity.entityId}
+      data-entity-id={segment.entity.id}
       className={clsx(
         'cursor-pointer rounded-sm px-0.5 transition-colors',
-        isActive ? 'bg-amber-400/30 text-amber-50' : 'bg-amber-300/15 text-amber-100 hover:bg-amber-400/20',
+        isActive ? 'bg-amber-400/30 text-amber-50' : 'text-slate-100 hover:bg-amber-300/20 hover:text-amber-50',
       )}
-      onMouseEnter={() => onHover(segment.entity.entityId)}
+      onMouseEnter={() => onHover(segment.entity.id)}
       onMouseLeave={() => onHover(null)}
       onClick={(e) => onClick(segment.entity, e.currentTarget.getBoundingClientRect())}
       title={`${segment.entity.name} (${segment.entity.type})`}
