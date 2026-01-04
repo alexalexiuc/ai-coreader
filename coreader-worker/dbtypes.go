@@ -81,6 +81,14 @@ type FilesDoc struct {
 	ProcessedAt         time.Time          `bson:"processedAt,omitempty" json:"processedAt,omitempty"`
 }
 
+type SessionsDoc struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Token     string             `bson:"token" json:"token"`
+	UserID    primitive.ObjectID `bson:"userId" json:"userId"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	ExpiresAt time.Time          `bson:"expiresAt" json:"expiresAt"`
+}
+
 type UsersDoc struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`

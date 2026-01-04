@@ -23,12 +23,7 @@ function toDTO(doc: UsersDoc): UserDTO {
 /**
  * Create a new user
  */
-export async function createUser(params: {
-  email: string;
-  passwordHash: string;
-  firstName?: string;
-  lastName?: string;
-}): Promise<UserDTO> {
+export async function createUser(params: { email: string; passwordHash: string; firstName?: string; lastName?: string }): Promise<UserDTO> {
   const db = await getDb();
   const now = new Date();
 
@@ -41,9 +36,7 @@ export async function createUser(params: {
     updatedAt: now,
   };
 
-  const result = await withMongoValidation(() => 
-    db.collection<UsersDoc>(collections.USERS).insertOne(userDoc as UsersDoc)
-  );
+  const result = await withMongoValidation(() => db.collection<UsersDoc>(collections.USERS).insertOne(userDoc as UsersDoc));
 
   const created = await db.collection<UsersDoc>(collections.USERS).findOne({ _id: result.insertedId });
   if (!created) {

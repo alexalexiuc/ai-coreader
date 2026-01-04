@@ -51,13 +51,3 @@ export async function deleteSession(token: string): Promise<void> {
   const db = await getDb();
   await db.collection<Session>(collections.SESSIONS).deleteOne({ token });
 }
-
-/**
- * Delete all expired sessions (cleanup)
- */
-export async function deleteExpiredSessions(): Promise<void> {
-  const db = await getDb();
-  await db.collection<Session>(collections.SESSIONS).deleteMany({
-    expiresAt: { $lt: new Date() },
-  });
-}

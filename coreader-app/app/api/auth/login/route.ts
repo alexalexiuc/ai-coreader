@@ -11,35 +11,23 @@ export async function POST(request: NextRequest) {
 
     // Validate inputs
     if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
     if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        { error: 'Password is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Password is required' }, { status: 400 });
     }
 
     // Find user
     const user = await findUserByEmail(email);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
     // Verify password
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
     // Create session
@@ -58,9 +46,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ user: userDTO });
   } catch (error: any) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Failed to login' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to login' }, { status: 500 });
   }
 }

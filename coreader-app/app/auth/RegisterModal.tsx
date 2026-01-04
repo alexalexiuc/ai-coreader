@@ -36,7 +36,7 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md rounded-lg bg-gray-900 p-8 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-6 text-2xl font-bold text-white">Register</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-300">
@@ -48,7 +48,7 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="your@email.com"
             />
           </div>
@@ -64,7 +64,7 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="••••••••"
             />
           </div>
@@ -79,7 +79,7 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="John"
               />
             </div>
@@ -93,17 +93,13 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Doe"
               />
             </div>
           </div>
 
-          {error && (
-            <div className="rounded-md bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
+          {error && <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>}
 
           <button
             type="submit"

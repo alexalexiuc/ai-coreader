@@ -225,6 +225,32 @@ export interface FilesDoc {
 }
 
 /**
+ * Sessions collection storing user authentication sessions
+ */
+export interface SessionsDoc {
+  /**
+   * Session unique identifier
+   */
+  _id: ObjectId;
+  /**
+   * Session token (random hex string)
+   */
+  token: string;
+  /**
+   * Reference to the user this session belongs to
+   */
+  userId: ObjectId;
+  /**
+   * Session creation timestamp
+   */
+  createdAt: Date;
+  /**
+   * Session expiration timestamp
+   */
+  expiresAt: Date;
+}
+
+/**
  * Users collection storing authentication credentials and profile metadata
  */
 export interface UsersDoc {

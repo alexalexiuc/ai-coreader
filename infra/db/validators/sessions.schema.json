@@ -1,0 +1,35 @@
+{
+  "title": "SessionsDoc",
+  "description": "Sessions collection storing user authentication sessions",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "token",
+    "userId",
+    "createdAt",
+    "expiresAt"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Session unique identifier",
+      "bsonType": "objectId"
+    },
+    "token": {
+      "description": "Session token (random hex string)",
+      "bsonType": "string"
+    },
+    "userId": {
+      "description": "Reference to the user this session belongs to",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "description": "Session creation timestamp",
+      "bsonType": "date"
+    },
+    "expiresAt": {
+      "description": "Session expiration timestamp",
+      "bsonType": "date"
+    }
+  },
+  "bsonType": "object"
+}
