@@ -82,11 +82,11 @@ type FilesDoc struct {
 }
 
 type UsersDoc struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
-	FirstName string             `bson:"firstName" json:"firstName"`
-	LastName  string             `bson:"lastName" json:"lastName"`
-	Email     string             `bson:"email" json:"email"`
-	Password  string             `bson:"password" json:"password"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
+	FirstName    string             `bson:"firstName,omitempty" json:"firstName,omitempty"`
+	LastName     string             `bson:"lastName,omitempty" json:"lastName,omitempty"`
+	Email        string             `bson:"email" json:"email"`
+	PasswordHash string             `bson:"passwordHash" json:"passwordHash"`
 }

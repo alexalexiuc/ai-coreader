@@ -243,11 +243,11 @@ export interface UsersDoc {
   /**
    * User's given name
    */
-  firstName: string;
+  firstName?: string;
   /**
    * User's family name
    */
-  lastName: string;
+  lastName?: string;
   /**
    * User email address (unique)
    */
@@ -255,5 +255,5 @@ export interface UsersDoc {
   /**
    * Hashed password for authentication
    */
-  password: string;
+  passwordHash: string;
 }
