@@ -12,30 +12,9 @@ import {
 } from '@/lib/db/user-books';
 import { getRecentFilesWithBooks, getProcessingFilesCount } from '@/lib/db/files';
 import { findBookById } from '@/lib/db/books';
+import { getTimeSince } from '@/lib/utils/time';
 
 export const dynamic = 'force-dynamic';
-
-/**
- * Helper to format time since last opened
- */
-function getTimeSince(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) {
-    return diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
-  }
-  if (diffHours > 0) {
-    return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
-  }
-  if (diffMins > 0) {
-    return diffMins === 1 ? '1 minute ago' : `${diffMins} minutes ago`;
-  }
-  return 'Just now';
-}
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -70,15 +49,24 @@ export default async function Home() {
       getRecentFilesWithBooks(user.id, 5),
     ]);
 
-    // Build stats
+    // Build stats and continue reading from most recent book
     let lastOpened = null;
     if (mostRecentUserBook) {
       const book = await findBookById(mostRecentUserBook.bookId);
       if (book) {
         const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
+        const progressPercent = mostRecentUserBook.progressPercent ?? 0;
+        
         lastOpened = {
           title: book.title ?? 'Untitled',
           detail: timeSince,
+        };
+
+        continueReading = {
+          title: book.title ?? 'Untitled',
+          progressLabel: `${Math.round(progressPercent)}%`,
+          ctaPath: `/reader/${book.id}`,
+          lastSession: timeSince,
         };
       }
     }
@@ -90,21 +78,6 @@ export default async function Home() {
       lastOpened,
       lastRead: null,
     };
-
-    // Build continue reading
-    if (mostRecentUserBook) {
-      const book = await findBookById(mostRecentUserBook.bookId);
-      if (book) {
-        const progressPercent = mostRecentUserBook.progressPercent ?? 0;
-        const timeSince = getTimeSince(new Date(mostRecentUserBook.lastOpenedAt!));
-        continueReading = {
-          title: book.title ?? 'Untitled',
-          progressLabel: `${Math.round(progressPercent)}%`,
-          ctaPath: `/reader/${book.id}`,
-          lastSession: timeSince,
-        };
-      }
-    }
 
     // Build recent uploads
     recentUploads = recentFiles.map((file) => ({

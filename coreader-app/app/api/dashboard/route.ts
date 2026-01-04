@@ -7,6 +7,7 @@ import {
 } from '@/lib/db/user-books';
 import { getRecentFilesWithBooks, getProcessingFilesCount } from '@/lib/db/files';
 import { findBookById } from '@/lib/db/books';
+import { getTimeSince } from '@/lib/utils/time';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -98,26 +99,4 @@ export async function GET(_request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Helper to format time since last opened
- */
-function getTimeSince(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) {
-    return diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
-  }
-  if (diffHours > 0) {
-    return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
-  }
-  if (diffMins > 0) {
-    return diffMins === 1 ? '1 minute ago' : `${diffMins} minutes ago`;
-  }
-  return 'Just now';
 }
