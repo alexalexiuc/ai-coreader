@@ -32,6 +32,7 @@ export const collections = {
   BOOK_CHUNKS: 'books-chunks',
   ENTITY_DESCRIPTIONS: 'entity-descriptions',
   USERS: 'users',
+  SESSIONS: 'sessions',
 };
 
 type SchemaRuleDetail = {

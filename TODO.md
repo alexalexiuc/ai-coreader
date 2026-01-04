@@ -1,8 +1,13 @@
 - [coreader-app]: togglePin function should change pin state in DB and update UI accordingly
 - [coreader-app]: Make pin and unpin icons more distinguishable
-- [coreader-app]: Add user concept
-- [coreader-app]: Implement user authentication and authorization
+- [coreader-app]: ~~Add user concept~~ ✅ Completed
+- [coreader-app]: ~~Implement user authentication and authorization~~ ✅ Completed (basic auth)
 - [coreader-app]: Implement user profiles with customizable settings
+- [coreader-app]: Add email verification for new user registrations
+- [coreader-app]: Add password reset functionality
+- [coreader-app]: Add OAuth / social login support
+- [coreader-app]: Add roles / permissions (admin, etc.)
+- [coreader-app]: Implement session cleanup mechanism for expired sessions
 - [coreader-app]: Add shopping cart functionality.
 - [coreader-app]: Add Admin Dashboard for managing users and shops
 - [coreader-app]: Implement Book deletion feature with confirmation dialog(maybe put it under a ⋯ menu next to the pin icon)

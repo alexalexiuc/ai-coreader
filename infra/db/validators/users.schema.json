@@ -6,10 +6,8 @@
     "_id",
     "createdAt",
     "updatedAt",
-    "firstName",
-    "lastName",
     "email",
-    "password"
+    "passwordHash"
   ],
   "properties": {
     "_id": {
@@ -36,7 +34,7 @@
       "description": "User email address (unique)",
       "bsonType": "string"
     },
-    "password": {
+    "passwordHash": {
       "description": "Hashed password for authentication",
       "bsonType": "string"
     }

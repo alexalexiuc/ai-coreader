@@ -9,10 +9,8 @@
     "_id",
     "createdAt",
     "updatedAt",
-    "firstName",
-    "lastName",
     "email",
-    "password"
+    "passwordHash"
   ],
   "properties": {
     "_id": {
@@ -43,7 +41,7 @@
       "format": "email",
       "description": "User email address (unique)"
     },
-    "password": {
+    "passwordHash": {
       "type": "string",
       "description": "Hashed password for authentication"
     }

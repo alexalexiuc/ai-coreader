@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/sessions.schema.json",
+  "title": "SessionsDoc",
+  "description": "Sessions collection storing user authentication sessions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "_id",
+    "token",
+    "userId",
+    "createdAt",
+    "expiresAt"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Session unique identifier"
+    },
+    "token": {
+      "type": "string",
+      "description": "Session token (random hex string)"
+    },
+    "userId": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Reference to the user this session belongs to"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session creation timestamp"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session expiration timestamp"
+    }
+  }
+}
