@@ -13,6 +13,7 @@ Frontend-specific guidance (inherits root AGENTS.md).
 - Mongo helpers: use `lib/db/mongo.ts` for connection + validation-friendly error formatting; prefer the DTO mappers in `lib/db/books.ts`, `lib/db/files.ts`, `lib/db/book-chunks.ts`, `lib/db/user-books.ts`.
 - Server actions (e.g., `app/uploads/actions.ts`) should revalidate relevant paths with `revalidatePath`.
 - Authorization: Use `getCurrentUser()` from `lib/auth/cookies.ts` to get current user; check ownership via `userOwnsBook()`, `userOwnsFile()` from `lib/db/user-books.ts` before allowing read/write operations.
+- Prefer Server Actions for first-party UI interactions (especially mutations) to keep logic close to the calling component; use Route Handlers only when you need an explicit HTTP endpoint (e.g., non-UI consumers, browser-addressable URLs, downloads/streams, or fetch-based APIs).
 
 ## Routing & UX cues
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { changePasswordAction } from './actions';
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -17,19 +18,12 @@ export function ChangePasswordForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/user/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword, passwordConfirmation }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to change password');
+      const result = await changePasswordAction({ currentPassword, newPassword, passwordConfirmation });
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      setSuccess('Password changed successfully. All other sessions have been logged out.');
+      setSuccess(result.message || 'Password changed successfully. All other sessions have been logged out.');
       setCurrentPassword('');
       setNewPassword('');
       setPasswordConfirmation('');

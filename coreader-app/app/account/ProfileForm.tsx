@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth, User } from '../contexts/AuthContext';
+import { updateProfileAction } from './actions';
 
 interface ProfileFormProps {
   user: User;
@@ -22,19 +23,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update profile');
+      const result = await updateProfileAction({ firstName, lastName });
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      setSuccess('Profile updated successfully');
+      setSuccess(result.message || 'Profile updated successfully');
       await refreshUser();
     } catch (err: any) {
       setError(err.message);
