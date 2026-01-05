@@ -16,7 +16,6 @@ import { Button } from '@/ui/Button';
 import { ViewToggle } from '@/ui/ViewToggle';
 import { useEffect } from 'react';
 import { listBooksAction } from '@/app/library/actions';
-import { toLibraryBook } from '@/app/library/utils';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -68,7 +67,7 @@ export default function LibraryClientPage({ initialBooks }: LibraryClientPagePro
       // TODO(coreader-app): replace polling with websockets for processing book updates.
       listBooksAction()
         .then((nextBooks) => {
-          setBooks(nextBooks.map(toLibraryBook));
+          setBooks(nextBooks);
         })
         .catch((err) => {
           console.error('Failed to refresh library books', err);

@@ -17,7 +17,8 @@ type ButtonProps = {
   className?: string;
   paddingClass?: string;
   textSizeClass?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+} & React.ButtonHTMLAttributes<HTMLButtonElement> &
+  React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
 const baseStyles =
   'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all select-none focus:outline-none disabled:opacity-50 cursor-pointer disabled:pointer-events-none';
@@ -64,7 +65,7 @@ export const Button: React.FC<ButtonProps> = ({
   if (href) {
     // Render as a Link when href is provided
     return (
-      <Link href={href} className={classes} {...(props as any)} aria-disabled={disabled || loading}>
+      <Link href={href} className={classes} {...props} aria-disabled={disabled || loading}>
         {content}
       </Link>
     );

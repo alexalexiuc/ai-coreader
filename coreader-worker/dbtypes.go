@@ -7,9 +7,8 @@ Do not modify it by hand
 package main
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type ChunkEntityRef struct {
@@ -102,6 +101,7 @@ type UserBooksDoc struct {
 	LastChunkIndex  int                `bson:"lastChunkIndex,omitempty" json:"lastChunkIndex,omitempty"`
 	LastCharOffset  int                `bson:"lastCharOffset,omitempty" json:"lastCharOffset,omitempty"`
 	ProgressPercent int                `bson:"progressPercent,omitempty" json:"progressPercent,omitempty"`
+	IsPinned        bool               `bson:"isPinned,omitempty" json:"isPinned,omitempty"`
 	StartedAt       time.Time          `bson:"startedAt,omitempty" json:"startedAt,omitempty"`
 	FinishedAt      time.Time          `bson:"finishedAt,omitempty" json:"finishedAt,omitempty"`
 }

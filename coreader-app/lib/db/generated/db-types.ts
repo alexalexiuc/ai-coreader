@@ -299,6 +299,10 @@ export interface UserBooksDoc {
    */
   progressPercent?: number;
   /**
+   * Whether the user pinned this book in the library
+   */
+  isPinned?: boolean;
+  /**
    * Timestamp when the user first started reading the book
    */
   startedAt?: Date;

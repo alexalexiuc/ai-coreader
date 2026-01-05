@@ -8,6 +8,7 @@ export interface UserBookDTO {
   bookId: string;
   createdAt: string;
   updatedAt: string;
+  isPinned?: boolean;
   lastOpenedAt?: string;
   lastPageIndex?: number;
   lastChunkIndex?: number;
@@ -28,6 +29,7 @@ function toDTO(doc: UserBooksDoc): UserBookDTO {
     bookId: doc.bookId.toHexString(),
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
+    isPinned: doc.isPinned,
     lastOpenedAt: doc.lastOpenedAt?.toISOString(),
     lastPageIndex: doc.lastPageIndex,
     lastChunkIndex: doc.lastChunkIndex,
@@ -126,6 +128,38 @@ export async function updateReadingProgress(
       },
       {
         $set: updateFields,
+        $setOnInsert: {
+          createdAt: now,
+          userId: userIdObj,
+          bookId: bookIdObj,
+        },
+      },
+      { upsert: true },
+    ),
+  );
+}
+
+/**
+ * Update pin state for a user's book (upsert)
+ */
+export async function setBookPinState(userId: string, bookId: string, isPinned: boolean): Promise<void> {
+  const db = await getDb();
+  const now = new Date();
+
+  const userIdObj = new ObjectId(userId);
+  const bookIdObj = new ObjectId(bookId);
+
+  await withMongoValidation(() =>
+    db.collection<UserBooksDoc>(collections.USER_BOOKS).updateOne(
+      {
+        userId: userIdObj,
+        bookId: bookIdObj,
+      },
+      {
+        $set: {
+          isPinned,
+          updatedAt: now,
+        },
         $setOnInsert: {
           createdAt: now,
           userId: userIdObj,

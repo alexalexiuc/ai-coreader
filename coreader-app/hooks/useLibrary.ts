@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import type { LibraryBook, FilterKey, SortKey, ViewKey } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
+import { togglePinAction } from '@/app/library/actions';
 
 export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const [query, setQuery] = useState('');
@@ -8,6 +9,7 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const [sort, setSort] = useState<SortKey>('lastOpened');
   const [view, setView] = useState<ViewKey>('grid');
   const [books, setBooks] = useState<LibraryBook[]>(initialBooks);
+  const [, startTransition] = useTransition();
 
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
@@ -77,9 +79,26 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const isEmptyAll = books.length === 0;
   const isEmptyFiltered = !isEmptyAll && filtered.length === 0;
 
-  const togglePin = useCallback((id: string) => {
-    setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b)));
-  }, []);
+  const togglePin = useCallback(
+    (id: string) => {
+      let previousPinned: boolean | undefined;
+      setBooks((prev) => {
+        previousPinned = prev.find((b) => b.id === id)?.isPinned ?? false;
+        return prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b));
+      });
+
+      startTransition(async () => {
+        try {
+          const { isPinned } = await togglePinAction(id);
+          setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned } : b)));
+        } catch (err) {
+          setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: previousPinned } : b)));
+          console.error('Failed to toggle pin state', err);
+        }
+      });
+    },
+    [startTransition],
+  );
 
   return {
     books,

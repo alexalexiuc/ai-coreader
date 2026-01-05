@@ -1,4 +1,4 @@
-- [coreader-app]: togglePin function should change pin state in DB and update UI accordingly
+- [coreader-app]: ~~togglePin function should change pin state in DB and update UI accordingly~~ ✅ Completed
 - [coreader-app]: Make pin and unpin icons more distinguishable
 - [coreader-app]: ~~Add user concept~~ ✅ Completed
 - [coreader-app]: ~~Implement user authentication and authorization~~ ✅ Completed (basic auth)
