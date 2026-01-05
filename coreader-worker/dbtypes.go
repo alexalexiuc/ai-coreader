@@ -7,8 +7,9 @@ Do not modify it by hand
 package main
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ChunkEntityRef struct {

@@ -1,5 +1,5 @@
 import LibraryClientPage from '@/app/library/LibraryClientPage';
-import { getUserBooks, listBooks } from '@/lib/db/books';
+import { getUserBooks } from '@/lib/db/books';
 import { toLibraryBook } from '@/app/library/utils';
 import { getCurrentUser } from '@/lib/auth/cookies';
 

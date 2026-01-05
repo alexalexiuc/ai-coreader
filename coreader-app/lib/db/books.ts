@@ -78,9 +78,6 @@ export async function findBookById(bookId: string): Promise<BookDTO | null> {
   return doc ? toDTO(doc) : null;
 }
 
-// Backward-compatible alias
-export const fetchBooks = listBooks;
-
 /**
  * Get books owned by a specific user (via user-books collection)
  */

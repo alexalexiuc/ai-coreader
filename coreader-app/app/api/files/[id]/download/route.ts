@@ -7,14 +7,15 @@ import { getCurrentUser } from '@/lib/auth/cookies';
 
 export const runtime = 'nodejs';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // Check authentication
   const user = await getCurrentUser();
   if (!user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const file = await getFileById(params.id);
+  const { id } = await params;
+  const file = await getFileById(id);
   if (!file?._id) {
     return new Response('File not found', { status: 404 });
   }
@@ -38,12 +39,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         'Content-Disposition': `attachment; filename="${encodedName}"; filename*=UTF-8''${encodedName}`,
       },
     });
-  } catch (err: any) {
-    if (err?.code === 'ENOENT') {
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
       return new Response('File not found', { status: 404 });
     }
 
-    console.error(`Failed to download file ${params.id}:`, err);
+    console.error(`Failed to download file ${id}:`, err);
     return new Response('Unable to download file', { status: 500 });
   }
 }

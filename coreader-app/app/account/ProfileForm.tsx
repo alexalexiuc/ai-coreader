@@ -30,8 +30,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
       setSuccess(result.message || 'Profile updated successfully');
       await refreshUser();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }

@@ -115,7 +115,7 @@ export async function updateReadingProgress(
 
   // Only include defined progress fields
   const updateFields = Object.fromEntries(
-    Object.entries({ ...baseFields, ...progress }).filter(([_, value]) => value !== undefined),
+    Object.entries({ ...baseFields, ...progress }).filter(([, value]) => value !== undefined),
   ) as Partial<UserBooksDoc>;
 
   await withMongoValidation(() =>
@@ -208,7 +208,7 @@ export async function getMostRecentUserBook(userId: string): Promise<UserBookDTO
     .collection<UserBooksDoc>(collections.USER_BOOKS)
     .find({
       userId: userIdObj,
-      lastOpenedAt: { $ne: null },
+      lastOpenedAt: { $exists: true },
     })
     .sort({ lastOpenedAt: -1 })
     .limit(1)
@@ -227,7 +227,7 @@ export async function getInProgressBooksCount(userId: string): Promise<number> {
   return db.collection<UserBooksDoc>(collections.USER_BOOKS).countDocuments({
     userId: userIdObj,
     finishedAt: { $exists: false },
-    lastOpenedAt: { $ne: null },
+    lastOpenedAt: { $exists: true },
   });
 }
 

@@ -18,8 +18,8 @@ console.log('Must be visible');
 const makeDirIfNotExists = async (dirPath: string) => {
   try {
     await fs.mkdir(dirPath, { recursive: true });
-  } catch (err: any) {
-    if (err.code !== 'EEXIST') {
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'EEXIST') {
       throw err;
     }
   }
@@ -75,8 +75,8 @@ export async function deleteStoredFile(storagePath: string, storageName: string)
   const fullPath = path.join(getStorageRoot(), storagePath, storageName);
   try {
     await fs.unlink(fullPath);
-  } catch (err: any) {
-    if (err?.code === 'ENOENT') {
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
       // already gone; ignore
       return;
     }

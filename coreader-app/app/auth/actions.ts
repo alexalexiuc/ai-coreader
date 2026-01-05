@@ -103,11 +103,8 @@ export async function registerAction(params: {
     await setSessionCookie(token);
 
     return { user };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Registration error:', error);
-    if (error?.code === 11000) {
-      return { error: 'Email already registered' };
-    }
     return { error: 'Failed to register user' };
   }
 }

@@ -25,8 +25,8 @@ export function RegisterModal({ onClose, onSwitchToLogin }: RegisterModalProps) 
     try {
       await register(email, password, firstName || undefined, lastName || undefined);
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to register');
+    } catch (err) {
+      setError((err as Error).message || 'Failed to register');
     } finally {
       setIsLoading(false);
     }

@@ -17,11 +17,11 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 
 ## Services and responsibilities
 
-| Component        | Owns                                            | Does NOT own                              |
-| ---------------- | ----------------------------------------------- | ----------------------------------------- |
-| coreader-app     | Routes/UI, upload server actions, DB reads, file storage helper | Long-running processing, schema design   |
-| coreader-worker  | File reading, chunking, LLM calls, writing books/chunks/entities, progress updates | Frontend rendering, HTTP API             |
-| infra/ + scripts | Mongo/LLM docker compose, JSON schemas, migrations, typegen | Feature logic in app/worker              |
+| Component        | Owns                                                                               | Does NOT own                           |
+| ---------------- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| coreader-app     | Routes/UI, upload server actions, DB reads, file storage helper                    | Long-running processing, schema design |
+| coreader-worker  | File reading, chunking, LLM calls, writing books/chunks/entities, progress updates | Frontend rendering, HTTP API           |
+| infra/ + scripts | Mongo/LLM docker compose, JSON schemas, migrations, typegen                        | Feature logic in app/worker            |
 
 ## Database & schemas
 
@@ -64,5 +64,6 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 ## PR checklist for agents
 
 - Follow commit format `[type]: (AI:{ainame}) description`; prefer `docs` type for instruction updates.
-- Run relevant checks: `npm run lint` (when frontend code touched); `gofmt -w <files>` (Go edits) and `go test ./...` if tests exist; `npm run db:types` + `npm run db:migrate` when schemas change.
+- Run relevant checks: `npm run lint` (when frontend code touched); `goimports -w <files>` (Go edits) and `go test -short ./...` if tests exist; `npm run db:types` + `npm run db:migrate` when schemas change.
 - Keep changes scoped; avoid new deps; note skipped checks with rationale; update TODO.md for leftover work.
+  NOTE: if `goimports` is not available, install it via `go install golang.org/x/tools/cmd/goimports@latest`.

@@ -45,8 +45,8 @@ export function UploadDropzone({ onUploadSuccess }: UploadDropzoneProps) {
         setMessage('Uploaded! We will process the book and add it to your library shortly.');
         setStatus('success');
         setFile(null);
-      } catch (err: any) {
-        const text = err?.message || 'Upload failed. Please try again.';
+      } catch (err) {
+        const text = (err as Error).message || 'Upload failed. Please try again.';
         setMessage(text);
         setStatus('error');
       }

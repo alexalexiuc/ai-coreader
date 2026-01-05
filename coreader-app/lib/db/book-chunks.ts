@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { collections, getDb } from './mongo';
-import type { BookChunkDoc } from './generated/db-types';
+import type { BookChunksDoc } from './generated/db-types';
 
 export type ChunkEntityRefDTO = {
   entityId: string;
@@ -18,10 +18,10 @@ export type BookChunkDTO = {
   endChar: number;
   llmProcessed: boolean;
   entities?: ChunkEntityRefDTO[];
-  chapters?: BookChunkDoc['chapters'];
+  chapters?: BookChunksDoc['chapters'];
 };
 
-function toDTO(doc: BookChunkDoc): BookChunkDTO {
+function toDTO(doc: BookChunksDoc): BookChunkDTO {
   if (!doc._id) {
     throw new Error('Book chunk document is missing _id');
   }
@@ -46,7 +46,7 @@ function toDTO(doc: BookChunkDoc): BookChunkDTO {
 
 export async function findBookChunkByIndex(bookId: string, index: number): Promise<BookChunkDTO | null> {
   const db = await getDb();
-  const doc = await db.collection<BookChunkDoc>(collections.BOOK_CHUNKS).findOne({ bookId: new ObjectId(bookId), index });
+  const doc = await db.collection<BookChunksDoc>(collections.BOOK_CHUNKS).findOne({ bookId: new ObjectId(bookId), index });
 
   return doc ? toDTO(doc) : null;
 }
@@ -60,5 +60,5 @@ export async function countBookChunks(bookId: string): Promise<number> {
   }
 
   const db = await getDb();
-  return db.collection<BookChunkDoc>(collections.BOOK_CHUNKS).countDocuments({ bookId: objectId });
+  return db.collection<BookChunksDoc>(collections.BOOK_CHUNKS).countDocuments({ bookId: objectId });
 }

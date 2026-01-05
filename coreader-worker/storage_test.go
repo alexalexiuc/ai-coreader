@@ -22,39 +22,39 @@ func TestReadFileInChunksBasic(t *testing.T) {
 	defer func() { FILE_STORAGE_ROOT = originalRoot }()
 
 	tests := []struct {
-		name      string
-		content   []byte
-		chunkSize int
+		name       string
+		content    []byte
+		chunkSize  int
 		wantChunks []int // expected sizes of each chunk
 	}{
 		{
-			name:      "Single chunk smaller than chunk size",
-			content:   []byte("Hello, World!"),
-			chunkSize: 1024,
+			name:       "Single chunk smaller than chunk size",
+			content:    []byte("Hello, World!"),
+			chunkSize:  1024,
 			wantChunks: []int{13},
 		},
 		{
-			name:      "Multiple chunks of exact size",
-			content:   []byte("ABCDEFGHIJ"), // 10 bytes
-			chunkSize: 5,
+			name:       "Multiple chunks of exact size",
+			content:    []byte("ABCDEFGHIJ"), // 10 bytes
+			chunkSize:  5,
 			wantChunks: []int{5, 5},
 		},
 		{
-			name:      "Multiple chunks with remainder",
-			content:   []byte("ABCDEFGHIJK"), // 11 bytes
-			chunkSize: 5,
+			name:       "Multiple chunks with remainder",
+			content:    []byte("ABCDEFGHIJK"), // 11 bytes
+			chunkSize:  5,
 			wantChunks: []int{5, 5, 1},
 		},
 		{
-			name:      "Chunk size of 1",
-			content:   []byte("ABC"),
-			chunkSize: 1,
+			name:       "Chunk size of 1",
+			content:    []byte("ABC"),
+			chunkSize:  1,
 			wantChunks: []int{1, 1, 1},
 		},
 		{
-			name:      "Large content",
-			content:   bytes.Repeat([]byte("X"), 10000),
-			chunkSize: 1024,
+			name:       "Large content",
+			content:    bytes.Repeat([]byte("X"), 10000),
+			chunkSize:  1024,
 			wantChunks: []int{1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 784},
 		},
 	}
