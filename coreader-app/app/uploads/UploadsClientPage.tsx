@@ -92,13 +92,14 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
   };
 
   const handleConfirmDelete = () => {
-    if (!deleteConfirm.fileId) return;
+    const fileId = deleteConfirm.fileId;
+    if (!fileId) return;
 
     setIsDeleting(true);
     startTransition(async () => {
       try {
-        await deleteFileAction(deleteConfirm.fileId!);
-        deleteFile(deleteConfirm.fileId!);
+        await deleteFileAction(fileId);
+        deleteFile(fileId);
         setDeleteConfirm({ isOpen: false, fileId: null, fileName: null });
       } catch (err) {
         console.error('Failed to delete file', err);
