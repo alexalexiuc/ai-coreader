@@ -1,2 +1,8 @@
 
+cd coreader-app
+npm run lint-staged
+npm run typecheck
 
+cd ..
+cd coreader-worker
+goimports -w .
