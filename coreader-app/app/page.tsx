@@ -83,10 +83,12 @@ export default async function Home() {
     <PageContainer>
       <WorkspaceOverview stats={stats} isGuest={isGuest} />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <ContinueReadingSection continueReading={continueReading} isGuest={isGuest} />
-        <RecentUploads recentUploads={recentUploads} isGuest={isGuest} />
-      </div>
+      {!isGuest && (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ContinueReadingSection continueReading={continueReading} isGuest={isGuest} />
+          <RecentUploads recentUploads={recentUploads} isGuest={isGuest} />
+        </div>
+      )}
 
       <ActionsSection />
 
