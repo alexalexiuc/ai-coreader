@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { getCurrentUserAction, loginAction, logoutAction, registerAction } from '@/app/auth/actions';
 
 export interface User {
   id: string;
@@ -27,13 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await fetch('/api/auth/me');
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
+      const result = await getCurrentUserAction();
+      if (result.error) {
+        throw new Error(result.error);
       }
+      setUser(result.user ?? null);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       setUser(null);
@@ -47,46 +46,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to login');
+    const result = await loginAction(email, password);
+    if (result.error) {
+      throw new Error(result.error);
     }
-
-    const data = await response.json();
-    setUser(data.user);
+    if (!result.user) {
+      throw new Error('Failed to login');
+    }
+    setUser(result.user);
   };
 
   const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, firstName, lastName }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to register');
+    const result = await registerAction({ email, password, firstName, lastName });
+    if (result.error) {
+      throw new Error(result.error);
     }
-
-    const data = await response.json();
-    setUser(data.user);
+    if (!result.user) {
+      throw new Error('Failed to register');
+    }
+    setUser(result.user);
   };
 
   const logout = async () => {
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to logout');
+    const result = await logoutAction();
+    if (result.error) {
+      throw new Error(result.error);
     }
-
     setUser(null);
   };
 
