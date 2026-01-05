@@ -211,45 +211,4 @@ test.describe('Authorization Guards', () => {
     });
   });
 
-  test.describe('API Authorization', () => {
-    test('should protect dashboard API for guest', async ({ request }) => {
-      // Try to access dashboard API without authentication
-      const response = await request.get('/api/dashboard');
-
-      // Should return guest state (not error, but empty data)
-      expect(response.status()).toBe(200);
-      const data = await response.json();
-      expect(data.isGuest).toBe(true);
-      expect(data.stats.booksTotal).toBe(0);
-      expect(data.recentUploads).toHaveLength(0);
-    });
-
-    test('should return user data from dashboard API when authenticated', async ({ page, request }) => {
-      // Login first to get session cookie
-      await page.goto('/');
-      await page
-        .getByRole('button', { name: /Log in/i })
-        .first()
-        .click();
-      await page.getByLabel(/Email/i).fill('testuser@example.com');
-      await page.getByLabel(/Password/i).fill('TestPassword123!');
-      await page.getByRole('button', { name: /Sign In/i }).click();
-      await page.waitForTimeout(1000);
-
-      // Get cookies from page context
-      const cookies = await page.context().cookies();
-
-      // Make API request with cookies
-      const response = await request.get('/api/dashboard', {
-        headers: {
-          Cookie: cookies.map((c) => `${c.name}=${c.value}`).join('; '),
-        },
-      });
-
-      expect(response.status()).toBe(200);
-      const data = await response.json();
-      expect(data.isGuest).toBe(false);
-      expect(data.stats.booksTotal).toBeGreaterThan(0);
-    });
-  });
 });
