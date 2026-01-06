@@ -16,7 +16,7 @@ export function toLibraryBook(book: BookDTO, userState?: UserBookState): Library
     source: book.source === 'user_upload' ? 'uploaded' : 'shop',
     addedAt: book.createdAt,
     lastOpenedAt: userState?.lastOpenedAt ?? book.updatedAt,
-    progressPct: userState?.progressPercent ?? (book.processed ? 100 : 0),
+    progressPct: userState?.progressPercent ?? 0,
     processed: book.processed,
     isPinned: userState?.isPinned ?? false,
   };
