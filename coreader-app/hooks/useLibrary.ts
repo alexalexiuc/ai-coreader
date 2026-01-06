@@ -10,7 +10,9 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const [view, setView] = useState<ViewKey>('grid');
   const [books, setBooks] = useState<LibraryBook[]>(initialBooks);
   const [, startTransition] = useTransition();
-  const serverConfirmedPinState = useRef<Map<string, boolean>>(new Map());
+  const serverConfirmedPinState = useRef<Map<string, boolean>>(
+    new Map(initialBooks.map((b) => [b.id, b.isPinned ?? false])),
+  );
 
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
@@ -86,7 +88,8 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
       setBooks((prev) => {
         const currentBook = prev.find((b) => b.id === id);
         if (currentBook) {
-          serverConfirmedPinState.current.set(id, currentBook.isPinned ?? false);
+          const currentPinned = currentBook.isPinned ?? false;
+          serverConfirmedPinState.current.set(id, currentPinned);
         }
         return prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b));
       });
@@ -99,8 +102,10 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
           setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned } : b)));
         } catch (err) {
           // Rollback to the last server-confirmed state
-          const previousPinned = serverConfirmedPinState.current.get(id) ?? false;
-          setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: previousPinned } : b)));
+          const previousPinned = serverConfirmedPinState.current.get(id);
+          if (previousPinned !== undefined) {
+            setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: previousPinned } : b)));
+          }
           console.error('Failed to toggle pin state', err);
         }
       });
