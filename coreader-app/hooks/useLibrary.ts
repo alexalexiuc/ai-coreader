@@ -87,10 +87,10 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
       // Capture the current server-confirmed state before optimistic update
       setBooks((prev) => {
         const currentBook = prev.find((b) => b.id === id);
-        if (currentBook) {
-          const currentPinned = currentBook.isPinned ?? false;
-          serverConfirmedPinState.current.set(id, currentPinned);
-        }
+        if (!currentBook) return prev; // Book not found, no update
+        
+        const currentPinned = currentBook.isPinned ?? false;
+        serverConfirmedPinState.current.set(id, currentPinned);
         return prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b));
       });
 
@@ -102,9 +102,9 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
           setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned } : b)));
         } catch (err) {
           // Rollback to the last server-confirmed state
-          const previousPinned = serverConfirmedPinState.current.get(id);
-          if (previousPinned !== undefined) {
-            setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: previousPinned } : b)));
+          const confirmedPinned = serverConfirmedPinState.current.get(id);
+          if (confirmedPinned !== undefined) {
+            setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: confirmedPinned } : b)));
           }
           console.error('Failed to toggle pin state', err);
         }
