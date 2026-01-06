@@ -76,6 +76,9 @@ export async function togglePinAction(bookId: string): Promise<{ isPinned: boole
     throw new Error('Unauthorized');
   }
 
+  if (!ObjectId.isValid(bookId)) {
+    throw new Error('Invalid book ID');
+  }
   const userBook = await getUserBook(user.id, bookId);
 
   if (!userBook) {
