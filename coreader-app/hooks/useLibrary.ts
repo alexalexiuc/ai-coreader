@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
 import type { LibraryBook, FilterKey, SortKey, ViewKey } from '@/app/library/types';
 import { clampPct } from '@/lib/number';
 import { togglePinAction } from '@/app/library/actions';
@@ -10,6 +10,9 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const [view, setView] = useState<ViewKey>('grid');
   const [books, setBooks] = useState<LibraryBook[]>(initialBooks);
   const [, startTransition] = useTransition();
+  const serverConfirmedPinState = useRef<Map<string, boolean>>(
+    new Map(initialBooks.map((b) => [b.id, b.isPinned ?? false])),
+  );
 
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
@@ -81,18 +84,28 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
 
   const togglePin = useCallback(
     (id: string) => {
-      let previousPinned: boolean | undefined;
+      // Capture the current server-confirmed state before optimistic update
       setBooks((prev) => {
-        previousPinned = prev.find((b) => b.id === id)?.isPinned ?? false;
+        const currentBook = prev.find((b) => b.id === id);
+        if (!currentBook) return prev; // Book not found, no update
+        
+        const currentPinned = currentBook.isPinned ?? false;
+        serverConfirmedPinState.current.set(id, currentPinned);
         return prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b));
       });
 
       startTransition(async () => {
         try {
           const { isPinned } = await togglePinAction(id);
+          // Update with server response and track confirmed state
+          serverConfirmedPinState.current.set(id, isPinned);
           setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned } : b)));
         } catch (err) {
-          setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: previousPinned } : b)));
+          // Rollback to the last server-confirmed state
+          const confirmedPinned = serverConfirmedPinState.current.get(id);
+          if (confirmedPinned !== undefined) {
+            setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isPinned: confirmedPinned } : b)));
+          }
           console.error('Failed to toggle pin state', err);
         }
       });
