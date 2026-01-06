@@ -11,7 +11,7 @@ const isLink = (props: ButtonProps): props is ButtonAsLinkProps => {
 
 type CommonProps = {
   children: React.ReactNode;
-  variant?: 'primary';
+  variant?: 'primary' | 'danger';
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -40,6 +40,7 @@ const baseStyles =
 
 const variantStyles: Record<string, string> = {
   primary: 'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
+  danger: 'rounded-xl border border-rose-800 bg-rose-950/70 text-rose-200 hover:border-rose-700 hover:bg-rose-950/90',
 };
 
 export const Button: React.FC<ButtonProps> = (props) => {

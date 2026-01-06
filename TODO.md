@@ -11,7 +11,7 @@
 - [coreader-app]: Add shopping cart functionality.
 - [coreader-app]: Add Admin Dashboard for managing users and shops
 - [coreader-app]: Implement Book deletion feature with confirmation dialog(maybe put it under a ⋯ menu next to the pin icon)
-- [coreader-app]: Add confirmation dialog before deleting an uploaded file.
+- [coreader-app]: ~~Add confirmation dialog before deleting an uploaded file.~~ ✅ Completed
 - [coreader-app]: Replace uploads/library polling refresh with websockets for status updates.
 - [coreader-app]: Restore page jump input in Reader side panel.
 - [worker]: Add retry if LLM response is not a valid JSON.

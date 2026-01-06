@@ -14,7 +14,8 @@ import { Select } from '@/ui/Select';
 import { ViewToggle } from '@/ui/ViewToggle';
 import { Badge } from '@/ui/Badge';
 import { Button } from '@/ui/Button';
-import { useEffect, useTransition } from 'react';
+import { ConfirmationDialog } from '@/ui/ConfirmationDialog';
+import { useEffect, useState, useTransition } from 'react';
 import { IoLibraryOutline, IoSearchOutline, IoStorefrontOutline } from 'react-icons/io5';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -37,6 +38,12 @@ type UploadsClientPageProps = {
 
 export default function UploadsClientPage({ initialFiles }: UploadsClientPageProps) {
   const [, startTransition] = useTransition();
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; fileId: string | null; fileName: string | null }>({
+    isOpen: false,
+    fileId: null,
+    fileName: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
   const {
     files,
     setFiles,
@@ -76,14 +83,34 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
   };
 
   const onDelete = (id: string) => {
+    const file = files.find((f) => f.id === id);
+    setDeleteConfirm({
+      isOpen: true,
+      fileId: id,
+      fileName: file?.originalName ?? 'this file',
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    const fileId = deleteConfirm.fileId;
+    if (!fileId) return;
+
+    setIsDeleting(true);
     startTransition(async () => {
       try {
-        await deleteFileAction(id);
-        deleteFile(id);
+        await deleteFileAction(fileId);
+        deleteFile(fileId);
+        setDeleteConfirm({ isOpen: false, fileId: null, fileName: null });
       } catch (err) {
         console.error('Failed to delete file', err);
+      } finally {
+        setIsDeleting(false);
       }
     });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirm({ isOpen: false, fileId: null, fileName: null });
   };
 
   const onRetry = (id: string) => {
@@ -177,6 +204,18 @@ export default function UploadsClientPage({ initialFiles }: UploadsClientPagePro
           </div>
         )}
       </Section>
+
+      <ConfirmationDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete File"
+        message={`Are you sure you want to delete "${deleteConfirm.fileName}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        isLoading={isDeleting}
+      />
     </PageContainer>
   );
 }
