@@ -140,16 +140,21 @@ export async function updateReadingProgress(
 }
 
 /**
- * Update pin state for a user's book (upsert)
+ * Update pin state for a user's book
+ * Only updates existing user-book relationships (no upsert to prevent unauthorized access)
  */
 export async function setBookPinState(userId: string, bookId: string, isPinned: boolean): Promise<void> {
+  if (!(await userOwnsBook(userId, bookId))) {
+    throw new Error('User does not own this book');
+  }
+
   const db = await getDb();
   const now = new Date();
 
   const userIdObj = new ObjectId(userId);
   const bookIdObj = new ObjectId(bookId);
 
-  await withMongoValidation(() =>
+  await withMongoValidation(async () =>
     db.collection<UserBooksDoc>(collections.USER_BOOKS).updateOne(
       {
         userId: userIdObj,
@@ -160,13 +165,7 @@ export async function setBookPinState(userId: string, bookId: string, isPinned: 
           isPinned,
           updatedAt: now,
         },
-        $setOnInsert: {
-          createdAt: now,
-          userId: userIdObj,
-          bookId: bookIdObj,
-        },
       },
-      { upsert: true },
     ),
   );
 }
