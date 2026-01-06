@@ -1,14 +1,17 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import Link, { type LinkProps } from 'next/link';
 import clsx from 'clsx';
 import { Spinner } from './Spinner';
 
-type ButtonProps = {
+const isLink = (props: ButtonProps): props is ButtonAsLinkProps => {
+  return 'href' in props;
+};
+
+type CommonProps = {
   children: React.ReactNode;
-  href?: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary';
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -17,30 +20,42 @@ type ButtonProps = {
   className?: string;
   paddingClass?: string;
   textSizeClass?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+};
+
+type ButtonAsButtonProps = CommonProps &
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof CommonProps> & {
+    href?: undefined;
+  };
+
+type ButtonAsLinkProps = CommonProps &
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof CommonProps | 'href'> &
+  Pick<LinkProps, 'prefetch' | 'replace' | 'scroll' | 'shallow' | 'locale'> & {
+    href: LinkProps['href'];
+  };
+
+type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
 
 const baseStyles =
   'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all select-none focus:outline-none disabled:opacity-50 cursor-pointer disabled:pointer-events-none';
 
 const variantStyles: Record<string, string> = {
   primary: 'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
-  active: 'rounded-xl border border-slate-800 bg-slate-950/70 text-slate-200 hover:border-slate-700',
 };
 
-export const Button: React.FC<ButtonProps> = ({
-  children,
-  href,
-  variant = 'primary',
-  loading = false,
-  disabled = false,
-  fullWidth = false,
-  leftIcon,
-  rightIcon,
-  className,
-  paddingClass,
-  textSizeClass,
-  ...props
-}) => {
+export const Button: React.FC<ButtonProps> = (props) => {
+  const {
+    children,
+    variant = 'primary',
+    loading = false,
+    disabled = false,
+    fullWidth = false,
+    leftIcon,
+    rightIcon,
+    className,
+    paddingClass,
+    textSizeClass,
+  } = props;
+
   const classes = clsx(
     baseStyles,
     variantStyles[variant],
@@ -61,17 +76,41 @@ export const Button: React.FC<ButtonProps> = ({
     </>
   );
 
-  if (href) {
-    // Render as a Link when href is provided
+  if (isLink(props)) {
+    // Link branch: only link-safe props are allowed here by type
+    const { href, prefetch, replace, scroll, shallow, locale, ...anchorProps } = props;
+
     return (
-      <Link href={href} className={classes} {...(props as any)} aria-disabled={disabled || loading}>
+      <Link
+        href={href}
+        prefetch={prefetch}
+        replace={replace}
+        scroll={scroll}
+        shallow={shallow}
+        locale={locale}
+        className={classes}
+        aria-disabled={disabled || loading}
+        tabIndex={disabled || loading ? -1 : anchorProps.tabIndex}
+        onClick={(e) => {
+          if (disabled || loading) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          anchorProps.onClick?.(e);
+        }}
+        {...anchorProps}
+      >
         {content}
       </Link>
     );
   }
 
+  // Button branch
+  const { ...buttonProps } = props;
+
   return (
-    <button {...props} disabled={disabled || loading} className={classes}>
+    <button {...buttonProps} disabled={disabled || loading} className={classes}>
       {content}
     </button>
   );

@@ -63,6 +63,10 @@
       "maximum": 100,
       "description": "Reading progress percentage (0-100)"
     },
+    "isPinned": {
+      "type": "boolean",
+      "description": "Whether the user pinned this book in the library"
+    },
     "startedAt": {
       "type": "string",
       "format": "date-time",

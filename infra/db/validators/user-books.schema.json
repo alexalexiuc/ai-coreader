@@ -54,6 +54,10 @@
       "description": "Reading progress percentage (0-100)",
       "bsonType": "int"
     },
+    "isPinned": {
+      "description": "Whether the user pinned this book in the library",
+      "bsonType": "bool"
+    },
     "startedAt": {
       "description": "Timestamp when the user first started reading the book",
       "bsonType": "date"

@@ -8,6 +8,7 @@ export interface UserBookDTO {
   bookId: string;
   createdAt: string;
   updatedAt: string;
+  isPinned?: boolean;
   lastOpenedAt?: string;
   lastPageIndex?: number;
   lastChunkIndex?: number;
@@ -28,6 +29,7 @@ function toDTO(doc: UserBooksDoc): UserBookDTO {
     bookId: doc.bookId.toHexString(),
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
+    isPinned: doc.isPinned,
     lastOpenedAt: doc.lastOpenedAt?.toISOString(),
     lastPageIndex: doc.lastPageIndex,
     lastChunkIndex: doc.lastChunkIndex,
@@ -133,6 +135,37 @@ export async function updateReadingProgress(
         },
       },
       { upsert: true },
+    ),
+  );
+}
+
+/**
+ * Update pin state for a user's book
+ * Only updates existing user-book relationships (no upsert to prevent unauthorized access)
+ */
+export async function setBookPinState(userId: string, bookId: string, isPinned: boolean): Promise<void> {
+  if (!(await userOwnsBook(userId, bookId))) {
+    throw new Error('User does not own this book');
+  }
+
+  const db = await getDb();
+  const now = new Date();
+
+  const userIdObj = new ObjectId(userId);
+  const bookIdObj = new ObjectId(bookId);
+
+  await withMongoValidation(async () =>
+    db.collection<UserBooksDoc>(collections.USER_BOOKS).updateOne(
+      {
+        userId: userIdObj,
+        bookId: bookIdObj,
+      },
+      {
+        $set: {
+          isPinned,
+          updatedAt: now,
+        },
+      },
     ),
   );
 }
