@@ -41,6 +41,8 @@ func main() {
 		}
 	}()
 
+	worker := NewWorker(db, llmClient, qdrantClient)
+
 	unprocessedFiles, err := db.GetUnprocessedFiles()
 	if err != nil {
 		fmt.Println("Error getting unprocessed files:", err)
@@ -55,7 +57,7 @@ func main() {
 
 		start := time.Now()
 		fmt.Println("Processing file:", file.ID.Hex(), file.StoragePath)
-		err := ProcessFile(ctx, db, &file, llmClient, qdrantClient)
+		err := worker.ProcessFile(ctx, &file)
 		if err != nil {
 			fmt.Println("Error processing file:", file.ID.Hex(), err)
 		} else {
@@ -63,5 +65,5 @@ func main() {
 		}
 	}
 
-	WatchFilesCollectionChanges(ctx, db, llmClient, qdrantClient)
+	worker.WatchFilesCollectionChanges(ctx)
 }
