@@ -30,6 +30,19 @@ services:
     networks:
       - llmreader-net
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: llmreader-qdrant
+    restart: unless-stopped
+    profiles: [infra, stack]
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC API
+    volumes:
+      - ../storage/qdrant:/qdrant/storage
+    networks:
+      - llmreader-net
+
   app:
     build:
       context: ../coreader-app
@@ -39,6 +52,7 @@ services:
     depends_on:
       - mongodb
       - llm
+      - qdrant
     ports:
       - "3000:3000"
     environment:
@@ -61,11 +75,14 @@ services:
     depends_on:
       - mongodb
       - llm
+      - qdrant
     environment:
       MONGODB_URI: mongodb://mongodb:27017
       MONGODB_DB_NAME: llm_reader
       FILE_STORAGE_ROOT: /worker-storage
       LLM_BASE_URL: http://llm:11434
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6334"
     volumes:
       - ../storage:/worker-storage
     networks:
