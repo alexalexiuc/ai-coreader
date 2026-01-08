@@ -116,8 +116,13 @@ func (qc *QdrantClient) createCollectionIfNotExists(ctx context.Context, collect
 
 // StoreChunkEmbedding stores a chunk's embedding in Qdrant
 func (qc *QdrantClient) StoreChunkEmbedding(ctx context.Context, bookID primitive.ObjectID, chunkID primitive.ObjectID, chunkIndex int, embedding []float32) error {
-	// Use chunkID as the point ID (convert ObjectID to string)
-	pointID := chunkID.Hex()
+	// Convert ObjectID to a numeric ID for Qdrant
+	// We use a hash of the hex string to get a uint64
+	chunkIDStr := chunkID.Hex()
+	var pointIDNum uint64
+	for i, c := range []byte(chunkIDStr) {
+		pointIDNum ^= uint64(c) << (uint(i%8) * 8)
+	}
 
 	// Create payload with metadata
 	payload := map[string]interface{}{
@@ -128,7 +133,7 @@ func (qc *QdrantClient) StoreChunkEmbedding(ctx context.Context, bookID primitiv
 
 	// Create point
 	point := &qdrant.PointStruct{
-		Id:      qdrant.NewIDUUID(pointID),
+		Id:      qdrant.NewIDNum(pointIDNum),
 		Vectors: qdrant.NewVectors(embedding...),
 		Payload: qdrant.NewValueMap(payload),
 	}

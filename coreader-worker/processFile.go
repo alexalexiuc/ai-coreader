@@ -140,7 +140,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		fmt.Printf("Appending %d chars\n", len(logicalChunk.Text))
 		currentChunkLength := len(logicalChunk.Text)
 		totalChars += currentChunkLength
-		totalChunks++
+		totalChunks++ // Increment first, so totalChunks-1 is the current 0-based chunk index
 
 		chunk, err := db.CreateBookChunkDoc(&BookChunksDoc{
 			BookID:       book.ID,

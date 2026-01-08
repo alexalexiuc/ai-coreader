@@ -161,5 +161,5 @@ func (s *AISession) doRequest(ctx context.Context, prompt string, options Option
 func (c *AIClient) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
 	// The AIClient is used for OpenAI, which doesn't directly support embeddings via the provider kit.
 	// For now, we only support embeddings via the OllamaClient.
-	return nil, fmt.Errorf("embedding generation not supported for AIClient; use Ollama client")
+	return nil, fmt.Errorf("embedding generation not supported for OpenAI provider; use Ollama client")
 }
