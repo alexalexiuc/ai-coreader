@@ -14,16 +14,14 @@ import (
 )
 
 type QdrantClient struct {
-	Client *qdrant.Client
+	Client          *qdrant.Client
+	VectorDimension uint64
 }
 
 const (
 	// Collection names
 	CollectionBookChunks = "book_chunks"
 	CollectionEntities   = "entities"
-
-	// Vector dimensions for nomic-embed-text model
-	VectorDimension = 768
 )
 
 // InitQdrant initializes a Qdrant client with configuration from environment variables.
@@ -31,10 +29,16 @@ const (
 func InitQdrant() (*QdrantClient, error) {
 	host := utils.GetEnv("QDRANT_HOST", "localhost")
 	portStr := utils.GetEnv("QDRANT_PORT", "6334")
+	vectorDimStr := utils.GetEnv("QDRANT_VECTOR_DIMENSION", "768")
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid QDRANT_PORT value '%s': %w", portStr, err)
+	}
+
+	vectorDim, err := strconv.ParseUint(vectorDimStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid QDRANT_VECTOR_DIMENSION value '%s': %w", vectorDimStr, err)
 	}
 
 	addr := fmt.Sprintf("%s:%d", host, port)
@@ -59,7 +63,7 @@ func InitQdrant() (*QdrantClient, error) {
 
 	log.Printf("Connected to Qdrant successfully! Version: %s", healthCheckResult.GetVersion())
 
-	qc := &QdrantClient{Client: client}
+	qc := &QdrantClient{Client: client, VectorDimension: vectorDim}
 
 	// Create collections if they don't exist
 	if err := qc.ensureCollections(ctx); err != nil {
@@ -102,7 +106,7 @@ func (qc *QdrantClient) createCollectionIfNotExists(ctx context.Context, collect
 	err = qc.Client.CreateCollection(ctx, &qdrant.CreateCollection{
 		CollectionName: collectionName,
 		VectorsConfig: qdrant.NewVectorsConfig(&qdrant.VectorParams{
-			Size:     VectorDimension,
+			Size:     qc.VectorDimension,
 			Distance: qdrant.Distance_Cosine,
 		}),
 	})
@@ -125,7 +129,7 @@ func (qc *QdrantClient) StoreChunkEmbedding(ctx context.Context, bookID primitiv
 	}
 
 	// Create payload with metadata
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"bookId":     bookID.Hex(),
 		"chunkId":    chunkID.Hex(),
 		"chunkIndex": chunkIndex,

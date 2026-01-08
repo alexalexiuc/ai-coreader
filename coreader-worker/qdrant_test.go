@@ -67,9 +67,9 @@ func TestStoreChunkEmbedding(t *testing.T) {
 	bookID := primitive.NewObjectID()
 	chunkID := primitive.NewObjectID()
 	chunkIndex := 0
-	embedding := make([]float32, VectorDimension)
+	embedding := make([]float32, qc.VectorDimension)
 	for i := range embedding {
-		embedding[i] = float32(i) / float32(VectorDimension)
+		embedding[i] = float32(i) / float32(qc.VectorDimension)
 	}
 
 	// Store embedding
@@ -79,13 +79,4 @@ func TestStoreChunkEmbedding(t *testing.T) {
 	}
 
 	t.Logf("Successfully stored embedding for chunk %s", chunkID.Hex())
-}
-
-// TestVectorDimension verifies that the vector dimension constant is correct
-func TestVectorDimension(t *testing.T) {
-	// nomic-embed-text produces 768-dimensional embeddings
-	expectedDim := 768
-	if VectorDimension != expectedDim {
-		t.Errorf("Expected vector dimension to be %d, got %d", expectedDim, VectorDimension)
-	}
 }
