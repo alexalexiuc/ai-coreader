@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"coreader-worker/utils"
@@ -19,9 +20,14 @@ type QdrantClient struct {
 // This is infrastructure-only setup; no collection creation or vector operations are performed.
 func InitQdrant() (*QdrantClient, error) {
 	host := utils.GetEnv("QDRANT_HOST", "localhost")
-	port := utils.GetEnv("QDRANT_PORT", "6334")
+	portStr := utils.GetEnv("QDRANT_PORT", "6334")
 
-	addr := fmt.Sprintf("%s:%s", host, port)
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid QDRANT_PORT value '%s': %w", portStr, err)
+	}
+
+	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Printf("Initializing Qdrant client at %s", addr)
 
 	client, err := qdrant.NewClient(&qdrant.Config{
