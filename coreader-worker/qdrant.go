@@ -154,6 +154,81 @@ func (qc *QdrantClient) StoreChunkEmbedding(ctx context.Context, bookID primitiv
 	return nil
 }
 
+// SimilarChunkResult represents a similar chunk returned from vector search
+type SimilarChunkResult struct {
+	ChunkID    primitive.ObjectID
+	ChunkIndex int
+	Score      float32 // Similarity score (higher is more similar)
+}
+
+// SearchSimilarChunks finds the most similar chunks to the given embedding within the same book.
+// It excludes the current chunk index from results.
+// Returns up to 'limit' results ordered by similarity (most similar first).
+func (qc *QdrantClient) SearchSimilarChunks(ctx context.Context, bookID primitive.ObjectID, currentChunkIndex int, embedding []float32, limit uint64) ([]SimilarChunkResult, error) {
+	// Build filter to restrict search to the same book and exclude current chunk
+	filter := &qdrant.Filter{
+		Must: []*qdrant.Condition{
+			// Match the same book
+			qdrant.NewMatch("bookId", bookID.Hex()),
+		},
+		MustNot: []*qdrant.Condition{
+			// Exclude the current chunk (use NewMatchInt for integer matching)
+			qdrant.NewMatchInt("chunkIndex", int64(currentChunkIndex)),
+		},
+	}
+
+	// Perform the search
+	searchResult, err := qc.Client.Query(ctx, &qdrant.QueryPoints{
+		CollectionName: CollectionBookChunks,
+		Query:          qdrant.NewQuery(embedding...),
+		Filter:         filter,
+		Limit:          &limit,
+		WithPayload:    qdrant.NewWithPayload(true),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to search similar chunks: %w", err)
+	}
+
+	// Convert results to our struct
+	results := make([]SimilarChunkResult, 0, len(searchResult))
+	for _, point := range searchResult {
+		payload := point.GetPayload()
+
+		// Extract chunkId from payload
+		chunkIDValue, ok := payload["chunkId"]
+		if !ok {
+			log.Printf("Warning: point missing chunkId in payload")
+			continue
+		}
+		chunkIDStr := chunkIDValue.GetStringValue()
+		if chunkIDStr == "" {
+			log.Printf("Warning: chunkId is not a string or is empty")
+			continue
+		}
+		chunkID, err := primitive.ObjectIDFromHex(chunkIDStr)
+		if err != nil {
+			log.Printf("Warning: invalid chunkId hex string: %v", err)
+			continue
+		}
+
+		// Extract chunkIndex from payload
+		chunkIndexValue, ok := payload["chunkIndex"]
+		if !ok {
+			log.Printf("Warning: point missing chunkIndex in payload")
+			continue
+		}
+		chunkIndex := chunkIndexValue.GetIntegerValue()
+
+		results = append(results, SimilarChunkResult{
+			ChunkID:    chunkID,
+			ChunkIndex: int(chunkIndex),
+			Score:      point.GetScore(),
+		})
+	}
+
+	return results, nil
+}
+
 // Close closes the Qdrant client connection
 func (qc *QdrantClient) Close() error {
 	if qc.Client != nil {

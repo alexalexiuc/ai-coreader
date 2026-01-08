@@ -210,7 +210,10 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 			}
 		}
 
-		chunkEntities, err := llm.AnalyzeChunk(ctx, w.llmClient, book.Title, logicalChunk.Text)
+		// Retrieve similar chunks for context enrichment (RAG)
+		priorContext := w.retrievePriorChunkContext(ctx, book.ID, totalChunks-1, embedding)
+
+		chunkEntities, err := llm.AnalyzeChunk(ctx, w.llmClient, book.Title, logicalChunk.Text, priorContext)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to analyze chunk %d: %w", totalChunks-1, err),
@@ -371,4 +374,84 @@ func generateSessionID(filename string) string {
 
 	timestamp := time.Now().Format("20060102_150405")
 	return fmt.Sprintf("%s_%s", timestamp, name)
+}
+
+// retrievePriorChunkContext retrieves semantically similar chunks for context enrichment.
+// Returns up to 3-5 most similar chunks from the same book, excluding the current chunk.
+// Failures in retrieval do not fail processing - returns empty context on error.
+func (w *Worker) retrievePriorChunkContext(ctx context.Context, bookID primitive.ObjectID, currentChunkIndex int, embedding []float32) []llm.PriorChunkContext {
+	const (
+		maxSimilarChunks = 5    // Top K similar chunks to retrieve
+		maxContextChars  = 6000 // Maximum total characters from prior context
+		maxChunkExcerpt  = 1500 // Maximum characters per chunk excerpt
+	)
+
+	// Skip retrieval for first chunk (no prior context available)
+	if currentChunkIndex == 0 {
+		return []llm.PriorChunkContext{}
+	}
+
+	// Query Qdrant for similar chunks
+	similarChunks, err := w.qdrantClient.SearchSimilarChunks(ctx, bookID, currentChunkIndex, embedding, maxSimilarChunks)
+	if err != nil {
+		// Log error but don't fail processing - graceful degradation
+		log.Printf("Warning: failed to retrieve similar chunks for context (chunk %d): %v", currentChunkIndex, err)
+		return []llm.PriorChunkContext{}
+	}
+
+	if len(similarChunks) == 0 {
+		log.Printf("No similar chunks found for chunk %d", currentChunkIndex)
+		return []llm.PriorChunkContext{}
+	}
+
+	log.Printf("Found %d similar chunks for chunk %d", len(similarChunks), currentChunkIndex)
+
+	// Extract chunk IDs
+	chunkIDs := make([]primitive.ObjectID, len(similarChunks))
+	for i, sc := range similarChunks {
+		chunkIDs[i] = sc.ChunkID
+	}
+
+	// Retrieve chunk text from MongoDB
+	chunksMap, err := w.db.GetChunksByIDs(ctx, chunkIDs)
+	if err != nil {
+		log.Printf("Warning: failed to retrieve chunk text from DB (chunk %d): %v", currentChunkIndex, err)
+		return []llm.PriorChunkContext{}
+	}
+
+	// Build prior context with size limits
+	priorContext := make([]llm.PriorChunkContext, 0, len(similarChunks))
+	totalChars := 0
+
+	for _, sc := range similarChunks {
+		chunk, found := chunksMap[sc.ChunkID]
+		if !found {
+			log.Printf("Warning: chunk %s not found in DB", sc.ChunkID.Hex())
+			continue
+		}
+
+		// Truncate chunk text if needed
+		chunkText := chunk.Text
+		if len(chunkText) > maxChunkExcerpt {
+			chunkText = chunkText[:maxChunkExcerpt] + "..."
+		}
+
+		// Check total size limit
+		if totalChars+len(chunkText) > maxContextChars {
+			// Skip this chunk if it would exceed limit
+			log.Printf("Skipping chunk %d (would exceed max context size)", sc.ChunkIndex)
+			break
+		}
+
+		priorContext = append(priorContext, llm.PriorChunkContext{
+			ChunkIndex: sc.ChunkIndex,
+			Text:       chunkText,
+		})
+		totalChars += len(chunkText)
+
+		log.Printf("Added prior context from chunk %d (score: %.3f, chars: %d)", sc.ChunkIndex, sc.Score, len(chunkText))
+	}
+
+	log.Printf("Retrieved %d prior context chunks (total chars: %d) for chunk %d", len(priorContext), totalChars, currentChunkIndex)
+	return priorContext
 }

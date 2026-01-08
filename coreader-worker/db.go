@@ -308,6 +308,37 @@ func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, entities []Chunk
 	return UpdateOneWithMeta(context.TODO(), db.BooksChunksCollection, chunkID, updateFields)
 }
 
+// GetChunksByIDs retrieves multiple book chunks by their IDs
+// Returns a map of chunk ID to chunk document for efficient lookup
+func (db *DB) GetChunksByIDs(ctx context.Context, chunkIDs []primitive.ObjectID) (map[primitive.ObjectID]*BookChunksDoc, error) {
+	if len(chunkIDs) == 0 {
+		return make(map[primitive.ObjectID]*BookChunksDoc), nil
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": chunkIDs}}
+	cursor, err := db.BooksChunksCollection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query chunks: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	result := make(map[primitive.ObjectID]*BookChunksDoc)
+	for cursor.Next(ctx) {
+		var chunk BookChunksDoc
+		if err := cursor.Decode(&chunk); err != nil {
+			log.Printf("Warning: failed to decode chunk: %v", err)
+			continue
+		}
+		result[chunk.ID] = &chunk
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %w", err)
+	}
+
+	return result, nil
+}
+
 func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*EntityDescriptionsDoc, error) {
 	var entity EntityDescriptionsDoc
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

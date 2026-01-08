@@ -39,9 +39,16 @@ func DescribeEntity(ctx context.Context, client LLMClient, in EntityDescriptionI
 	return &desc, nil
 }
 
+// PriorChunkContext represents context from a previous chunk
+type PriorChunkContext struct {
+	ChunkIndex int
+	Text       string
+}
+
 // AnalyzeChunk sends a TextChunk to the LLM and returns structured metadata.
 // This is a helper function that works with any Client implementation.
-func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk string) (*ChunkLLMMetadata, error) {
+// priorContext contains excerpts from semantically similar chunks in the same book (can be empty).
+func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk string, priorContext []PriorChunkContext) (*ChunkLLMMetadata, error) {
 	if strings.TrimSpace(chunk) == "" {
 		// empty chunk → no entities
 		return &ChunkLLMMetadata{
@@ -50,7 +57,7 @@ func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk
 		}, nil
 	}
 
-	prompt := buildChunkAnalysisPrompt(bookTitle, chunk)
+	prompt := buildChunkAnalysisPrompt(bookTitle, chunk, priorContext)
 
 	options := Options{
 		Temperature: 0.1,
@@ -163,7 +170,7 @@ func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
 	return buildPrompt(setup, tasks, PromptChunk{Label: "Context", Text: in.Context}, schema, rules)
 }
 
-func buildChunkAnalysisPrompt(bookTitle, text string) string {
+func buildChunkAnalysisPrompt(bookTitle, text string, priorContext []PriorChunkContext) string {
 	bookPart := ""
 	if strings.TrimSpace(bookTitle) != "" {
 		bookPart = fmt.Sprintf(" from the book \"%s\"", bookTitle)
@@ -175,6 +182,12 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 		"Work ONLY within this chunk. You do NOT have the rest of the book.",
 		"Detect every chapter heading present in the chunk (e.g. \"Chapter 3\", \"Capitolul 2\", \"Part II\", or similar). Include all chapter headings found, not just the first.",
 	}
+
+	// Add prior context instructions if available
+	if len(priorContext) > 0 {
+		tasks = append(tasks, "Earlier context from the same book is provided below to help with entity recognition and continuity. Use it to identify entities that may be referenced by pronouns or partial names in the current chunk.")
+	}
+
 	schema := `STRICTLY a JSON object with this structure (no extra text):
 
 {
@@ -193,6 +206,46 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 		"Always include all occurrences of the entity name you can find in this chunk.",
 		"If no entities are found, use an empty array for \"entities\".",
 		"If there are no chapter headings, return an empty array for \"chapters\".",
+	}
+
+	// Add rules for using prior context
+	if len(priorContext) > 0 {
+		rules = append(rules, "When earlier context mentions an entity, reuse the same entity name if it appears in the current chunk (even if referenced indirectly).")
+		rules = append(rules, "The earlier context is for reference only - extract entities ONLY from the current chunk text, not from the earlier context.")
+	}
+
+	// Build the prompt with prior context if available
+	if len(priorContext) > 0 {
+		// Format prior context
+		var priorContextText strings.Builder
+		for i, pc := range priorContext {
+			if i > 0 {
+				priorContextText.WriteString("\n\n")
+			}
+			priorContextText.WriteString(fmt.Sprintf("--- Earlier context (chunk %d) ---\n%s", pc.ChunkIndex, pc.Text))
+		}
+
+		return fmt.Sprintf(`
+%s
+
+Your task:
+%s
+
+Earlier context:
+---
+%s
+---
+
+Current chunk to analyze:
+---
+%s
+---
+
+Return %s
+
+Rules:
+%s
+`, strings.TrimSpace(setup), formatBulletList(tasks), priorContextText.String(), text, strings.TrimSpace(schema), formatBulletList(rules))
 	}
 
 	return buildPrompt(setup, tasks, PromptChunk{Label: "Chunk", Text: text}, schema, rules)
