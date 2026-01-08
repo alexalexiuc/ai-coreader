@@ -62,7 +62,7 @@ export function UploadDropzone({ onUploadSuccess }: UploadDropzoneProps) {
         <Button
           onClick={handleUpload}
           disabled={!file || isPending}
-          loading={isPending}
+          isLoading={isPending}
           leftIcon={<IoCloudUploadOutline className="h-5 w-5" />}
         >
           Upload book

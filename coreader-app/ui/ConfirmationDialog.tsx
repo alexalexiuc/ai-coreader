@@ -48,7 +48,7 @@ export function ConfirmationDialog({
           <Button onClick={onClose} variant="primary" disabled={isLoading}>
             {cancelLabel}
           </Button>
-          <Button onClick={handleConfirm} variant={confirmVariant} loading={isLoading} disabled={isLoading}>
+          <Button onClick={handleConfirm} variant={confirmVariant} isLoading={isLoading} disabled={isLoading}>
             {confirmLabel}
           </Button>
         </div>

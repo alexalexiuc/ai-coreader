@@ -12,7 +12,7 @@ const isLink = (props: ButtonProps): props is ButtonAsLinkProps => {
 type CommonProps = {
   children: React.ReactNode;
   variant?: 'primary' | 'danger';
-  loading?: boolean;
+  isLoading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
@@ -47,7 +47,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
   const {
     children,
     variant = 'primary',
-    loading = false,
+    isLoading: loading = false,
     disabled = false,
     fullWidth = false,
     leftIcon,
