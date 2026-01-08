@@ -160,7 +160,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		log.Printf("Chunk %d created (chars=%d)", totalChunks-1, currentChunkLength)
 
 		// Generate and store embedding for the chunk
-		embedding, err := llmClient.GenerateEmbedding(ctx, logicalChunk.Text)
+		embedding, err := llm.GenerateEmbedding(ctx, llmClient, logicalChunk.Text)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to generate embedding for chunk %d: %w", totalChunks-1, err),
