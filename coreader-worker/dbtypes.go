@@ -7,9 +7,8 @@ Do not modify it by hand
 package main
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type ChunkEntityRef struct {
@@ -51,18 +50,19 @@ type BooksDoc struct {
 }
 
 type EntityDescriptionsDoc struct {
-	ID                     primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt              time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt              time.Time          `bson:"updatedAt" json:"updatedAt"`
-	BookID                 primitive.ObjectID `bson:"bookId" json:"bookId"`
-	BookChunkID            primitive.ObjectID `bson:"bookChunkId" json:"bookChunkId"`
-	Name                   string             `bson:"name" json:"name"`
-	Type                   string             `bson:"type" json:"type"`
-	Summary                string             `bson:"summary,omitempty" json:"summary,omitempty"`
-	Role                   string             `bson:"role,omitempty" json:"role,omitempty"`
-	Traits                 []string           `bson:"traits,omitempty" json:"traits,omitempty"`
-	ImportantLocations     []string           `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`
-	ImportantRelationships []string           `bson:"importantRelationships,omitempty" json:"importantRelationships,omitempty"`
+	ID                     primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt              time.Time            `bson:"createdAt" json:"createdAt"`
+	UpdatedAt              time.Time            `bson:"updatedAt" json:"updatedAt"`
+	BookID                 primitive.ObjectID   `bson:"bookId" json:"bookId"`
+	BookChunkID            primitive.ObjectID   `bson:"bookChunkId" json:"bookChunkId"`
+	BookChunkIds           []primitive.ObjectID `bson:"bookChunkIds,omitempty" json:"bookChunkIds,omitempty"`
+	Name                   string               `bson:"name" json:"name"`
+	Type                   string               `bson:"type" json:"type"`
+	Summary                string               `bson:"summary,omitempty" json:"summary,omitempty"`
+	Role                   string               `bson:"role,omitempty" json:"role,omitempty"`
+	Traits                 []string             `bson:"traits,omitempty" json:"traits,omitempty"`
+	ImportantLocations     []string             `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`
+	ImportantRelationships []string             `bson:"importantRelationships,omitempty" json:"importantRelationships,omitempty"`
 }
 
 type FilesDoc struct {

@@ -202,6 +202,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, llmEntity := range chunkEntities.Entities {
 			entityID := primitive.NilObjectID
+			entityCreated := false
 			for _, inserted := range insertedEntities {
 				if inserted.Name == llmEntity.Name && inserted.Type == llmEntity.Type {
 					entityID = inserted.ID
@@ -210,11 +211,12 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 			if entityID == primitive.NilObjectID {
 				createdEntity, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
-					BookID:      book.ID,
-					BookChunkID: chunk.ID,
-					Name:        llmEntity.Name,
-					Type:        llmEntity.Type,
-					Summary:     "", // Will be filled later with more detailed analysis
+					BookID:       book.ID,
+					BookChunkID:  chunk.ID,
+					BookChunkIds: []primitive.ObjectID{chunk.ID},
+					Name:         llmEntity.Name,
+					Type:         llmEntity.Type,
+					Summary:      "", // Will be filled later with more detailed analysis
 				})
 				if err != nil {
 					return &ErrorInfo{
@@ -230,6 +232,17 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 					ID:   createdEntity.ID,
 				})
 				log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
+				entityCreated = true
+			}
+
+			if !entityCreated {
+				if err := db.AddChunkToEntityDescription(entityID, chunk.ID); err != nil {
+					return &ErrorInfo{
+						RawError:        fmt.Errorf("failed to update entity chunk references: %w", err),
+						FriendlyMessage: "Failed to update entity references",
+						BookID:          &bookID,
+					}
+				}
 			}
 
 			startOffsets := llmEntity.StartOffsets

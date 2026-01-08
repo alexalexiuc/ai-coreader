@@ -133,6 +133,10 @@ export interface EntityDescriptionsDoc {
    */
   bookChunkId: ObjectId;
   /**
+   * References to book chunks where the entity is found
+   */
+  bookChunkIds?: ObjectId[];
+  /**
    * Entity name
    */
   name: string;
