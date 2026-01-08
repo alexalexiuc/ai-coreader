@@ -68,7 +68,7 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 
 // processFileInternal contains the core file processing logic without error handling
 func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client, qdrantClient *QdrantClient) *ErrorInfo {
-	llmSession := llmClient.NewSession(generateSessionID(file.StorageName))
+	ctx = llm.WithRequestLogger(ctx, generateSessionID(file.StorageName))
 
 	type entityRecord struct {
 		Name string
@@ -184,7 +184,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")
 			isFirstChunk = false
-			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, llmSession, logicalChunk.Text)
+			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, llmClient, logicalChunk.Text)
 			if err != nil {
 				return &ErrorInfo{
 					RawError:        fmt.Errorf("failed to analyze book header: %w", err),
@@ -210,7 +210,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 		}
 
-		chunkEntities, err := llm.AnalyzeChunk(ctx, llmSession, book.Title, logicalChunk.Text)
+		chunkEntities, err := llm.AnalyzeChunk(ctx, llmClient, book.Title, logicalChunk.Text)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to analyze chunk %d: %w", totalChunks-1, err),

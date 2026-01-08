@@ -20,16 +20,9 @@ const defaultEmbeddingModel = "nomic-embed-text"
 // OllamaClient implements the Client interface for Ollama API.
 
 type OllamaClient struct {
-	loggingEnabled bool
 	Provider       *api.Client
 	Model          string
 	EmbeddingModel string
-}
-
-type OllamaSession struct {
-	SessionID string
-	Client    *OllamaClient
-	logger    *Logger
 }
 
 // NewOllamaClient creates a new Ollama client from environment variables.
@@ -37,7 +30,6 @@ func NewOllamaClient() Client {
 	baseURL := utils.GetEnv("LLM_BASE_URL", "http://localhost:11434")
 	model := utils.GetEnv("OLLAMA_MODEL", defaultOllamaModel)
 	embeddingModel := utils.GetEnv("OLLAMA_EMBEDDING_MODEL", defaultEmbeddingModel)
-	loggingEnabled := utils.GetEnv("LLM_LOGGING_ENABLED", "true") == "true"
 
 	// Parse base URL
 	parsedURL, err := url.Parse(baseURL)
@@ -54,31 +46,20 @@ func NewOllamaClient() Client {
 
 	return &OllamaClient{
 		Provider:       client,
-		loggingEnabled: loggingEnabled,
 		Model:          model,
 		EmbeddingModel: embeddingModel,
 	}
 }
 
-func (c *OllamaClient) NewSession(sessionId string) Session {
-	return &OllamaSession{
-		SessionID: sessionId,
-		Client:    c,
-		logger:    NewLogger(true, "./llm_logs", sessionId),
-	}
-}
-
 // GenerateCompletion sends a prompt to Ollama and returns the raw response.
 // This is the single function that handles all model requests.
-func (s *OllamaSession) GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error) {
-	response, err := s.doRequest(ctx, prompt, options)
-	s.logger.LogRequest(prompt, &options, response, err)
-	return response, err
+func (c *OllamaClient) GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error) {
+	return c.doRequest(ctx, prompt, options)
 }
 
-func (s *OllamaSession) doRequest(ctx context.Context, prompt string, options Options) (string, error) {
+func (c *OllamaClient) doRequest(ctx context.Context, prompt string, options Options) (string, error) {
 	req := &api.GenerateRequest{
-		Model:  s.Client.Model,
+		Model:  c.Model,
 		Prompt: prompt,
 		Stream: new(bool), // false
 		Options: map[string]any{
@@ -91,7 +72,7 @@ func (s *OllamaSession) doRequest(ctx context.Context, prompt string, options Op
 	}
 
 	var responseText strings.Builder
-	err := s.Client.Provider.Generate(ctx, req, func(resp api.GenerateResponse) error {
+	err := c.Provider.Generate(ctx, req, func(resp api.GenerateResponse) error {
 		responseText.WriteString(resp.Response)
 		return nil
 	})
