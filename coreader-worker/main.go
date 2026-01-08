@@ -30,6 +30,17 @@ func main() {
 		return
 	}
 
+	qdrantClient, err := InitQdrant()
+	if err != nil {
+		fmt.Printf("Error initializing Qdrant client: %v\n", err)
+		return
+	}
+	defer func() {
+		if err := qdrantClient.Close(); err != nil {
+			fmt.Printf("Error closing Qdrant client: %v\n", err)
+		}
+	}()
+
 	unprocessedFiles, err := db.GetUnprocessedFiles()
 	if err != nil {
 		fmt.Println("Error getting unprocessed files:", err)

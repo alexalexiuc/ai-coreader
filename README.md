@@ -42,3 +42,4 @@ Useful commands:
 - App: http://localhost:3000
 - MongoDB: mongodb://localhost:27017
 - LLM (Ollama): http://localhost:11434
+- Qdrant: http://localhost:6333 (HTTP API), localhost:6334 (gRPC API)
