@@ -153,7 +153,7 @@ func (db *DB) Close() {
 	db.Client.Disconnect(context.TODO())
 }
 
-func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.LLMClient, qdrantClient *QdrantClient) {
+func (w *Worker) WatchFilesCollectionChanges(ctx context.Context) {
 	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
 	log.Println("Polling files collection for pending files...")
 
@@ -163,7 +163,7 @@ func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.LLMC
 			return
 		}
 
-		files, err := queryPendingFiles(db)
+		files, err := queryPendingFiles(w.db)
 		if err != nil {
 			log.Printf("Polling error: %v", err)
 		} else {
@@ -175,7 +175,7 @@ func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.LLMC
 
 				start := time.Now()
 				log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
-				if err := ProcessFile(ctx, db, &file, llmClient, qdrantClient); err != nil {
+				if err := w.ProcessFile(ctx, &file); err != nil {
 					log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
 					continue
 				}

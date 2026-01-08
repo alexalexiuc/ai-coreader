@@ -28,10 +28,10 @@ func WithRequestLogger(ctx context.Context, sessionID string) context.Context {
 	return WithLogger(ctx, NewLogger(enabled, "./llm_logs", sessionID))
 }
 
-func logRequest(ctx context.Context, prompt string, options *Options, response string, respErr error) {
+func logRequest(ctx context.Context, reqName string, prompt string, options *Options, response string, respErr error) {
 	logger := LoggerFromContext(ctx)
 	if logger == nil {
 		return
 	}
-	_ = logger.LogRequest(prompt, options, response, respErr)
+	_ = logger.LogRequest(reqName, prompt, options, response, respErr)
 }

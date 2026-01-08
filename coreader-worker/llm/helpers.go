@@ -20,7 +20,7 @@ func DescribeEntity(ctx context.Context, client LLMClient, in EntityDescriptionI
 	}
 
 	response, err := client.GenerateCompletion(ctx, prompt, options)
-	logRequest(ctx, prompt, &options, response, err)
+	logRequest(ctx, "DescribeEntity", prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk
 	}
 
 	response, err := client.GenerateCompletion(ctx, prompt, options)
-	logRequest(ctx, prompt, &options, response, err)
+	logRequest(ctx, "AnalyzeChunk", prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func AnalyzeBookHeader(ctx context.Context, client LLMClient, chunk string) (*Bo
 	}
 
 	response, err := client.GenerateCompletion(ctx, prompt, options)
-	logRequest(ctx, prompt, &options, response, err)
+	logRequest(ctx, "AnalyzeBookHeader", prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}
@@ -110,6 +110,13 @@ func AnalyzeBookHeader(ctx context.Context, client LLMClient, chunk string) (*Bo
 	}
 
 	return &meta, nil
+}
+
+// GenerateEmbedding wraps embedding generation to keep LLM calls consistent.
+func GenerateEmbedding(ctx context.Context, client LLMClient, text string) ([]float32, error) {
+	response, err := client.GenerateEmbedding(ctx, text)
+	logRequest(ctx, "GenerateEmbedding", text, nil, fmt.Sprintf("embedding(len=%d)", len(response)), err)
+	return response, err
 }
 
 // =======================

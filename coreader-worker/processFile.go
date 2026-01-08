@@ -35,30 +35,30 @@ type ErrorInfo struct {
 */
 
 // ProcessFile orchestrates file processing and handles error recording
-func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.LLMClient, qdrantClient *QdrantClient) error {
-	if err := db.SetFileProcessingStarted(file.ID); err != nil {
+func (w *Worker) ProcessFile(ctx context.Context, file *FilesDoc) error {
+	if err := w.db.SetFileProcessingStarted(file.ID); err != nil {
 		log.Printf("Failed to set processing start time: %v", err)
 	}
 
 	// Call the actual processing logic
-	err := processFileInternal(ctx, db, file, llmClient, qdrantClient)
+	err := w.processFileInternal(ctx, file)
 
 	// Handle the result - update DB regardless of success or failure
 	if err != nil {
 		log.Printf("File processing failed for id=%s: %v", file.ID.Hex(), err)
 		if err.BookID != nil {
-			if cleanupErr := db.DeleteBookData(*err.BookID); cleanupErr != nil {
+			if cleanupErr := w.db.DeleteBookData(*err.BookID); cleanupErr != nil {
 				log.Printf("Failed to cleanup book data for file id=%s bookId=%s: %v", file.ID.Hex(), err.BookID.Hex(), cleanupErr)
 			}
 		}
 		// Append error to the error history array
-		_ = db.AppendFileError(file.ID, err.RawError.Error(), err.FriendlyMessage)
-		_ = db.SetFileStatus(file.ID, "failed")
+		_ = w.db.AppendFileError(file.ID, err.RawError.Error(), err.FriendlyMessage)
+		_ = w.db.SetFileStatus(file.ID, "failed")
 		return err.RawError
 	}
 
 	// Set processing completed timestamp
-	if err := db.SetFileProcessingCompleted(file.ID); err != nil {
+	if err := w.db.SetFileProcessingCompleted(file.ID); err != nil {
 		log.Printf("Failed to set processing end time: %v", err)
 	}
 
@@ -67,7 +67,7 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.LLMC
 }
 
 // processFileInternal contains the core file processing logic without error handling
-func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.LLMClient, qdrantClient *QdrantClient) *ErrorInfo {
+func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *ErrorInfo {
 	ctx = llm.WithRequestLogger(ctx, generateSessionID(file.StorageName))
 
 	type entityRecord struct {
@@ -78,7 +78,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 	insertedEntities := make([]entityRecord, 0)
 
 	// Create book with known info, additional will be added later
-	book, err := db.CreateBookDoc(&BooksDoc{
+	book, err := w.db.CreateBookDoc(&BooksDoc{
 		FileID:      file.ID,
 		Processed:   false,
 		TotalChars:  0,
@@ -97,7 +97,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 
 	// Create user-book link if file has a userId (user-uploaded file)
 	if !file.UserID.IsZero() {
-		_, created, err := db.CreateOrUpdateUserBook(file.UserID, book.ID)
+		_, created, err := w.db.CreateOrUpdateUserBook(file.UserID, book.ID)
 		if err != nil {
 			log.Printf("Warning: Failed to create user-book link for userId=%s bookId=%s: %v", file.UserID.Hex(), book.ID.Hex(), err)
 			// Non-fatal: continue processing even if link creation fails
@@ -142,7 +142,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		totalChars += currentChunkLength
 		totalChunks++ // Increment first, so totalChunks-1 is the current 0-based chunk index
 
-		chunk, err := db.CreateBookChunkDoc(&BookChunksDoc{
+		chunk, err := w.db.CreateBookChunkDoc(&BookChunksDoc{
 			BookID:       book.ID,
 			Index:        totalChunks - 1,
 			StartChar:    totalChars - currentChunkLength,
@@ -160,7 +160,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		log.Printf("Chunk %d created (chars=%d)", totalChunks-1, currentChunkLength)
 
 		// Generate and store embedding for the chunk
-		embedding, err := llmClient.GenerateEmbedding(ctx, logicalChunk.Text)
+		embedding, err := llm.GenerateEmbedding(ctx, w.llmClient, logicalChunk.Text)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to generate embedding for chunk %d: %w", totalChunks-1, err),
@@ -171,7 +171,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		log.Printf("Generated embedding for chunk %d (dimension: %d)", totalChunks-1, len(embedding))
 
 		// Store embedding in Qdrant
-		err = qdrantClient.StoreChunkEmbedding(ctx, book.ID, chunk.ID, totalChunks-1, embedding)
+		err = w.qdrantClient.StoreChunkEmbedding(ctx, book.ID, chunk.ID, totalChunks-1, embedding)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to store embedding for chunk %d: %w", totalChunks-1, err),
@@ -184,7 +184,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")
 			isFirstChunk = false
-			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, llmClient, logicalChunk.Text)
+			bookHeaderMetadata, err := llm.AnalyzeBookHeader(ctx, w.llmClient, logicalChunk.Text)
 			if err != nil {
 				return &ErrorInfo{
 					RawError:        fmt.Errorf("failed to analyze book header: %w", err),
@@ -194,7 +194,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 			log.Printf("Book header metadata: %+v", bookHeaderMetadata)
 			if bookHeaderMetadata.HasHeader {
-				_, err := db.UpdateBookDoc(book.ID, bson.M{
+				_, err := w.db.UpdateBookDoc(book.ID, bson.M{
 					"author": bookHeaderMetadata.Author,
 					"title":  bookHeaderMetadata.Title,
 				})
@@ -210,7 +210,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 		}
 
-		chunkEntities, err := llm.AnalyzeChunk(ctx, llmClient, book.Title, logicalChunk.Text)
+		chunkEntities, err := llm.AnalyzeChunk(ctx, w.llmClient, book.Title, logicalChunk.Text)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to analyze chunk %d: %w", totalChunks-1, err),
@@ -232,7 +232,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 				}
 			}
 			if entityID == primitive.NilObjectID {
-				createdEntity, err := db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
+				createdEntity, err := w.db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
 					BookID:       book.ID,
 					BookChunkID:  chunk.ID,
 					BookChunkIds: []primitive.ObjectID{chunk.ID},
@@ -258,7 +258,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 
 			if !entityCreated {
-				if err := db.AddChunkToEntityDescription(entityID, chunk.ID); err != nil {
+				if err := w.db.AddChunkToEntityDescription(entityID, chunk.ID); err != nil {
 					return &ErrorInfo{
 						RawError:        fmt.Errorf("failed to update entity chunk references: %w", err),
 						FriendlyMessage: "Failed to update entity references",
@@ -281,7 +281,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		}
 
 		// Update book chunk with LLM metadata
-		_, err = db.AddLLMDataToBookChunk(chunk.ID, entitiesWithIDs, chunkEntities)
+		_, err = w.db.AddLLMDataToBookChunk(chunk.ID, entitiesWithIDs, chunkEntities)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to add LLM data to book chunk: %w", err),
@@ -297,7 +297,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			if progressPct >= 100 {
 				progressPct = 99
 			}
-			err = db.SetFileProgress(file.ID, progressPct)
+			err = w.db.SetFileProgress(file.ID, progressPct)
 			if err != nil {
 				return &ErrorInfo{
 					RawError:        fmt.Errorf("failed to set file progress: %w", err),
@@ -310,7 +310,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 	}
 
 	if file.Size > 0 {
-		err = db.SetFileProgress(file.ID, 100)
+		err = w.db.SetFileProgress(file.ID, 100)
 		if err != nil {
 			return &ErrorInfo{
 				RawError:        fmt.Errorf("failed to set final progress: %w", err),
@@ -322,7 +322,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
 
-	_, err = db.SetBookProcessed(book.ID)
+	_, err = w.db.SetBookProcessed(book.ID)
 	if err != nil {
 		return &ErrorInfo{
 			RawError:        fmt.Errorf("failed to mark book as processed: %w", err),
@@ -332,7 +332,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 	}
 
 	// Update file status in DB
-	err = db.SetFileStatus(file.ID, "processed")
+	err = w.db.SetFileStatus(file.ID, "processed")
 	if err != nil {
 		return &ErrorInfo{
 			RawError:        fmt.Errorf("failed to set final status: %w", err),

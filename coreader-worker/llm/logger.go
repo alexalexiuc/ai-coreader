@@ -39,9 +39,13 @@ func NewLogger(enabled bool, baseDir string, sessionID string) *Logger {
 }
 
 // LogRequest logs a single LLM request with prompt, format, and response
-func (l *Logger) LogRequest(prompt string, options *Options, response string, respErr error) error {
+func (l *Logger) LogRequest(reqName string, prompt string, options *Options, response string, respErr error) error {
 	if !l.enabled {
 		return nil
+	}
+
+	if options == nil {
+		options = &Options{}
 	}
 
 	// Ensure logs directory exists
@@ -73,7 +77,7 @@ func (l *Logger) LogRequest(prompt string, options *Options, response string, re
 	}
 
 	// Create filename with timestamp
-	filename := fmt.Sprintf("request_%d.log", time.Now().UnixNano())
+	filename := fmt.Sprintf("request_%s_%d.log", reqName, time.Now().UnixNano())
 	filepath := filepath.Join(logDir, filename)
 
 	// Write to file
