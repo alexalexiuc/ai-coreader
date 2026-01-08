@@ -330,6 +330,18 @@ func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*En
 	return entityDesc, err
 }
 
+func (db *DB) AddChunkToEntityDescription(entityID primitive.ObjectID, chunkID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$addToSet": bson.M{"bookChunkIds": chunkID},
+		"$set":      bson.M{"updatedAt": time.Now().UTC()},
+	}
+	_, err := db.EntityDescriptionsCollection.UpdateByID(ctx, entityID, update)
+	return err
+}
+
 func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

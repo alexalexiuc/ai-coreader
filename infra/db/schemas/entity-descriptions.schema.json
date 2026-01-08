@@ -39,6 +39,14 @@
       "format": "objectId",
       "description": "Reference to the originating book chunk"
     },
+    "bookChunkIds": {
+      "type": "array",
+      "description": "References to book chunks where the entity is found",
+      "items": {
+        "type": "string",
+        "format": "objectId"
+      }
+    },
     "name": {
       "type": "string",
       "description": "Entity name"

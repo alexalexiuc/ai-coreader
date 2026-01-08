@@ -31,6 +31,13 @@
       "description": "Reference to the originating book chunk",
       "bsonType": "objectId"
     },
+    "bookChunkIds": {
+      "description": "References to book chunks where the entity is found",
+      "items": {
+        "bsonType": "objectId"
+      },
+      "bsonType": "array"
+    },
     "name": {
       "description": "Entity name",
       "bsonType": "string"
