@@ -7,9 +7,10 @@ ollama serve &
 # give it a moment to start
 sleep 2
 
-# pull models you want available
+# pull phi4-mini model for text generation (ignore errors)
 ollama pull phi4-mini || true
-# ollama pull llama3.2:3b-instruct || true
+# pull nomic-embed-text model for text embedding (ignore errors)
+ollama pull nomic-embed-text || true
 
 # GPU check
 nvidia-smi
