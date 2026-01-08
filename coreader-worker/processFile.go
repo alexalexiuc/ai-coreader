@@ -35,13 +35,13 @@ type ErrorInfo struct {
 */
 
 // ProcessFile orchestrates file processing and handles error recording
-func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client) error {
+func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client, qdrantClient *QdrantClient) error {
 	if err := db.SetFileProcessingStarted(file.ID); err != nil {
 		log.Printf("Failed to set processing start time: %v", err)
 	}
 
 	// Call the actual processing logic
-	err := processFileInternal(ctx, db, file, llmClient)
+	err := processFileInternal(ctx, db, file, llmClient, qdrantClient)
 
 	// Handle the result - update DB regardless of success or failure
 	if err != nil {
@@ -67,7 +67,7 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 }
 
 // processFileInternal contains the core file processing logic without error handling
-func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client) *ErrorInfo {
+func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client, qdrantClient *QdrantClient) *ErrorInfo {
 	llmSession := llmClient.NewSession(generateSessionID(file.StorageName))
 
 	type entityRecord struct {
@@ -140,7 +140,7 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 		fmt.Printf("Appending %d chars\n", len(logicalChunk.Text))
 		currentChunkLength := len(logicalChunk.Text)
 		totalChars += currentChunkLength
-		totalChunks++
+		totalChunks++ // Increment first, so totalChunks-1 is the current 0-based chunk index
 
 		chunk, err := db.CreateBookChunkDoc(&BookChunksDoc{
 			BookID:       book.ID,
@@ -158,6 +158,28 @@ func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient 
 			}
 		}
 		log.Printf("Chunk %d created (chars=%d)", totalChunks-1, currentChunkLength)
+
+		// Generate and store embedding for the chunk
+		embedding, err := llmClient.GenerateEmbedding(ctx, logicalChunk.Text)
+		if err != nil {
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to generate embedding for chunk %d: %w", totalChunks-1, err),
+				FriendlyMessage: "Failed to generate chunk embedding",
+				BookID:          &bookID,
+			}
+		}
+		log.Printf("Generated embedding for chunk %d (dimension: %d)", totalChunks-1, len(embedding))
+
+		// Store embedding in Qdrant
+		err = qdrantClient.StoreChunkEmbedding(ctx, book.ID, chunk.ID, totalChunks-1, embedding)
+		if err != nil {
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to store embedding for chunk %d: %w", totalChunks-1, err),
+				FriendlyMessage: "Failed to store chunk embedding",
+				BookID:          &bookID,
+			}
+		}
+		log.Printf("Stored embedding in Qdrant for chunk %d", totalChunks-1)
 
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")

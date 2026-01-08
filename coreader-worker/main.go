@@ -55,7 +55,7 @@ func main() {
 
 		start := time.Now()
 		fmt.Println("Processing file:", file.ID.Hex(), file.StoragePath)
-		err := ProcessFile(ctx, db, &file, llmClient)
+		err := ProcessFile(ctx, db, &file, llmClient, qdrantClient)
 		if err != nil {
 			fmt.Println("Error processing file:", file.ID.Hex(), err)
 		} else {
@@ -63,5 +63,5 @@ func main() {
 		}
 	}
 
-	WatchFilesCollectionChanges(ctx, db, llmClient)
+	WatchFilesCollectionChanges(ctx, db, llmClient, qdrantClient)
 }

@@ -13,6 +13,7 @@ Worker-specific guidance (inherits root AGENTS.md).
 - Mongo helpers: use `db.go` helpers (`InsertOneWithMeta`, `UpdateOneWithMeta`) to keep `createdAt`/`updatedAt` aligned with schema requirements.
 - Status flow: file `status` transitions `pending → processing → processed` (or `failed` if you add error handling); book `processed` flag is set at the end of `ProcessFile`.
 - Ownership: When processing a file with `userId` set, worker creates a `user-books` link via `CreateOrUpdateUserBook()` to establish ownership for authorization checks.
+- use `any` instead of `interface{}` for generic types (Go 1.18+).
 
 ## LLM client
 

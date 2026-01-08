@@ -56,6 +56,9 @@ type ChunkLLMMetadata struct {
 type Client interface {
 	// New Session creates a new LLM session with logging tied to the provided filename.
 	NewSession(sessionId string) Session
+
+	// GenerateEmbedding generates a vector embedding for the given text.
+	GenerateEmbedding(ctx context.Context, text string) ([]float32, error)
 }
 
 // Options represents configuration options for model generation.

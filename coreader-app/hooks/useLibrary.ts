@@ -10,9 +10,7 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
   const [view, setView] = useState<ViewKey>('grid');
   const [books, setBooks] = useState<LibraryBook[]>(initialBooks);
   const [, startTransition] = useTransition();
-  const serverConfirmedPinState = useRef<Map<string, boolean>>(
-    new Map(initialBooks.map((b) => [b.id, b.isPinned ?? false])),
-  );
+  const serverConfirmedPinState = useRef<Map<string, boolean>>(new Map(initialBooks.map((b) => [b.id, b.isPinned ?? false])));
 
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
@@ -88,7 +86,7 @@ export default function useLibrary(initialBooks: LibraryBook[] = []) {
       setBooks((prev) => {
         const currentBook = prev.find((b) => b.id === id);
         if (!currentBook) return prev; // Book not found, no update
-        
+
         const currentPinned = currentBook.isPinned ?? false;
         serverConfirmedPinState.current.set(id, currentPinned);
         return prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b));
