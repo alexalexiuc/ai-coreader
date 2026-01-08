@@ -51,11 +51,12 @@ type ChunkLLMMetadata struct {
 	Chapters []string         `json:"chapters,omitempty"`
 }
 
-// Client is the interface for interacting with language models.
+// LLMClient is the interface for interacting with language models.
 // Different implementations can be swapped (local, remote, different providers).
-type Client interface {
-	// New Session creates a new LLM session with logging tied to the provided filename.
-	NewSession(sessionId string) Session
+type LLMClient interface {
+	// GenerateCompletion sends a prompt to the model and returns the raw response.
+	// Callers may attach logging context via llm.WithLogger.
+	GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error)
 
 	// GenerateEmbedding generates a vector embedding for the given text.
 	GenerateEmbedding(ctx context.Context, text string) ([]float32, error)
@@ -69,13 +70,6 @@ type Options struct {
 	// TopK        int
 	// NumCtx      int
 	// Seed        int
-}
-
-// Session bundles a client with its session identifier for logging.
-type Session interface {
-	// GenerateCompletion sends a prompt to the model and returns the raw response.
-	// This is the core function that all model interactions go through.
-	GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error)
 }
 
 // NewClientFromEnv selects the LLM client based on AI_CLIENT env var and enables logging.

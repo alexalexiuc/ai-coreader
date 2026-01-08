@@ -11,7 +11,7 @@ import (
 
 // DescribeEntity analyzes entity context and returns a structured description.
 // This is a helper function that works with any Client implementation.
-func DescribeEntity(ctx context.Context, session Session, in EntityDescriptionInput) (*EntityDescription, error) {
+func DescribeEntity(ctx context.Context, client LLMClient, in EntityDescriptionInput) (*EntityDescription, error) {
 	prompt := buildEntityDescriptionPrompt(in)
 
 	options := Options{
@@ -19,7 +19,8 @@ func DescribeEntity(ctx context.Context, session Session, in EntityDescriptionIn
 		Format:      EntityDescriptionFormat(),
 	}
 
-	response, err := session.GenerateCompletion(ctx, prompt, options)
+	response, err := client.GenerateCompletion(ctx, prompt, options)
+	logRequest(ctx, prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func DescribeEntity(ctx context.Context, session Session, in EntityDescriptionIn
 
 // AnalyzeChunk sends a TextChunk to the LLM and returns structured metadata.
 // This is a helper function that works with any Client implementation.
-func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk string) (*ChunkLLMMetadata, error) {
+func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk string) (*ChunkLLMMetadata, error) {
 	if strings.TrimSpace(chunk) == "" {
 		// empty chunk → no entities
 		return &ChunkLLMMetadata{
@@ -56,7 +57,8 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 		Format:      ChunkMetadataFormat(),
 	}
 
-	response, err := session.GenerateCompletion(ctx, prompt, options)
+	response, err := client.GenerateCompletion(ctx, prompt, options)
+	logRequest(ctx, prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +84,7 @@ func AnalyzeChunk(ctx context.Context, session Session, bookTitle string, chunk 
 
 // AnalyzeBookHeader analyzes the beginning of a book and extracts header metadata.
 // This is a helper function that works with any Client implementation.
-func AnalyzeBookHeader(ctx context.Context, session Session, chunk string) (*BookHeaderMetadata, error) {
+func AnalyzeBookHeader(ctx context.Context, client LLMClient, chunk string) (*BookHeaderMetadata, error) {
 	if strings.TrimSpace(chunk) == "" {
 		return &BookHeaderMetadata{
 			HasHeader: false,
@@ -96,7 +98,8 @@ func AnalyzeBookHeader(ctx context.Context, session Session, chunk string) (*Boo
 		Format:      BookHeaderFormat(),
 	}
 
-	response, err := session.GenerateCompletion(ctx, prompt, options)
+	response, err := client.GenerateCompletion(ctx, prompt, options)
+	logRequest(ctx, prompt, &options, response, err)
 	if err != nil {
 		return nil, err
 	}

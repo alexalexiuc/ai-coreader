@@ -17,25 +17,16 @@ import (
 var SupportedClients = map[string]bool{"ollama": true, "openai": true}
 
 type AIClient struct {
-	loggingEnabled bool
-	Provider       types.Provider
+	Provider types.Provider
 }
 
-type AISession struct {
-	SessionID string
-	Client    *AIClient
-	logger    *Logger
-}
-
-func NewClientFromEnv() (Client, error) {
+func NewClientFromEnv() (LLMClient, error) {
 	clientType := strings.ToLower(strings.TrimSpace(utils.GetEnv("AI_CLIENT", "ollama")))
-	loggingEnabled := utils.GetEnv("LLM_LOGGING_ENABLED", "true") == "true"
-
 	if ok, supported := SupportedClients[clientType]; !supported || !ok {
 		return nil, fmt.Errorf("unsupported AI_CLIENT: %s", clientType)
 	}
 
-	log.Printf("Using LLM client: %s (logging: %v)", clientType, loggingEnabled)
+	log.Printf("Using LLM client: %s", clientType)
 
 	var provider types.Provider
 	var err error
@@ -77,8 +68,7 @@ func NewClientFromEnv() (Client, error) {
 	}
 
 	return &AIClient{
-		loggingEnabled: loggingEnabled,
-		Provider:       provider,
+		Provider: provider,
 	}, nil
 }
 
@@ -93,23 +83,11 @@ func newProvider(config types.ProviderConfig) (types.Provider, error) {
 	return provider, nil
 }
 
-func (c *AIClient) NewSession(sessionId string) Session {
-	return &AISession{
-		SessionID: sessionId,
-		Client:    c,
-		logger:    NewLogger(true, "./llm_logs", sessionId),
-	}
+func (c *AIClient) GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error) {
+	return c.doRequest(ctx, prompt, options)
 }
 
-func (s *AISession) GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error) {
-	response, err := s.doRequest(ctx, prompt, options)
-	if s.Client.loggingEnabled && s.logger != nil {
-		_ = s.logger.LogRequest(prompt, &options, response, err)
-	}
-	return response, err
-}
-
-func (s *AISession) doRequest(ctx context.Context, prompt string, options Options) (string, error) {
+func (c *AIClient) doRequest(ctx context.Context, prompt string, options Options) (string, error) {
 	req := types.GenerateOptions{
 		Messages: []types.ChatMessage{
 			{Role: "user", Content: prompt},
@@ -128,7 +106,7 @@ func (s *AISession) doRequest(ctx context.Context, prompt string, options Option
 		req.ResponseFormat = string(schemaJSON)
 	}
 
-	stream, err := s.Client.Provider.GenerateChatCompletion(ctx, req)
+	stream, err := c.Provider.GenerateChatCompletion(ctx, req)
 	if err != nil {
 		return "", err
 	}

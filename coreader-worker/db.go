@@ -153,7 +153,7 @@ func (db *DB) Close() {
 	db.Client.Disconnect(context.TODO())
 }
 
-func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.Client, qdrantClient *QdrantClient) {
+func WatchFilesCollectionChanges(ctx context.Context, db *DB, llmClient llm.LLMClient, qdrantClient *QdrantClient) {
 	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
 	log.Println("Polling files collection for pending files...")
 
