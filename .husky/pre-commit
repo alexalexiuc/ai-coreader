@@ -6,3 +6,4 @@ npm run typecheck
 cd ..
 cd coreader-worker
 goimports -w .
+git add .
