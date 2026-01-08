@@ -44,6 +44,10 @@ func (l *Logger) LogRequest(reqName string, prompt string, options *Options, res
 		return nil
 	}
 
+	if options == nil {
+		options = &Options{}
+	}
+
 	// Ensure logs directory exists
 	logDir := filepath.Join(l.baseDir, "logs", l.sessionID)
 	if err := os.MkdirAll(logDir, 0755); err != nil {
