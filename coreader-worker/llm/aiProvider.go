@@ -20,7 +20,7 @@ type AIClient struct {
 	Provider types.Provider
 }
 
-func NewClientFromEnv() (Client, error) {
+func NewClientFromEnv() (LLMClient, error) {
 	clientType := strings.ToLower(strings.TrimSpace(utils.GetEnv("AI_CLIENT", "ollama")))
 	if ok, supported := SupportedClients[clientType]; !supported || !ok {
 		return nil, fmt.Errorf("unsupported AI_CLIENT: %s", clientType)

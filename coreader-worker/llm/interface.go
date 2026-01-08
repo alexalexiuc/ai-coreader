@@ -51,9 +51,9 @@ type ChunkLLMMetadata struct {
 	Chapters []string         `json:"chapters,omitempty"`
 }
 
-// Client is the interface for interacting with language models.
+// LLMClient is the interface for interacting with language models.
 // Different implementations can be swapped (local, remote, different providers).
-type Client interface {
+type LLMClient interface {
 	// GenerateCompletion sends a prompt to the model and returns the raw response.
 	// Callers may attach logging context via llm.WithLogger.
 	GenerateCompletion(ctx context.Context, prompt string, options Options) (string, error)

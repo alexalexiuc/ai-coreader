@@ -35,7 +35,7 @@ type ErrorInfo struct {
 */
 
 // ProcessFile orchestrates file processing and handles error recording
-func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client, qdrantClient *QdrantClient) error {
+func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.LLMClient, qdrantClient *QdrantClient) error {
 	if err := db.SetFileProcessingStarted(file.ID); err != nil {
 		log.Printf("Failed to set processing start time: %v", err)
 	}
@@ -67,7 +67,7 @@ func ProcessFile(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Clie
 }
 
 // processFileInternal contains the core file processing logic without error handling
-func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.Client, qdrantClient *QdrantClient) *ErrorInfo {
+func processFileInternal(ctx context.Context, db *DB, file *FilesDoc, llmClient llm.LLMClient, qdrantClient *QdrantClient) *ErrorInfo {
 	ctx = llm.WithRequestLogger(ctx, generateSessionID(file.StorageName))
 
 	type entityRecord struct {

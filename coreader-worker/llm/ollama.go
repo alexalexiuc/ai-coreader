@@ -26,7 +26,7 @@ type OllamaClient struct {
 }
 
 // NewOllamaClient creates a new Ollama client from environment variables.
-func NewOllamaClient() Client {
+func NewOllamaClient() LLMClient {
 	baseURL := utils.GetEnv("LLM_BASE_URL", "http://localhost:11434")
 	model := utils.GetEnv("OLLAMA_MODEL", defaultOllamaModel)
 	embeddingModel := utils.GetEnv("OLLAMA_EMBEDDING_MODEL", defaultEmbeddingModel)
