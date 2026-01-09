@@ -22,3 +22,4 @@
 - [coreader-app]: After register/login/logout, Main page does not refreshes with new messages (as per guest vs logged in user). Fix this.
 - [coreader-app]: Use button component for Login/Register (create a new button variant if needed).
 - [coreader-app]: If book has no name, but it is being processed, show "Processing..." instead of "Untitled".
+- [coreader-worker]: Improve chapter detection when processing chunks. Currently we pick the middle occurrence of chapter headings, but we can do better by avoiding first and last if there are multiple occurrences.

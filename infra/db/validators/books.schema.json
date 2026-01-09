@@ -72,6 +72,33 @@
         "shop"
       ],
       "bsonType": "string"
+    },
+    "chapters": {
+      "description": "List of chapters detected in the book.",
+      "items": {
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "chunkId",
+          "startOffset"
+        ],
+        "properties": {
+          "name": {
+            "description": "Chapter name or heading (e.g. 'Chapter 1', 'Prologue').",
+            "bsonType": "string"
+          },
+          "chunkId": {
+            "description": "The chunk ID where this chapter heading was found.",
+            "bsonType": "objectId"
+          },
+          "startOffset": {
+            "description": "The character offset within the entire book where this chapter heading appears.",
+            "bsonType": "int"
+          }
+        },
+        "bsonType": "object"
+      },
+      "bsonType": "array"
     }
   },
   "bsonType": "object"

@@ -106,6 +106,23 @@ export interface BooksDoc {
    * The source of the book, such as user upload or shop.
    */
   source: 'user_upload' | 'shop';
+  /**
+   * List of chapters detected in the book.
+   */
+  chapters?: {
+    /**
+     * Chapter name or heading (e.g. 'Chapter 1', 'Prologue').
+     */
+    name: string;
+    /**
+     * The chunk ID where this chapter heading was found.
+     */
+    chunkId: ObjectId;
+    /**
+     * The character offset within the entire book where this chapter heading appears.
+     */
+    startOffset: number;
+  }[];
 }
 
 /**

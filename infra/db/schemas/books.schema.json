@@ -79,6 +79,34 @@
         "user_upload",
         "shop"
       ]
+    },
+    "chapters": {
+      "type": "array",
+      "description": "List of chapters detected in the book.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "chunkId",
+          "startOffset"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Chapter name or heading (e.g. 'Chapter 1', 'Prologue')."
+          },
+          "chunkId": {
+            "type": "string",
+            "format": "objectId",
+            "description": "The chunk ID where this chapter heading was found."
+          },
+          "startOffset": {
+            "type": "integer",
+            "description": "The character offset within the entire book where this chapter heading appears."
+          }
+        }
+      }
     }
   }
 }
