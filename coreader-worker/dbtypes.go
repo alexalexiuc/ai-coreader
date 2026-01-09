@@ -48,6 +48,11 @@ type BooksDoc struct {
 	TotalChunks int                `bson:"totalChunks" json:"totalChunks"`
 	Processed   bool               `bson:"processed" json:"processed"`
 	Source      string             `bson:"source" json:"source"`
+	Chapters    []struct {
+		Name        string             `bson:"name" json:"name"`
+		ChunkID     primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+		StartOffset int                `bson:"startOffset" json:"startOffset"`
+	} `bson:"chapters,omitempty" json:"chapters,omitempty"`
 }
 
 type EntityDescriptionsDoc struct {
