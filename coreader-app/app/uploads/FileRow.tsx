@@ -39,7 +39,7 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
             <div className="mt-0.5 rounded-xl border border-slate-800 bg-slate-900/50 p-2 text-slate-200">
               <IoDocumentTextOutline />
             </div>
-            <div className="min-w-0">
+            <div className="w-full min-w-0">
               <p className="truncate text-sm font-semibold text-white">{file.originalName}</p>
 
               {isCompleted && file.bookId && (

@@ -110,7 +110,7 @@ func chunkMetadataSchema() any {
 						"name": map[string]any{"type": "string"},
 						"type": map[string]any{
 							"type": "string",
-							"enum": []string{"character", "place", "spell", "song", "artifact", "organization", "work", "animal", "plant", "event", "other"},
+							"enum": []string{"character", "place", "organization", "artifact", "event", "work", "other"},
 						},
 					},
 				},

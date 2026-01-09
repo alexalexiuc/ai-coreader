@@ -39,7 +39,7 @@ type BookHeaderMetadata struct {
 // ChunkEntityRef represents an entity reference found in a chunk.
 type ChunkEntityRef struct {
 	Name string `json:"name"`
-	Type string `json:"type"` // character, place, spell, song, artifact, other
+	Type string `json:"type"` // character, place, organization, artifact, event, work, other
 	// Subtype      string `json:"subtype"`
 	StartOffsets []int `json:"startOffsets"`
 }

@@ -23,3 +23,4 @@
 - [coreader-app]: Use button component for Login/Register (create a new button variant if needed).
 - [coreader-app]: If book has no name, but it is being processed, show "Processing..." instead of "Untitled".
 - [coreader-worker]: Improve chapter detection when processing chunks. Currently we pick the middle occurrence of chapter headings, but we can do better by avoiding first and last if there are multiple occurrences.
+- [coreader-worker]: When we got chapters, sometimes there may be intruders. Either ask AI to exclude intruders from chapters list or implement an algorithm that will only determine chapters based on certain patterns (e.g. "Chapter X", "CHAPTER X", etc.)
