@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	CHUNK_SIZE_CHARS = 3000
-	CHUNK_SIZE_BYTES = 3000 * 4 // UTF-8 can be up to 4 bytes per character
+	CHUNK_SIZE_CHARS = 1000
+	CHUNK_SIZE_BYTES = 1000 * 4 // UTF-8 can be up to 4 bytes per character
 	// Max chars allowed to look for new lines when splitting
-	MAX_ENDING_SEARCH_CHARS = 300
+	MAX_ENDING_SEARCH_CHARS = 100
 )
 
 // ErrorInfo contains both technical and user-friendly error information

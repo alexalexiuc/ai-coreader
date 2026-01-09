@@ -5,7 +5,7 @@ import Link, { type LinkProps } from 'next/link';
 import clsx from 'clsx';
 import { Spinner } from './Spinner';
 
-const isLink = (props: ButtonProps): props is ButtonAsLinkProps => {
+const isLink = (props: Omit<ButtonProps, keyof CommonProps>): props is ButtonAsLinkProps => {
   return 'href' in props;
 };
 
@@ -47,7 +47,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
   const {
     children,
     variant = 'primary',
-    isLoading: loading = false,
+    isLoading = false,
     disabled = false,
     fullWidth = false,
     leftIcon,
@@ -55,6 +55,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
     className,
     paddingClass,
     textSizeClass,
+    ...restProps
   } = props;
 
   const classes = clsx(
@@ -64,10 +65,10 @@ export const Button: React.FC<ButtonProps> = (props) => {
     paddingClass ?? 'px-4 py-2',
     className,
     textSizeClass ?? 'text-sm',
-    (disabled || loading) && 'opacity-50 pointer-events-none',
+    (disabled || isLoading) && 'opacity-50 pointer-events-none',
   );
 
-  const content = loading ? (
+  const content = isLoading ? (
     <Spinner height={20} width={20} />
   ) : (
     <>
@@ -77,9 +78,8 @@ export const Button: React.FC<ButtonProps> = (props) => {
     </>
   );
 
-  if (isLink(props)) {
-    // Link branch: only link-safe props are allowed here by type
-    const { href, prefetch, replace, scroll, shallow, locale, ...anchorProps } = props;
+  if (isLink(restProps)) {
+    const { href, prefetch, replace, scroll, shallow, locale, ...anchorProps } = restProps;
 
     return (
       <Link
@@ -90,10 +90,10 @@ export const Button: React.FC<ButtonProps> = (props) => {
         shallow={shallow}
         locale={locale}
         className={classes}
-        aria-disabled={disabled || loading}
-        tabIndex={disabled || loading ? -1 : anchorProps.tabIndex}
+        aria-disabled={disabled || isLoading}
+        tabIndex={disabled || isLoading ? -1 : anchorProps.tabIndex}
         onClick={(e) => {
-          if (disabled || loading) {
+          if (disabled || isLoading) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -107,11 +107,8 @@ export const Button: React.FC<ButtonProps> = (props) => {
     );
   }
 
-  // Button branch
-  const { ...buttonProps } = props;
-
   return (
-    <button {...buttonProps} disabled={disabled || loading} className={classes}>
+    <button {...(restProps as ButtonAsButtonProps)} disabled={disabled || isLoading} className={classes}>
       {content}
     </button>
   );
