@@ -7,6 +7,8 @@ import (
 	"log"
 	"math"
 	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,11 +16,18 @@ import (
 )
 
 const (
-	CHUNK_SIZE_CHARS = 1000
-	CHUNK_SIZE_BYTES = 1000 * 4 // UTF-8 can be up to 4 bytes per character
+	CHUNK_SIZE_CHARS = 1500
+	CHUNK_SIZE_BYTES = CHUNK_SIZE_CHARS * 4 // UTF-8 can be up to 4 bytes per character
 	// Max chars allowed to look for new lines when splitting
-	MAX_ENDING_SEARCH_CHARS = 100
+	MAX_ENDING_SEARCH_CHARS = CHUNK_SIZE_CHARS / 10
 )
+
+// chapterOccurrence tracks where a chapter heading was found during processing
+type chapterOccurrence struct {
+	Name        string
+	ChunkID     primitive.ObjectID
+	StartOffset int // character offset in the entire book where chapter name appears
+}
 
 // ErrorInfo contains both technical and user-friendly error information
 type ErrorInfo struct {
@@ -76,6 +85,9 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		ID   primitive.ObjectID
 	}
 	insertedEntities := make([]entityRecord, 0)
+
+	// Track chapters found across all chunks
+	allChapterOccurrences := make([]chapterOccurrence, 0)
 
 	// Create book with known info, additional will be added later
 	book, err := w.db.CreateBookDoc(&BooksDoc{
@@ -220,6 +232,26 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		}
 		log.Printf("Found %d entities in chunk %d", len(chunkEntities.Entities), totalChunks-1)
 
+		// Collect chapter occurrences
+		if len(chunkEntities.Chapters) > 0 {
+			log.Printf("Found %d chapter(s) in chunk %d: %v", len(chunkEntities.Chapters), totalChunks-1, chunkEntities.Chapters)
+			chunkStartInBook := totalChars - currentChunkLength
+			for _, chapterName := range chunkEntities.Chapters {
+				// Find where this chapter name appears in the chunk text
+				chapterPosInChunk := strings.Index(logicalChunk.Text, chapterName)
+				if chapterPosInChunk == -1 {
+					// Fallback to chunk start if not found
+					chapterPosInChunk = 0
+					log.Printf("Warning: Chapter %q not found in chunk text, using chunk start", chapterName)
+				}
+				allChapterOccurrences = append(allChapterOccurrences, chapterOccurrence{
+					Name:        chapterName,
+					ChunkID:     chunk.ID,
+					StartOffset: chunkStartInBook + chapterPosInChunk,
+				})
+			}
+		}
+
 		// Store entities in the database collection and capture IDs on the chunk refs.
 		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, llmEntity := range chunkEntities.Entities {
@@ -322,6 +354,25 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
 
+	// Deduplicate chapters and pick middle occurrence
+	finalChapters := deduplicateChapters(allChapterOccurrences)
+	log.Printf("Final chapters after deduplication: %d chapters", len(finalChapters))
+
+	// Update book with chapters
+	if len(finalChapters) > 0 {
+		_, err = w.db.UpdateBookDoc(book.ID, bson.M{
+			"chapters": finalChapters,
+		})
+		if err != nil {
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to update book with chapters: %w", err),
+				FriendlyMessage: "Failed to store chapters",
+				BookID:          &bookID,
+			}
+		}
+		log.Printf("Stored %d chapters in book document", len(finalChapters))
+	}
+
 	_, err = w.db.SetBookProcessed(book.ID)
 	if err != nil {
 		return &ErrorInfo{
@@ -371,4 +422,56 @@ func generateSessionID(filename string) string {
 
 	timestamp := time.Now().Format("20060102_150405")
 	return fmt.Sprintf("%s_%s", timestamp, name)
+}
+
+// deduplicateChapters processes all chapter occurrences and returns a deduplicated list.
+// When a chapter name appears multiple times, it picks the middle occurrence to avoid
+// table of contents at the beginning or end of the book.
+func deduplicateChapters(occurrences []chapterOccurrence) []struct {
+	Name        string             `bson:"name" json:"name"`
+	ChunkID     primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+	StartOffset int                `bson:"startOffset" json:"startOffset"`
+} {
+	if len(occurrences) == 0 {
+		return []struct {
+			Name        string             `bson:"name" json:"name"`
+			ChunkID     primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+			StartOffset int                `bson:"startOffset" json:"startOffset"`
+		}{}
+	}
+
+	// Group occurrences by chapter name
+	byName := make(map[string][]chapterOccurrence)
+	for _, occ := range occurrences {
+		byName[occ.Name] = append(byName[occ.Name], occ)
+	}
+
+	result := make([]struct {
+		Name        string             `bson:"name" json:"name"`
+		ChunkID     primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+		StartOffset int                `bson:"startOffset" json:"startOffset"`
+	}, 0, len(byName))
+	for _, occs := range byName {
+		// Pick the middle occurrence
+		// TODO: Improve by verifying if there are dupes and chunk has more than one chapters, it is most probably table of content of hte book, so we pick the other than the first or last
+		middleIdx := len(occs) / 2
+		chosen := occs[middleIdx]
+
+		result = append(result, struct {
+			Name        string             `bson:"name" json:"name"`
+			ChunkID     primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+			StartOffset int                `bson:"startOffset" json:"startOffset"`
+		}{
+			Name:        chosen.Name,
+			ChunkID:     chosen.ChunkID,
+			StartOffset: chosen.StartOffset,
+		})
+	}
+
+	// Sort by start offset to maintain chapter order
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].StartOffset < result[j].StartOffset
+	})
+
+	return result
 }
