@@ -181,16 +181,14 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	"entities": [
     {
       "name": string,
-      "type": "character" | "place" | "spell" | "song" | "artifact" | "other" | "organization" | "work" | "animal" | "plant" | "event",
-      "startOffsets": number[]
+      "type": "character" | "place" | "spell" | "song" | "artifact" | "other" | "organization" | "work" | "animal" | "plant" | "event"
     }
   ],
   "chapters": string[]
 }`
 	rules := []string{
 		"type MUST be exactly one of the allowed strings above. If unsure, set type = \"other\"",
-		"\"startOffsets\" is a list of 0-based character indices into the given chunk text for EACH encounter of the entity name.",
-		"Always include all occurrences of the entity name you can find in this chunk.",
+		"Each entity should be listed only ONCE with its name and type.",
 		"If no entities are found, use an empty array for \"entities\".",
 		"If there are no chapter headings, return an empty array for \"chapters\".",
 	}
@@ -248,18 +246,10 @@ Rules:
 func correctEntityOffsets(chunk string, entities []ChunkEntityRef) {
 	for i := range entities {
 		entity := &entities[i]
-		if entity.StartOffsets == nil {
-			entity.StartOffsets = []int{}
-		}
-
-		expected := findAllOccurrences(chunk, entity.Name)
-		reported := dedupeAndSort(entity.StartOffsets)
-
-		if !equalIntSlices(expected, reported) {
-			log.Printf("LLM offsets mismatch for entity %q: provided=%v corrected=%v", entity.Name, reported, expected)
-			entity.StartOffsets = expected
-		} else {
-			entity.StartOffsets = reported
+		// Compute all occurrences of the entity name in the chunk
+		entity.StartOffsets = findAllOccurrences(chunk, entity.Name)
+		if len(entity.StartOffsets) == 0 {
+			log.Printf("Warning: Entity %q not found in chunk text", entity.Name)
 		}
 	}
 }

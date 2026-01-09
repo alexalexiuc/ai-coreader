@@ -157,6 +157,7 @@ func (w *Worker) WatchFilesCollectionChanges(ctx context.Context) {
 	// TODO: Replace polling with a more elegant solution (e.g., change streams, message queue, or event-driven architecture)
 	log.Println("Polling files collection for pending files...")
 
+	sem := make(chan struct{}, 3) // limit to 3 concurrent file processing
 	for {
 		if ctx.Err() != nil {
 			log.Println("Shutdown signal received; stopping poller.")
@@ -173,13 +174,17 @@ func (w *Worker) WatchFilesCollectionChanges(ctx context.Context) {
 					return
 				}
 
-				start := time.Now()
-				log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
-				if err := w.ProcessFile(ctx, &file); err != nil {
-					log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
-					continue
-				}
-				log.Printf("Successfully processed file %s in %s", file.ID.Hex(), time.Since(start))
+				sem <- struct{}{}
+				go func(file FilesDoc) {
+					defer func() { <-sem }()
+					start := time.Now()
+					log.Printf("Processing file: %s (%s)", file.ID.Hex(), file.StoragePath)
+					if err := w.ProcessFile(ctx, &file); err != nil {
+						log.Printf("Error processing file %s: %v", file.ID.Hex(), err)
+
+					}
+					log.Printf("Successfully processed file %s in %s", file.ID.Hex(), time.Since(start))
+				}(file)
 			}
 		}
 

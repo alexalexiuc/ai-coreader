@@ -160,26 +160,26 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		log.Printf("Chunk %d created (chars=%d)", totalChunks-1, currentChunkLength)
 
 		// Generate and store embedding for the chunk
-		embedding, err := llm.GenerateEmbedding(ctx, w.llmClient, logicalChunk.Text)
-		if err != nil {
-			return &ErrorInfo{
-				RawError:        fmt.Errorf("failed to generate embedding for chunk %d: %w", totalChunks-1, err),
-				FriendlyMessage: "Failed to generate chunk embedding",
-				BookID:          &bookID,
-			}
-		}
-		log.Printf("Generated embedding for chunk %d (dimension: %d)", totalChunks-1, len(embedding))
+		// embedding, err := llm.GenerateEmbedding(ctx, w.llmClient, logicalChunk.Text)
+		// if err != nil {
+		// 	return &ErrorInfo{
+		// 		RawError:        fmt.Errorf("failed to generate embedding for chunk %d: %w", totalChunks-1, err),
+		// 		FriendlyMessage: "Failed to generate chunk embedding",
+		// 		BookID:          &bookID,
+		// 	}
+		// }
+		// log.Printf("Generated embedding for chunk %d (dimension: %d)", totalChunks-1, len(embedding))
 
 		// Store embedding in Qdrant
-		err = w.qdrantClient.StoreChunkEmbedding(ctx, book.ID, chunk.ID, totalChunks-1, embedding)
-		if err != nil {
-			return &ErrorInfo{
-				RawError:        fmt.Errorf("failed to store embedding for chunk %d: %w", totalChunks-1, err),
-				FriendlyMessage: "Failed to store chunk embedding",
-				BookID:          &bookID,
-			}
-		}
-		log.Printf("Stored embedding in Qdrant for chunk %d", totalChunks-1)
+		// err = w.qdrantClient.StoreChunkEmbedding(ctx, book.ID, chunk.ID, totalChunks-1, embedding)
+		// if err != nil {
+		// 	return &ErrorInfo{
+		// 		RawError:        fmt.Errorf("failed to store embedding for chunk %d: %w", totalChunks-1, err),
+		// 		FriendlyMessage: "Failed to store chunk embedding",
+		// 		BookID:          &bookID,
+		// 	}
+		// }
+		// log.Printf("Stored embedding in Qdrant for chunk %d", totalChunks-1)
 
 		if isFirstChunk {
 			log.Println("Processing first chunk for book header metadata")

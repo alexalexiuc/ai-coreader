@@ -13,8 +13,6 @@ export const FOLDERS = {
   FILES: 'files',
 };
 
-console.log('Must be visible');
-
 const makeDirIfNotExists = async (dirPath: string) => {
   try {
     await fs.mkdir(dirPath, { recursive: true });
