@@ -1,0 +1,119 @@
+{
+  "title": "EntityMentionsDoc",
+  "description": "Per-occurrence mention records for entities within a single book, including bounded snippets and extracted facts.",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "entityId",
+    "chunkId",
+    "chunkIndex",
+    "offsetStart",
+    "snippet"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Entity mention unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "bsonType": "date"
+    },
+    "bookId": {
+      "bsonType": "objectId"
+    },
+    "entityId": {
+      "bsonType": "objectId"
+    },
+    "chunkId": {
+      "bsonType": "objectId"
+    },
+    "chunkIndex": {
+      "minimum": 0,
+      "bsonType": "int"
+    },
+    "surfaceForm": {
+      "description": "Observed surface form for the mention (best-effort)",
+      "bsonType": "string"
+    },
+    "offsetStart": {
+      "minimum": 0,
+      "description": "Character offset relative to chunk.text where the mention starts",
+      "bsonType": "int"
+    },
+    "snippet": {
+      "description": "Bounded snippet window around the mention used for fact extraction",
+      "bsonType": "string"
+    },
+    "snippetStartOffset": {
+      "minimum": 0,
+      "description": "Character offset (relative to chunk.text) where snippet begins",
+      "bsonType": "int"
+    },
+    "snippetEndOffset": {
+      "minimum": 0,
+      "description": "Character offset (relative to chunk.text) where snippet ends (exclusive)",
+      "bsonType": "int"
+    },
+    "factsExtracted": {
+      "items": {
+        "title": "EntityFact",
+        "additionalProperties": false,
+        "required": [
+          "hash",
+          "factType",
+          "value",
+          "confidence",
+          "evidence"
+        ],
+        "properties": {
+          "hash": {
+            "description": "Deterministic hash used for deduplication",
+            "bsonType": "string"
+          },
+          "factType": {
+            "enum": [
+              "role",
+              "trait",
+              "appearance",
+              "relationship",
+              "event",
+              "location",
+              "other"
+            ],
+            "bsonType": "string"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "bsonType": "string"
+              },
+              {
+                "bsonType": "object"
+              }
+            ]
+          },
+          "confidence": {
+            "minimum": 0,
+            "maximum": 1,
+            "bsonType": "double"
+          },
+          "evidence": {
+            "description": "Short quote (<= 20 words) extracted from snippet",
+            "bsonType": "string"
+          }
+        },
+        "bsonType": "object"
+      },
+      "bsonType": "array"
+    },
+    "factsExtractedAt": {
+      "bsonType": "date"
+    }
+  },
+  "bsonType": "object"
+}

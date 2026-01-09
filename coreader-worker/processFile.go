@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"coreader-worker/llm"
+	"coreader-worker/utils"
 	"fmt"
 	"log"
 	"math"
@@ -252,57 +253,64 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 			}
 		}
 
-		// Store entities in the database collection and capture IDs on the chunk refs.
+		// Process entities: generate deterministic IDs and create mention records.
+		// EntityDescriptions will be created later in PostProcess from aggregated mentions.
 		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, llmEntity := range chunkEntities.Entities {
-			entityID := primitive.NilObjectID
-			entityCreated := false
+			// Generate deterministic entity ID from bookId + name + type
+			entityID := utils.GenerateEntityID(book.ID, llmEntity.Name, llmEntity.Type)
+
+			// Track for deduplication within this file processing session
+			alreadyTracked := false
 			for _, inserted := range insertedEntities {
-				if inserted.Name == llmEntity.Name && inserted.Type == llmEntity.Type {
-					entityID = inserted.ID
+				if inserted.ID == entityID {
+					alreadyTracked = true
 					break
 				}
 			}
-			if entityID == primitive.NilObjectID {
-				createdEntity, err := w.db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
-					BookID:       book.ID,
-					BookChunkID:  chunk.ID,
-					BookChunkIds: []primitive.ObjectID{chunk.ID},
-					Name:         llmEntity.Name,
-					Type:         llmEntity.Type,
-					Summary:      "", // Will be filled later with more detailed analysis
-				})
-				if err != nil {
-					return &ErrorInfo{
-						RawError:        fmt.Errorf("failed to create entity description: %w", err),
-						FriendlyMessage: "Failed to create entity description",
-						BookID:          &bookID,
-					}
-				}
-				entityID = createdEntity.ID
+			if !alreadyTracked {
 				insertedEntities = append(insertedEntities, entityRecord{
 					Name: llmEntity.Name,
 					Type: llmEntity.Type,
-					ID:   createdEntity.ID,
+					ID:   entityID,
 				})
-				log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
-				entityCreated = true
+				log.Printf("Tracking entity: %s (%s) with ID %s", llmEntity.Name, llmEntity.Type, entityID.Hex())
 			}
 
-			if !entityCreated {
-				if err := w.db.AddChunkToEntityDescription(entityID, chunk.ID); err != nil {
-					return &ErrorInfo{
-						RawError:        fmt.Errorf("failed to update entity chunk references: %w", err),
-						FriendlyMessage: "Failed to update entity references",
-						BookID:          &bookID,
-					}
-				}
-			}
-
+			// Create EntityMention records for each occurrence
 			startOffsets := llmEntity.StartOffsets
 			if startOffsets == nil {
 				startOffsets = []int{}
 			}
+
+			for _, offset := range startOffsets {
+				snippet, snippetStart, snippetEnd := snippetAroundOffset(logicalChunk.Text, offset, 250)
+				mention := &EntityMentionsDoc{
+					BookID:             book.ID,
+					EntityID:           entityID,
+					ChunkID:            chunk.ID,
+					ChunkIndex:         totalChunks - 1,
+					SurfaceForm:        strings.TrimSpace(llmEntity.Name),
+					OffsetStart:        offset,
+					Snippet:            snippet,
+					SnippetStartOffset: snippetStart,
+					SnippetEndOffset:   snippetEnd,
+				}
+
+				created, err := w.db.CreateEntityMentionDocIgnoreDuplicate(ctx, mention)
+				if err != nil {
+					return &ErrorInfo{
+						RawError:        fmt.Errorf("failed to create entity mention: %w", err),
+						FriendlyMessage: "Failed to create entity mention",
+						BookID:          &bookID,
+					}
+				}
+				if created {
+					log.Printf("Created mention for entity %s at offset %d in chunk %d", llmEntity.Name, offset, totalChunks-1)
+				}
+			}
+
+			// Store entity reference in chunk for fast rendering
 			dbEntity := ChunkEntityRef{
 				EntityID:     entityID,
 				Name:         llmEntity.Name,
@@ -390,6 +398,17 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 			FriendlyMessage: "Failed to finalize processing status",
 			BookID:          &bookID,
 		}
+	}
+
+	// Post-process entity descriptions after the book is fully chunked and persisted.
+	// This is intentionally non-fatal: chunk/book persistence is the primary output,
+	// and entity summaries can be safely re-run later due to idempotent mention upserts.
+	//
+	// ARCHITECTURAL NOTE: See entity_postprocess.go header comment for discussion of
+	// data flow and architectural inconsistencies between this function (Worker method
+	// with direct DB access) vs PostProcess (standalone function with interfaces).
+	if err := PostProcessEntityDescriptions(ctx, w.db, book.ID, w.llmClient); err != nil {
+		log.Printf("Warning: entity post-processing failed bookId=%s: %v", book.ID.Hex(), err)
 	}
 
 	log.Printf("Successfully completed processing file id=%s with bookId=%s", file.ID.Hex(), book.ID.Hex())

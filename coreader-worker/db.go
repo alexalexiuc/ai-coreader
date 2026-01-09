@@ -60,6 +60,18 @@ func (e *EntityDescriptionsDoc) SetDocID(id primitive.ObjectID) {
 	e.ID = id
 }
 
+func (m *EntityMentionsDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        m.ID,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+	}
+}
+
+func (m *EntityMentionsDoc) SetDocID(id primitive.ObjectID) {
+	m.ID = id
+}
+
 func (b *BookChunksDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
 		ID:        b.ID,
@@ -102,6 +114,7 @@ type DB struct {
 	BooksCollection              *mongo.Collection
 	BooksChunksCollection        *mongo.Collection
 	EntityDescriptionsCollection *mongo.Collection
+	EntityMentionsCollection     *mongo.Collection
 	UsersCollection              *mongo.Collection
 	UserBooksCollection          *mongo.Collection
 }
@@ -111,6 +124,7 @@ const (
 	BooksCollectionName              = "books"
 	BooksChunksCollectionName        = "books-chunks"
 	EntityDescriptionsCollectionName = "entity-descriptions"
+	EntityMentionsCollectionName     = "entity-mentions"
 	UsersCollectionName              = "users"
 	UserBooksCollectionName          = "user-books"
 )
@@ -135,6 +149,7 @@ func InitDB() *DB {
 	booksCollection := llmDatabase.Collection(BooksCollectionName)
 	booksChunksCollection := llmDatabase.Collection(BooksChunksCollectionName)
 	entityDescriptionsCollection := llmDatabase.Collection(EntityDescriptionsCollectionName)
+	entityMentionsCollection := llmDatabase.Collection(EntityMentionsCollectionName)
 	usersCollection := llmDatabase.Collection(UsersCollectionName)
 	userBooksCollection := llmDatabase.Collection(UserBooksCollectionName)
 	return &DB{
@@ -144,6 +159,7 @@ func InitDB() *DB {
 		BooksCollection:              booksCollection,
 		BooksChunksCollection:        booksChunksCollection,
 		EntityDescriptionsCollection: entityDescriptionsCollection,
+		EntityMentionsCollection:     entityMentionsCollection,
 		UsersCollection:              usersCollection,
 		UserBooksCollection:          userBooksCollection,
 	}
@@ -335,6 +351,21 @@ func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*En
 	return entityDesc, err
 }
 
+// CreateEntityDescriptionWithID inserts an EntityDescriptionsDoc with a predetermined ID.
+// Used by PostProcess when creating entity descriptions from aggregated mentions.
+func (db *DB) CreateEntityDescriptionWithID(ctx context.Context, entityDesc *EntityDescriptionsDoc) error {
+	if entityDesc.ID.IsZero() {
+		return fmt.Errorf("entityDesc.ID must be set when using CreateEntityDescriptionWithID")
+	}
+
+	now := time.Now().UTC()
+	entityDesc.CreatedAt = now
+	entityDesc.UpdatedAt = now
+
+	_, err := db.EntityDescriptionsCollection.InsertOne(ctx, entityDesc)
+	return err
+}
+
 func (db *DB) AddChunkToEntityDescription(entityID primitive.ObjectID, chunkID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -352,6 +383,9 @@ func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 	defer cancel()
 
 	if _, err := db.EntityDescriptionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
+		return err
+	}
+	if _, err := db.EntityMentionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
 		return err
 	}
 	if _, err := db.BooksChunksCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
@@ -404,4 +438,159 @@ func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive
 	}
 
 	return result, true, nil
+}
+
+func (db *DB) ListBookChunksByBook(ctx context.Context, bookID primitive.ObjectID) ([]BookChunksDoc, error) {
+	cur, err := db.BooksChunksCollection.Find(ctx, bson.M{"bookId": bookID})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var chunks []BookChunksDoc
+	if err := cur.All(ctx, &chunks); err != nil {
+		return nil, err
+	}
+	return chunks, nil
+}
+
+func (db *DB) ListEntityDescriptionsByBook(ctx context.Context, bookID primitive.ObjectID) ([]EntityDescriptionsDoc, error) {
+	cur, err := db.EntityDescriptionsCollection.Find(ctx, bson.M{"bookId": bookID})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var entities []EntityDescriptionsDoc
+	if err := cur.All(ctx, &entities); err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
+func (db *DB) CreateEntityMentionDocIgnoreDuplicate(ctx context.Context, mention *EntityMentionsDoc) (bool, error) {
+	_, err := InsertOneWithMeta(ctx, db.EntityMentionsCollection, mention)
+	if err == nil {
+		return true, nil
+	}
+	if isDuplicateKeyError(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func (db *DB) ListMentionsNeedingFacts(ctx context.Context, bookID primitive.ObjectID, limit int) ([]EntityMentionsDoc, error) {
+	filter := bson.M{
+		"bookId": bookID,
+		"$or": []bson.M{
+			{"factsExtracted": bson.M{"$exists": false}},
+			{"factsExtracted.0": bson.M{"$exists": false}},
+		},
+	}
+	findOpts := options.Find().
+		SetSort(bson.M{"createdAt": 1}).
+		SetLimit(int64(limit))
+	cur, err := db.EntityMentionsCollection.Find(ctx, filter, findOpts)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var mentions []EntityMentionsDoc
+	if err := cur.All(ctx, &mentions); err != nil {
+		return nil, err
+	}
+	return mentions, nil
+}
+
+func (db *DB) SetEntityMentionFacts(ctx context.Context, mentionID primitive.ObjectID, facts []EntityFact) error {
+	update := bson.M{
+		"factsExtracted":   facts,
+		"factsExtractedAt": time.Now().UTC(),
+	}
+	_, err := UpdateOneWithMeta(ctx, db.EntityMentionsCollection, mentionID, update)
+	return err
+}
+
+func (db *DB) ListMentionsForEntityWithFacts(ctx context.Context, bookID primitive.ObjectID, entityID primitive.ObjectID, limit int64) ([]EntityMentionsDoc, error) {
+	filter := bson.M{
+		"bookId":           bookID,
+		"entityId":         entityID,
+		"factsExtracted.0": bson.M{"$exists": true},
+	}
+	findOpts := options.Find().
+		SetSort(bson.M{"chunkIndex": 1, "offsetStart": 1}).
+		SetLimit(limit)
+	cur, err := db.EntityMentionsCollection.Find(ctx, filter, findOpts)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var mentions []EntityMentionsDoc
+	if err := cur.All(ctx, &mentions); err != nil {
+		return nil, err
+	}
+	return mentions, nil
+}
+
+func (db *DB) AggregateEntityMentionStats(ctx context.Context, bookID primitive.ObjectID) (map[primitive.ObjectID]entityMentionStats, error) {
+	pipeline := bson.A{
+		bson.M{"$match": bson.M{"bookId": bookID}},
+		bson.M{"$group": bson.M{
+			"_id":                 "$entityId",
+			"mentionCount":        bson.M{"$sum": 1},
+			"firstSeenChunkIndex": bson.M{"$min": "$chunkIndex"},
+			"lastSeenChunkIndex":  bson.M{"$max": "$chunkIndex"},
+		}},
+	}
+	cur, err := db.EntityMentionsCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	type aggRow struct {
+		ID                  primitive.ObjectID `bson:"_id"`
+		MentionCount        int                `bson:"mentionCount"`
+		FirstSeenChunkIndex int                `bson:"firstSeenChunkIndex"`
+		LastSeenChunkIndex  int                `bson:"lastSeenChunkIndex"`
+	}
+	var rows []aggRow
+	if err := cur.All(ctx, &rows); err != nil {
+		return nil, err
+	}
+
+	out := make(map[primitive.ObjectID]entityMentionStats, len(rows))
+	for _, r := range rows {
+		out[r.ID] = entityMentionStats{
+			MentionCount:        r.MentionCount,
+			FirstSeenChunkIndex: r.FirstSeenChunkIndex,
+			LastSeenChunkIndex:  r.LastSeenChunkIndex,
+		}
+	}
+	return out, nil
+}
+
+func (db *DB) UpdateEntityDescriptionMentionStats(ctx context.Context, entityID primitive.ObjectID, stats entityMentionStats) error {
+	update := bson.M{
+		"mentionCount":        stats.MentionCount,
+		"firstSeenChunkIndex": stats.FirstSeenChunkIndex,
+		"lastSeenChunkIndex":  stats.LastSeenChunkIndex,
+	}
+	_, err := UpdateOneWithMeta(ctx, db.EntityDescriptionsCollection, entityID, update)
+	return err
+}
+
+func (db *DB) UpdateEntityDescriptionAfterDistillation(ctx context.Context, entityID primitive.ObjectID, summary string, mentionCount int) error {
+	_, err := db.EntityDescriptionsCollection.UpdateOne(ctx, bson.M{"_id": entityID}, bson.M{
+		"$set": bson.M{
+			"summary":                   summary,
+			"descriptionUpdatedAt":      time.Now().UTC(),
+			"lastDistilledMentionCount": mentionCount,
+			"updatedAt":                 time.Now().UTC(),
+		},
+		"$inc": bson.M{"descriptionVersion": 1},
+	})
+	return err
 }

@@ -56,19 +56,51 @@ type BooksDoc struct {
 }
 
 type EntityDescriptionsDoc struct {
-	ID                     primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt              time.Time            `bson:"createdAt" json:"createdAt"`
-	UpdatedAt              time.Time            `bson:"updatedAt" json:"updatedAt"`
-	BookID                 primitive.ObjectID   `bson:"bookId" json:"bookId"`
-	BookChunkID            primitive.ObjectID   `bson:"bookChunkId" json:"bookChunkId"`
-	BookChunkIds           []primitive.ObjectID `bson:"bookChunkIds,omitempty" json:"bookChunkIds,omitempty"`
-	Name                   string               `bson:"name" json:"name"`
-	Type                   string               `bson:"type" json:"type"`
-	Summary                string               `bson:"summary,omitempty" json:"summary,omitempty"`
-	Role                   string               `bson:"role,omitempty" json:"role,omitempty"`
-	Traits                 []string             `bson:"traits,omitempty" json:"traits,omitempty"`
-	ImportantLocations     []string             `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`
-	ImportantRelationships []string             `bson:"importantRelationships,omitempty" json:"importantRelationships,omitempty"`
+	ID                        primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt                 time.Time            `bson:"createdAt" json:"createdAt"`
+	UpdatedAt                 time.Time            `bson:"updatedAt" json:"updatedAt"`
+	BookID                    primitive.ObjectID   `bson:"bookId" json:"bookId"`
+	BookChunkID               primitive.ObjectID   `bson:"bookChunkId" json:"bookChunkId"`
+	BookChunkIds              []primitive.ObjectID `bson:"bookChunkIds,omitempty" json:"bookChunkIds,omitempty"`
+	Name                      string               `bson:"name" json:"name"`
+	Type                      string               `bson:"type" json:"type"`
+	Summary                   string               `bson:"summary,omitempty" json:"summary,omitempty"`
+	Role                      string               `bson:"role,omitempty" json:"role,omitempty"`
+	Traits                    []string             `bson:"traits,omitempty" json:"traits,omitempty"`
+	ImportantLocations        []string             `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`
+	ImportantRelationships    []string             `bson:"importantRelationships,omitempty" json:"importantRelationships,omitempty"`
+	Aliases                   []string             `bson:"aliases,omitempty" json:"aliases,omitempty"`
+	MentionCount              int                  `bson:"mentionCount,omitempty" json:"mentionCount,omitempty"`
+	FirstSeenChunkIndex       int                  `bson:"firstSeenChunkIndex,omitempty" json:"firstSeenChunkIndex,omitempty"`
+	LastSeenChunkIndex        int                  `bson:"lastSeenChunkIndex,omitempty" json:"lastSeenChunkIndex,omitempty"`
+	DescriptionVersion        int                  `bson:"descriptionVersion,omitempty" json:"descriptionVersion,omitempty"`
+	LastDistilledMentionCount int                  `bson:"lastDistilledMentionCount,omitempty" json:"lastDistilledMentionCount,omitempty"`
+	DescriptionUpdatedAt      time.Time            `bson:"descriptionUpdatedAt,omitempty" json:"descriptionUpdatedAt,omitempty"`
+}
+
+type EntityFact struct {
+	Hash       string      `bson:"hash" json:"hash"`
+	FactType   string      `bson:"factType" json:"factType"`
+	Value      interface{} `bson:"value" json:"value"`
+	Confidence float64     `bson:"confidence" json:"confidence"`
+	Evidence   string      `bson:"evidence" json:"evidence"`
+}
+
+type EntityMentionsDoc struct {
+	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt          time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt          time.Time          `bson:"updatedAt" json:"updatedAt"`
+	BookID             primitive.ObjectID `bson:"bookId" json:"bookId"`
+	EntityID           primitive.ObjectID `bson:"entityId" json:"entityId"`
+	ChunkID            primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+	ChunkIndex         int                `bson:"chunkIndex" json:"chunkIndex"`
+	SurfaceForm        string             `bson:"surfaceForm,omitempty" json:"surfaceForm,omitempty"`
+	OffsetStart        int                `bson:"offsetStart" json:"offsetStart"`
+	Snippet            string             `bson:"snippet" json:"snippet"`
+	SnippetStartOffset int                `bson:"snippetStartOffset,omitempty" json:"snippetStartOffset,omitempty"`
+	SnippetEndOffset   int                `bson:"snippetEndOffset,omitempty" json:"snippetEndOffset,omitempty"`
+	FactsExtracted     []EntityFact       `bson:"factsExtracted,omitempty" json:"factsExtracted,omitempty"`
+	FactsExtractedAt   time.Time          `bson:"factsExtractedAt,omitempty" json:"factsExtractedAt,omitempty"`
 }
 
 type FilesDoc struct {

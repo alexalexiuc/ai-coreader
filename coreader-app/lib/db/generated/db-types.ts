@@ -181,6 +181,80 @@ export interface EntityDescriptionsDoc {
    * Important relationships with other entities
    */
   importantRelationships?: string[];
+  /**
+   * Alternate surface forms for this entity within the same book
+   */
+  aliases?: string[];
+  /**
+   * Number of entity mention occurrences recorded for this entity in this book
+   */
+  mentionCount?: number;
+  firstSeenChunkIndex?: number;
+  lastSeenChunkIndex?: number;
+  /**
+   * Monotonic counter incremented whenever the summary/description is distilled
+   */
+  descriptionVersion?: number;
+  /**
+   * Mention count at the time of last distillation (used to avoid over-distilling)
+   */
+  lastDistilledMentionCount?: number;
+  descriptionUpdatedAt?: Date;
+}
+
+/**
+ * Per-occurrence mention records for entities within a single book, including bounded snippets and extracted facts.
+ */
+export interface EntityMentionsDoc {
+  /**
+   * Entity mention unique identifier
+   */
+  _id?: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  bookId: ObjectId;
+  entityId: ObjectId;
+  chunkId: ObjectId;
+  chunkIndex: number;
+  /**
+   * Observed surface form for the mention (best-effort)
+   */
+  surfaceForm?: string;
+  /**
+   * Character offset relative to chunk.text where the mention starts
+   */
+  offsetStart: number;
+  /**
+   * Bounded snippet window around the mention used for fact extraction
+   */
+  snippet: string;
+  /**
+   * Character offset (relative to chunk.text) where snippet begins
+   */
+  snippetStartOffset?: number;
+  /**
+   * Character offset (relative to chunk.text) where snippet ends (exclusive)
+   */
+  snippetEndOffset?: number;
+  factsExtracted?: EntityFact[];
+  factsExtractedAt?: Date;
+}
+export interface EntityFact {
+  /**
+   * Deterministic hash used for deduplication
+   */
+  hash: string;
+  factType: 'role' | 'trait' | 'appearance' | 'relationship' | 'event' | 'location' | 'other';
+  value:
+    | string
+    | {
+        [k: string]: unknown;
+      };
+  confidence: number;
+  /**
+   * Short quote (<= 20 words) extracted from snippet
+   */
+  evidence: string;
 }
 
 /**

@@ -33,6 +33,22 @@ func BookHeaderFormat() *JSONSchemaFormat {
 	}
 }
 
+func EntityFactsFormat() *JSONSchemaFormat {
+	return &JSONSchemaFormat{
+		Name:        "entity_facts",
+		Description: "Strict JSON output for mention-level entity facts",
+		Schema:      entityFactsSchema(),
+	}
+}
+
+func EntityDistillationFormat() *JSONSchemaFormat {
+	return &JSONSchemaFormat{
+		Name:        "entity_distillation",
+		Description: "Strict JSON output for distilled entity description",
+		Schema:      entityDistillationSchema(),
+	}
+}
+
 // InferJSONSchemaFromPrompt picks the best schema for existing prompt templates.
 // Your prompt builders include a JSON block with field names; we key off that.
 func InferJSONSchemaFromPrompt(prompt string) *JSONSchemaFormat {
@@ -81,6 +97,57 @@ func entityDescriptionSchema() any {
 				"items": map[string]any{"type": "string"},
 			},
 			"importantRelationships": map[string]any{
+				"type":  "array",
+				"items": map[string]any{"type": "string"},
+			},
+		},
+	}
+}
+
+func entityFactsSchema() any {
+	return map[string]any{
+		"type":                 "object",
+		"additionalProperties": false,
+		"required":             []string{"facts"},
+		"properties": map[string]any{
+			"facts": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type":                 "object",
+					"additionalProperties": false,
+					"required":             []string{"factType", "value", "confidence", "evidence"},
+					"properties": map[string]any{
+						"factType": map[string]any{
+							"type": "string",
+							"enum": []string{"role", "trait", "appearance", "relationship", "event", "location", "other"},
+						},
+						"value": map[string]any{
+							"oneOf": []any{
+								map[string]any{"type": "string"},
+								map[string]any{"type": "object"},
+							},
+						},
+						"confidence": map[string]any{"type": "number", "minimum": 0, "maximum": 1},
+						"evidence":   map[string]any{"type": "string"},
+					},
+				},
+			},
+		},
+	}
+}
+
+func entityDistillationSchema() any {
+	return map[string]any{
+		"type":                 "object",
+		"additionalProperties": false,
+		"required":             []string{"description", "keyFacts", "uncertainties"},
+		"properties": map[string]any{
+			"description": map[string]any{"type": "string"},
+			"keyFacts": map[string]any{
+				"type":  "array",
+				"items": map[string]any{"type": "string"},
+			},
+			"uncertainties": map[string]any{
 				"type":  "array",
 				"items": map[string]any{"type": "string"},
 			},

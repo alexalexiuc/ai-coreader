@@ -74,6 +74,39 @@
         "bsonType": "string"
       },
       "bsonType": "array"
+    },
+    "aliases": {
+      "description": "Alternate surface forms for this entity within the same book",
+      "items": {
+        "bsonType": "string"
+      },
+      "bsonType": "array"
+    },
+    "mentionCount": {
+      "minimum": 0,
+      "description": "Number of entity mention occurrences recorded for this entity in this book",
+      "bsonType": "int"
+    },
+    "firstSeenChunkIndex": {
+      "minimum": 0,
+      "bsonType": "int"
+    },
+    "lastSeenChunkIndex": {
+      "minimum": 0,
+      "bsonType": "int"
+    },
+    "descriptionVersion": {
+      "minimum": 0,
+      "description": "Monotonic counter incremented whenever the summary/description is distilled",
+      "bsonType": "int"
+    },
+    "lastDistilledMentionCount": {
+      "minimum": 0,
+      "description": "Mention count at the time of last distillation (used to avoid over-distilling)",
+      "bsonType": "int"
+    },
+    "descriptionUpdatedAt": {
+      "bsonType": "date"
     }
   },
   "bsonType": "object"

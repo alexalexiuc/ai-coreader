@@ -150,6 +150,81 @@ func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
 	return buildPrompt(setup, tasks, PromptChunk{Label: "Context", Text: in.Context}, schema, rules)
 }
 
+func buildEntityFactsPrompt(in EntityFactsInput) string {
+	entityLabel := in.EntityName
+	if strings.TrimSpace(in.EntityType) != "" {
+		entityLabel = fmt.Sprintf("%s (%s)", in.EntityName, in.EntityType)
+	}
+
+	setup := "You extract small, atomic facts about a single entity mention from a bounded snippet of text."
+	tasks := []string{
+		fmt.Sprintf("Extract ONLY facts about \"%s\" that are supported by the snippet.", entityLabel),
+		"Facts must be atomic and grounded in a short quote from the snippet (<= 20 words).",
+		"If no useful facts are present, return an empty facts array.",
+	}
+
+	schema := `STRICTLY a JSON object with this schema (no extra text):
+
+{
+  "facts": [
+    {
+      "factType": "role"|"trait"|"appearance"|"relationship"|"event"|"location"|"other",
+      "value": object|string,
+      "confidence": number, // 0..1
+      "evidence": string // short quote from snippet, <= 20 words
+    }
+  ]
+}`
+
+	rules := []string{
+		"Only include facts directly supported by the snippet; do not infer beyond it.",
+		"Prefer atomic facts (one idea per fact).",
+		"Keep evidence as an exact quote from the snippet.",
+	}
+
+	return buildPrompt(setup, tasks, PromptChunk{Label: "Snippet", Text: in.Snippet}, schema, rules)
+}
+
+func buildEntityDistillationPrompt(in EntityDistillationInput) string {
+	entityLabel := in.EntityName
+	if strings.TrimSpace(in.EntityType) != "" {
+		entityLabel = fmt.Sprintf("%s (%s)", in.EntityName, in.EntityType)
+	}
+
+	factsJSON, _ := json.Marshal(in.Facts)
+	snippetsJSON, _ := json.Marshal(in.Snippets)
+
+	inputBlock := fmt.Sprintf(
+		"Entity: %s\n\nCurrentDescription:\n%s\n\nSelectedFacts(JSON):\n%s\n\nSelectedSnippets(JSON):\n%s",
+		entityLabel,
+		strings.TrimSpace(in.CurrentDescription),
+		string(factsJSON),
+		string(snippetsJSON),
+	)
+
+	setup := "You write grounded, non-invented entity descriptions for books."
+	tasks := []string{
+		fmt.Sprintf("Update the description for \"%s\" using ONLY the provided facts/snippets.", entityLabel),
+		"Do not invent details; if evidence is weak or contradictory, keep description minimal and list uncertainties.",
+	}
+
+	schema := `STRICTLY a JSON object with this schema (no extra text):
+
+{
+  "description": string, // 2-6 sentences
+  "keyFacts": string[], // 5-12 short bullet-like strings
+  "uncertainties": string[]
+}`
+
+	rules := []string{
+		"The description must not contradict the provided facts/snippets.",
+		"If a key fact is uncertain, put it in uncertainties instead of stating it as fact.",
+		"Keep keyFacts short and grounded; do not add outside knowledge.",
+	}
+
+	return buildPrompt(setup, tasks, PromptChunk{Label: "Input", Text: inputBlock}, schema, rules)
+}
+
 func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	bookPart := ""
 	if strings.TrimSpace(bookTitle) != "" {

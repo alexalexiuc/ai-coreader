@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/entity-mentions.schema.json",
+  "title": "EntityMentionsDoc",
+  "description": "Per-occurrence mention records for entities within a single book, including bounded snippets and extracted facts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "entityId",
+    "chunkId",
+    "chunkIndex",
+    "offsetStart",
+    "snippet"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "objectId",
+      "description": "Entity mention unique identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "bookId": {
+      "type": "string",
+      "format": "objectId"
+    },
+    "entityId": {
+      "type": "string",
+      "format": "objectId"
+    },
+    "chunkId": {
+      "type": "string",
+      "format": "objectId"
+    },
+    "chunkIndex": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "surfaceForm": {
+      "type": "string",
+      "description": "Observed surface form for the mention (best-effort)"
+    },
+    "offsetStart": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character offset relative to chunk.text where the mention starts"
+    },
+    "snippet": {
+      "type": "string",
+      "description": "Bounded snippet window around the mention used for fact extraction"
+    },
+    "snippetStartOffset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character offset (relative to chunk.text) where snippet begins"
+    },
+    "snippetEndOffset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character offset (relative to chunk.text) where snippet ends (exclusive)"
+    },
+    "factsExtracted": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/EntityFact"
+      }
+    },
+    "factsExtractedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "EntityFact": {
+      "title": "EntityFact",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hash", "factType", "value", "confidence", "evidence"],
+      "properties": {
+        "hash": {
+          "type": "string",
+          "description": "Deterministic hash used for deduplication"
+        },
+        "factType": {
+          "type": "string",
+          "enum": ["role", "trait", "appearance", "relationship", "event", "location", "other"]
+        },
+        "value": {
+          "oneOf": [{ "type": "string" }, { "type": "object" }]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Short quote (<= 20 words) extracted from snippet"
+        }
+      }
+    }
+  }
+}
