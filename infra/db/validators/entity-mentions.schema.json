@@ -1,0 +1,98 @@
+{
+  "title": "EntityMentionsDoc",
+  "description": "Individual entity mention within a chunk with extracted facts",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "entityId",
+    "chunkId",
+    "chunkIndex",
+    "surfaceForm"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Mention unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "bsonType": "date"
+    },
+    "bookId": {
+      "description": "Reference to the parent book",
+      "bsonType": "objectId"
+    },
+    "entityId": {
+      "description": "Reference to the canonical entity",
+      "bsonType": "objectId"
+    },
+    "chunkId": {
+      "description": "Reference to the chunk where entity is mentioned",
+      "bsonType": "objectId"
+    },
+    "chunkIndex": {
+      "description": "Index of the chunk in the book",
+      "bsonType": "int"
+    },
+    "surfaceForm": {
+      "description": "The actual text form of the entity mention",
+      "bsonType": "string"
+    },
+    "offsets": {
+      "description": "Character offsets of mentions within the chunk",
+      "items": {
+        "bsonType": "int"
+      },
+      "bsonType": "array"
+    },
+    "snippet": {
+      "description": "Text snippet around the mention for context",
+      "bsonType": "string"
+    },
+    "factsExtracted": {
+      "description": "Array of extracted facts from this mention",
+      "items": {
+        "additionalProperties": false,
+        "required": [
+          "factType",
+          "value",
+          "confidence"
+        ],
+        "properties": {
+          "factType": {
+            "description": "Type of fact (role, trait, appearance, relationship, event, location, other)",
+            "bsonType": "string"
+          },
+          "value": {
+            "description": "The fact value (can be string or object)"
+          },
+          "confidence": {
+            "description": "Confidence score 0-1",
+            "bsonType": "double"
+          },
+          "evidence": {
+            "description": "Short quote from snippet supporting the fact",
+            "bsonType": "string"
+          },
+          "hash": {
+            "description": "Hash for deduplication",
+            "bsonType": "string"
+          }
+        },
+        "bsonType": "object"
+      },
+      "bsonType": "array"
+    },
+    "confidence": {
+      "description": "Overall confidence for this mention",
+      "bsonType": "double"
+    }
+  },
+  "bsonType": "object"
+}

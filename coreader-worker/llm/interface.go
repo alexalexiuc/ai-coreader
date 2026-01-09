@@ -50,6 +50,36 @@ type ChunkLLMMetadata struct {
 	Chapters []string         `json:"chapters,omitempty"`
 }
 
+// EntityFact represents a single extracted fact about an entity
+type EntityFact struct {
+	FactType   string      `json:"factType"`       // role, trait, appearance, relationship, event, location, other
+	Value      interface{} `json:"value"`          // The fact value
+	Confidence float64     `json:"confidence"`     // 0-1
+	Evidence   string      `json:"evidence"`       // Short quote from snippet
+	Hash       string      `json:"hash,omitempty"` // For deduplication
+}
+
+// EntityFactExtractionResult is the LLM response for fact extraction
+type EntityFactExtractionResult struct {
+	Facts []EntityFact `json:"facts"`
+}
+
+// EntityDistillationInput describes input for entity description distillation
+type EntityDistillationInput struct {
+	EntityName         string       `json:"entityName"`
+	EntityType         string       `json:"entityType"`
+	CurrentDescription string       `json:"currentDescription,omitempty"`
+	Facts              []EntityFact `json:"facts"`
+	Snippets           []string     `json:"snippets"`
+}
+
+// EntityDistillationResult is what we expect from distillation LLM call
+type EntityDistillationResult struct {
+	Description   string   `json:"description"`
+	KeyFacts      []string `json:"keyFacts"`
+	Uncertainties []string `json:"uncertainties"`
+}
+
 // LLMClient is the interface for interacting with language models.
 // Different implementations can be swapped (local, remote, different providers).
 type LLMClient interface {

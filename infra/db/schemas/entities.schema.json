@@ -1,0 +1,84 @@
+{
+  "title": "EntitiesDoc",
+  "description": "Canonical entity record with consolidated description per book",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "nameCanonical",
+    "type"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Entity unique identifier",
+      "type": "string",
+      "format": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "type": "string",
+      "format": "date-time"
+    },
+    "bookId": {
+      "description": "Reference to the parent book",
+      "type": "string",
+      "format": "objectId"
+    },
+    "nameCanonical": {
+      "description": "Canonical name of the entity",
+      "type": "string"
+    },
+    "type": {
+      "description": "Entity type (character, place, organization, artifact, event, work, other)",
+      "type": "string"
+    },
+    "aliases": {
+      "description": "Alternative names for the entity",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mentionCount": {
+      "description": "Total number of mentions across all chunks",
+      "type": "integer"
+    },
+    "firstSeenChunkIndex": {
+      "description": "Index of the first chunk where entity appears",
+      "type": "integer"
+    },
+    "lastSeenChunkIndex": {
+      "description": "Index of the last chunk where entity appears",
+      "type": "integer"
+    },
+    "descriptionCurrent": {
+      "description": "Current consolidated description of the entity",
+      "type": "string"
+    },
+    "descriptionVersion": {
+      "description": "Version number for the description",
+      "type": "integer"
+    },
+    "keyFacts": {
+      "description": "List of key facts about the entity",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "uncertainties": {
+      "description": "List of unclear or contradictory aspects",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

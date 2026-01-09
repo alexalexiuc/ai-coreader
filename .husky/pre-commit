@@ -5,5 +5,12 @@ npm run typecheck
 
 cd ..
 cd coreader-worker
-goimports -w .
+# Use full path if goimports is not in PATH
+if command -v goimports > /dev/null 2>&1; then
+  goimports -w .
+elif [ -f "$HOME/go/bin/goimports" ]; then
+  "$HOME/go/bin/goimports" -w .
+else
+  echo "Warning: goimports not found, skipping Go formatting"
+fi
 git add .

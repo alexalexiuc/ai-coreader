@@ -1,0 +1,100 @@
+{
+  "title": "EntityMentionsDoc",
+  "description": "Individual entity mention within a chunk with extracted facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "entityId",
+    "chunkId",
+    "chunkIndex",
+    "surfaceForm"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Mention unique identifier",
+      "type": "string",
+      "format": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "type": "string",
+      "format": "date-time"
+    },
+    "bookId": {
+      "description": "Reference to the parent book",
+      "type": "string",
+      "format": "objectId"
+    },
+    "entityId": {
+      "description": "Reference to the canonical entity",
+      "type": "string",
+      "format": "objectId"
+    },
+    "chunkId": {
+      "description": "Reference to the chunk where entity is mentioned",
+      "type": "string",
+      "format": "objectId"
+    },
+    "chunkIndex": {
+      "description": "Index of the chunk in the book",
+      "type": "integer"
+    },
+    "surfaceForm": {
+      "description": "The actual text form of the entity mention",
+      "type": "string"
+    },
+    "offsets": {
+      "description": "Character offsets of mentions within the chunk",
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "snippet": {
+      "description": "Text snippet around the mention for context",
+      "type": "string"
+    },
+    "factsExtracted": {
+      "description": "Array of extracted facts from this mention",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["factType", "value", "confidence"],
+        "properties": {
+          "factType": {
+            "description": "Type of fact (role, trait, appearance, relationship, event, location, other)",
+            "type": "string"
+          },
+          "value": {
+            "description": "The fact value (can be string or object)"
+          },
+          "confidence": {
+            "description": "Confidence score 0-1",
+            "type": "number"
+          },
+          "evidence": {
+            "description": "Short quote from snippet supporting the fact",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Hash for deduplication",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "description": "Overall confidence for this mention",
+      "type": "number"
+    }
+  }
+}

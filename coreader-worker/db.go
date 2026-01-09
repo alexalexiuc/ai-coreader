@@ -84,6 +84,30 @@ func (u *UserBooksDoc) SetDocID(id primitive.ObjectID) {
 	u.ID = id
 }
 
+func (e *EntitiesDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        e.ID,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+}
+
+func (e *EntitiesDoc) SetDocID(id primitive.ObjectID) {
+	e.ID = id
+}
+
+func (e *EntityMentionsDoc) GetBaseDoc() *BaseDoc {
+	return &BaseDoc{
+		ID:        e.ID,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+}
+
+func (e *EntityMentionsDoc) SetDocID(id primitive.ObjectID) {
+	e.ID = id
+}
+
 func query(coll *mongo.Collection, filter interface{}, result interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -102,6 +126,8 @@ type DB struct {
 	BooksCollection              *mongo.Collection
 	BooksChunksCollection        *mongo.Collection
 	EntityDescriptionsCollection *mongo.Collection
+	EntitiesCollection           *mongo.Collection
+	EntityMentionsCollection     *mongo.Collection
 	UsersCollection              *mongo.Collection
 	UserBooksCollection          *mongo.Collection
 }
@@ -111,6 +137,8 @@ const (
 	BooksCollectionName              = "books"
 	BooksChunksCollectionName        = "books-chunks"
 	EntityDescriptionsCollectionName = "entity-descriptions"
+	EntitiesCollectionName           = "entities"
+	EntityMentionsCollectionName     = "entity-mentions"
 	UsersCollectionName              = "users"
 	UserBooksCollectionName          = "user-books"
 )
@@ -135,6 +163,8 @@ func InitDB() *DB {
 	booksCollection := llmDatabase.Collection(BooksCollectionName)
 	booksChunksCollection := llmDatabase.Collection(BooksChunksCollectionName)
 	entityDescriptionsCollection := llmDatabase.Collection(EntityDescriptionsCollectionName)
+	entitiesCollection := llmDatabase.Collection(EntitiesCollectionName)
+	entityMentionsCollection := llmDatabase.Collection(EntityMentionsCollectionName)
 	usersCollection := llmDatabase.Collection(UsersCollectionName)
 	userBooksCollection := llmDatabase.Collection(UserBooksCollectionName)
 	return &DB{
@@ -144,6 +174,8 @@ func InitDB() *DB {
 		BooksCollection:              booksCollection,
 		BooksChunksCollection:        booksChunksCollection,
 		EntityDescriptionsCollection: entityDescriptionsCollection,
+		EntitiesCollection:           entitiesCollection,
+		EntityMentionsCollection:     entityMentionsCollection,
 		UsersCollection:              usersCollection,
 		UserBooksCollection:          userBooksCollection,
 	}

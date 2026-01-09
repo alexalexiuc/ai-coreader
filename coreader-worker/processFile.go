@@ -382,6 +382,15 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		}
 	}
 
+	// Post-process entity descriptions
+	log.Printf("Starting entity post-processing for book %s", book.ID.Hex())
+	if err := w.PostProcessEntityDescriptions(ctx, book.ID); err != nil {
+		log.Printf("Warning: Entity post-processing failed for book %s: %v", book.ID.Hex(), err)
+		// Non-fatal: we still mark the file as processed
+	} else {
+		log.Printf("Successfully completed entity post-processing for book %s", book.ID.Hex())
+	}
+
 	// Update file status in DB
 	err = w.db.SetFileStatus(file.ID, "processed")
 	if err != nil {

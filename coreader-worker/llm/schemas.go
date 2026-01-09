@@ -33,6 +33,22 @@ func BookHeaderFormat() *JSONSchemaFormat {
 	}
 }
 
+func EntityFactExtractionFormat() *JSONSchemaFormat {
+	return &JSONSchemaFormat{
+		Name:        "entity_fact_extraction",
+		Description: "Strict JSON output for entity fact extraction",
+		Schema:      entityFactExtractionSchema(),
+	}
+}
+
+func EntityDistillationFormat() *JSONSchemaFormat {
+	return &JSONSchemaFormat{
+		Name:        "entity_distillation",
+		Description: "Strict JSON output for entity description distillation",
+		Schema:      entityDistillationSchema(),
+	}
+}
+
 // InferJSONSchemaFromPrompt picks the best schema for existing prompt templates.
 // Your prompt builders include a JSON block with field names; we key off that.
 func InferJSONSchemaFromPrompt(prompt string) *JSONSchemaFormat {
@@ -152,6 +168,78 @@ func bookHeaderSchema() any {
 			"headerEndOffset": map[string]any{
 				"type":    "integer",
 				"minimum": 0,
+			},
+		},
+	}
+}
+
+func entityFactExtractionSchema() any {
+	return map[string]any{
+		"type":                 "object",
+		"additionalProperties": false,
+		"required": []string{
+			"facts",
+		},
+		"properties": map[string]any{
+			"facts": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type":                 "object",
+					"additionalProperties": false,
+					"required": []string{
+						"factType",
+						"value",
+						"confidence",
+						"evidence",
+					},
+					"properties": map[string]any{
+						"factType": map[string]any{
+							"type": "string",
+							"enum": []string{"role", "trait", "appearance", "relationship", "event", "location", "other"},
+						},
+						"value": map[string]any{
+							"description": "The fact value (can be string or object)",
+						},
+						"confidence": map[string]any{
+							"type":    "number",
+							"minimum": 0,
+							"maximum": 1,
+						},
+						"evidence": map[string]any{
+							"type":      "string",
+							"maxLength": 100,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func entityDistillationSchema() any {
+	return map[string]any{
+		"type":                 "object",
+		"additionalProperties": false,
+		"required": []string{
+			"description",
+			"keyFacts",
+			"uncertainties",
+		},
+		"properties": map[string]any{
+			"description": map[string]any{
+				"type": "string",
+			},
+			"keyFacts": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "string",
+				},
+			},
+			"uncertainties": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "string",
+				},
 			},
 		},
 	}
