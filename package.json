@@ -28,6 +28,7 @@
     "db:reset": "npm run db:drop && npm run db:migrate",
     "infra:reset": "bash ./scripts/reset-infra.sh",
     "infra:reset:win": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-infra.ps1",
+    "check:invalid-utf8": "node ./scripts/check-invalid-utf8.cjs",
     "prepare": "husky"
   },
   "devDependencies": {
