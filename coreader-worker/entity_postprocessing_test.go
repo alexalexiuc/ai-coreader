@@ -293,3 +293,45 @@ t.Errorf("sanitizeUTF8() did not produce valid UTF-8 string")
 }
 })
 }
+
+func TestExtractSnippetUTF8Safety(t *testing.T) {
+// Test that extractSnippet doesn't break multi-byte UTF-8 characters
+// This addresses the issue where slicing at byte boundaries could split UTF-8 sequences
+
+// Create text with multi-byte UTF-8 characters
+text := "Hello 世界 こんにちは мир שלום مرحبا สวัสดี 你好 안녕하세요"
+
+tests := []struct {
+name    string
+offsets []int
+}{
+{
+name:    "offset near multi-byte chars",
+offsets: []int{6}, // Right at 世界
+},
+{
+name:    "offset in middle of multi-byte sequence",
+offsets: []int{15}, // Somewhere in the middle
+},
+{
+name:    "multiple offsets with multi-byte chars",
+offsets: []int{6, 20, 35},
+},
+}
+
+for _, tt := range tests {
+t.Run(tt.name, func(t *testing.T) {
+result := extractSnippet(text, tt.offsets)
+
+// Most important: result must be valid UTF-8
+if !utf8.ValidString(result) {
+t.Errorf("extractSnippet() produced invalid UTF-8 string with offsets %v", tt.offsets)
+}
+
+// Result should not be empty
+if len(result) == 0 {
+t.Errorf("extractSnippet() produced empty string with offsets %v", tt.offsets)
+}
+})
+}
+}

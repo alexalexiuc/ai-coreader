@@ -174,13 +174,15 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 }
 
 func extractSnippet(text string, offsets []int) string {
+	// Convert to runes to handle multi-byte UTF-8 characters correctly
+	runes := []rune(text)
+	
 	if len(offsets) == 0 {
 		// Return first N chars if no offsets
-		snippet := text
-		if len(text) > SNIPPET_CONTEXT_CHARS {
-			snippet = text[:SNIPPET_CONTEXT_CHARS]
+		if len(runes) <= SNIPPET_CONTEXT_CHARS {
+			return sanitizeUTF8(strings.TrimSpace(text))
 		}
-		return sanitizeUTF8(strings.TrimSpace(snippet))
+		return sanitizeUTF8(strings.TrimSpace(string(runes[:SNIPPET_CONTEXT_CHARS])))
 	}
 
 	// If multiple mentions in chunk, try to include them all in a larger window
@@ -198,16 +200,26 @@ func extractSnippet(text string, offsets []int) string {
 
 	// Expand window around the span of mentions
 	start := max(0, minOffset-SNIPPET_CONTEXT_CHARS)
-	end := min(len(text), maxOffset+SNIPPET_CONTEXT_CHARS)
+	end := min(len(runes), maxOffset+SNIPPET_CONTEXT_CHARS)
 
-	// If the resulting snippet is too large, use just the first mention
+	// If the resulting snippet is too large, extract max available chars with warning
 	if end-start > SNIPPET_CONTEXT_CHARS*3 {
-		offset := offsets[0]
-		start = max(0, offset-SNIPPET_CONTEXT_CHARS)
-		end = min(len(text), offset+SNIPPET_CONTEXT_CHARS)
+		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions", 
+			end-start, SNIPPET_CONTEXT_CHARS*3)
+		
+		// Try to center on the span of mentions, but cap at 3x context
+		spanCenter := (minOffset + maxOffset) / 2
+		halfWindow := (SNIPPET_CONTEXT_CHARS * 3) / 2
+		start = max(0, spanCenter-halfWindow)
+		end = min(len(runes), start+SNIPPET_CONTEXT_CHARS*3)
+		
+		// Adjust start if we hit the end boundary
+		if end == len(runes) && end-start < SNIPPET_CONTEXT_CHARS*3 {
+			start = max(0, end-SNIPPET_CONTEXT_CHARS*3)
+		}
 	}
 
-	snippet := text[start:end]
+	snippet := string(runes[start:end])
 	return sanitizeUTF8(strings.TrimSpace(snippet))
 }
 
