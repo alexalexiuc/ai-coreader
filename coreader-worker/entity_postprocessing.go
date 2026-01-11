@@ -177,7 +177,7 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 func extractSnippet(text string, offsets []int) string {
 	// Convert to runes to handle multi-byte UTF-8 characters correctly
 	runes := []rune(text)
-	
+
 	if len(offsets) == 0 {
 		// Return first N chars if no offsets
 		if len(runes) <= SNIPPET_CONTEXT_CHARS {
@@ -192,10 +192,16 @@ func extractSnippet(text string, offsets []int) string {
 	}
 
 	// If multiple mentions in chunk, try to include them all in a larger window
-	// Find min and max offsets to determine span
-	minOffset := offsets[0]
-	maxOffset := offsets[0]
+	// Convert byte offsets to rune indices to avoid slicing issues.
+	runeOffsets := make([]int, 0, len(offsets))
 	for _, offset := range offsets {
+		runeOffsets = append(runeOffsets, byteOffsetToRuneIndex(text, offset))
+	}
+
+	// Find min and max offsets to determine span
+	minOffset := runeOffsets[0]
+	maxOffset := runeOffsets[0]
+	for _, offset := range runeOffsets {
 		if offset < minOffset {
 			minOffset = offset
 		}
@@ -210,15 +216,15 @@ func extractSnippet(text string, offsets []int) string {
 
 	// If the resulting snippet is too large, extract max available chars with warning
 	if end-start > SNIPPET_CONTEXT_CHARS*3 {
-		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions", 
+		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions",
 			end-start, SNIPPET_CONTEXT_CHARS*3)
-		
+
 		// Try to center on the span of mentions, but cap at 3x context
 		spanCenter := (minOffset + maxOffset) / 2
 		halfWindow := (SNIPPET_CONTEXT_CHARS * 3) / 2
 		start = max(0, spanCenter-halfWindow)
 		end = min(len(runes), start+SNIPPET_CONTEXT_CHARS*3)
-		
+
 		// Adjust start if we hit the end boundary
 		if end == len(runes) && end-start < SNIPPET_CONTEXT_CHARS*3 {
 			start = max(0, end-SNIPPET_CONTEXT_CHARS*3)
@@ -231,6 +237,16 @@ func extractSnippet(text string, offsets []int) string {
 
 	snippet := string(runes[start:end])
 	return strings.TrimSpace(snippet)
+}
+
+func byteOffsetToRuneIndex(text string, offset int) int {
+	if offset <= 0 {
+		return 0
+	}
+	if offset > len(text) {
+		offset = len(text)
+	}
+	return utf8.RuneCountInString(text[:offset])
 }
 
 // findSnippetBoundary finds a good place to end a snippet, similar to findRuneBoundary in chunking.go
