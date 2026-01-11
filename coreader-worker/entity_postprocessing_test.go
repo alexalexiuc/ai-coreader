@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"testing"
+	"unicode/utf8"
 
 	"coreader-worker/llm"
 )
@@ -58,9 +59,15 @@ func TestExtractSnippet(t *testing.T) {
 			checkLen: true,
 		},
 		{
-			name:     "multiple offsets",
+			name:     "multiple offsets close together",
 			offsets:  []int{42, 50},
 			expected: "Harry",
+			checkLen: true,
+		},
+		{
+			name:     "multiple offsets far apart - should handle span",
+			offsets:  []int{10, 200},
+			expected: "long",
 			checkLen: true,
 		},
 	}
@@ -81,8 +88,8 @@ func TestExtractSnippet(t *testing.T) {
 					t.Errorf("extractSnippet() result %q does not contain expected %q", result, tt.expected)
 				}
 			}
-			if tt.checkLen && len(result) > SNIPPET_CONTEXT_CHARS*2+100 {
-				t.Errorf("extractSnippet() result length %d exceeds expected max %d", len(result), SNIPPET_CONTEXT_CHARS*2+100)
+			if tt.checkLen && len(result) > SNIPPET_CONTEXT_CHARS*3+100 {
+				t.Errorf("extractSnippet() result length %d exceeds expected max %d", len(result), SNIPPET_CONTEXT_CHARS*3+100)
 			}
 		})
 	}
@@ -238,4 +245,51 @@ func TestMinMax(t *testing.T) {
 func createTestHash(data string) string {
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
+}
+
+func TestSanitizeUTF8(t *testing.T) {
+tests := []struct {
+name     string
+input    string
+expected string
+}{
+{
+name:     "valid UTF-8",
+input:    "Hello World",
+expected: "Hello World",
+},
+{
+name:     "empty string",
+input:    "",
+expected: "",
+},
+{
+name:     "unicode characters",
+input:    "Hello 世界",
+expected: "Hello 世界",
+},
+}
+
+for _, tt := range tests {
+t.Run(tt.name, func(t *testing.T) {
+result := sanitizeUTF8(tt.input)
+if result != tt.expected {
+t.Errorf("sanitizeUTF8(%q) = %q; want %q", tt.input, result, tt.expected)
+}
+})
+}
+
+// Test with actual invalid UTF-8
+t.Run("invalid UTF-8 bytes", func(t *testing.T) {
+// Create string with invalid UTF-8 sequence
+invalidBytes := []byte{0xFF, 0xFE, 0xFD}
+invalidStr := string(invalidBytes)
+
+result := sanitizeUTF8(invalidStr)
+
+// Result should be valid UTF-8
+if !utf8.ValidString(result) {
+t.Errorf("sanitizeUTF8() did not produce valid UTF-8 string")
+}
+})
 }

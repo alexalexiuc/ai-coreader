@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -175,18 +176,49 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 func extractSnippet(text string, offsets []int) string {
 	if len(offsets) == 0 {
 		// Return first N chars if no offsets
-		if len(text) <= SNIPPET_CONTEXT_CHARS {
-			return text
+		snippet := text
+		if len(text) > SNIPPET_CONTEXT_CHARS {
+			snippet = text[:SNIPPET_CONTEXT_CHARS]
 		}
-		return text[:SNIPPET_CONTEXT_CHARS]
+		return sanitizeUTF8(strings.TrimSpace(snippet))
 	}
 
-	// Use first offset
-	offset := offsets[0]
-	start := max(0, offset-SNIPPET_CONTEXT_CHARS)
-	end := min(len(text), offset+SNIPPET_CONTEXT_CHARS)
+	// If multiple mentions in chunk, try to include them all in a larger window
+	// Find min and max offsets to determine span
+	minOffset := offsets[0]
+	maxOffset := offsets[0]
+	for _, offset := range offsets {
+		if offset < minOffset {
+			minOffset = offset
+		}
+		if offset > maxOffset {
+			maxOffset = offset
+		}
+	}
 
-	return strings.TrimSpace(text[start:end])
+	// Expand window around the span of mentions
+	start := max(0, minOffset-SNIPPET_CONTEXT_CHARS)
+	end := min(len(text), maxOffset+SNIPPET_CONTEXT_CHARS)
+
+	// If the resulting snippet is too large, use just the first mention
+	if end-start > SNIPPET_CONTEXT_CHARS*3 {
+		offset := offsets[0]
+		start = max(0, offset-SNIPPET_CONTEXT_CHARS)
+		end = min(len(text), offset+SNIPPET_CONTEXT_CHARS)
+	}
+
+	snippet := text[start:end]
+	return sanitizeUTF8(strings.TrimSpace(snippet))
+}
+
+// sanitizeUTF8 removes invalid UTF-8 sequences from a string
+func sanitizeUTF8(s string) string {
+	// Convert to valid UTF-8 by replacing invalid sequences
+	if !utf8.ValidString(s) {
+		// Use strings.ToValidUTF8 to replace invalid sequences with replacement character
+		return strings.ToValidUTF8(s, "�")
+	}
+	return s
 }
 
 func max(a, b int) int {
