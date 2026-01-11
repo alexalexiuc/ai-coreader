@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -182,7 +183,12 @@ func extractSnippet(text string, offsets []int) string {
 		if len(runes) <= SNIPPET_CONTEXT_CHARS {
 			return strings.TrimSpace(text)
 		}
-		return strings.TrimSpace(string(runes[:SNIPPET_CONTEXT_CHARS]))
+		// Find a good boundary instead of cutting at arbitrary position
+		boundary := findSnippetBoundary(runes, SNIPPET_CONTEXT_CHARS, min(SNIPPET_CONTEXT_CHARS+50, len(runes)))
+		if boundary == -1 {
+			boundary = SNIPPET_CONTEXT_CHARS
+		}
+		return strings.TrimSpace(string(runes[:boundary]))
 	}
 
 	// If multiple mentions in chunk, try to include them all in a larger window
@@ -219,8 +225,93 @@ func extractSnippet(text string, offsets []int) string {
 		}
 	}
 
+	// Adjust boundaries to avoid cutting words
+	start = findSnippetStart(runes, start)
+	end = findSnippetEnd(runes, end, min(end+50, len(runes)))
+
 	snippet := string(runes[start:end])
 	return strings.TrimSpace(snippet)
+}
+
+// findSnippetBoundary finds a good place to end a snippet, similar to findRuneBoundary in chunking.go
+// Priorities: sentence end > comma > whitespace
+func findSnippetBoundary(runes []rune, minIdx, maxIdx int) int {
+	if minIdx >= len(runes) {
+		return -1
+	}
+	if maxIdx > len(runes) {
+		maxIdx = len(runes)
+	}
+
+	// 1) Sentence end: . ! ? followed by whitespace
+	for i := maxIdx - 1; i >= minIdx; i-- {
+		if runes[i] == '.' || runes[i] == '!' || runes[i] == '?' {
+			if i+1 < len(runes) && unicode.IsSpace(runes[i+1]) {
+				return i + 1
+			}
+		}
+	}
+
+	// 2) Comma + whitespace
+	for i := maxIdx - 1; i >= minIdx; i-- {
+		if runes[i] == ',' && i+1 < len(runes) && unicode.IsSpace(runes[i+1]) {
+			return i + 1
+		}
+	}
+
+	// 3) Last whitespace
+	for i := maxIdx - 1; i >= minIdx; i-- {
+		if unicode.IsSpace(runes[i]) {
+			return i + 1
+		}
+	}
+
+	return -1
+}
+
+// findSnippetStart adjusts the start position to begin at a word boundary
+func findSnippetStart(runes []rune, start int) int {
+	if start <= 0 || start >= len(runes) {
+		return start
+	}
+
+	// If we're in the middle of a word, move forward to the next word boundary
+	if !unicode.IsSpace(runes[start]) && start > 0 && !unicode.IsSpace(runes[start-1]) {
+		// Look for next whitespace or punctuation within reasonable distance
+		for i := start; i < len(runes) && i < start+30; i++ {
+			if unicode.IsSpace(runes[i]) {
+				// Skip the whitespace
+				for i < len(runes) && unicode.IsSpace(runes[i]) {
+					i++
+				}
+				return i
+			}
+		}
+	}
+
+	return start
+}
+
+// findSnippetEnd adjusts the end position to a natural boundary
+func findSnippetEnd(runes []rune, end, maxEnd int) int {
+	if end >= len(runes) {
+		return len(runes)
+	}
+
+	// Try to find a good boundary
+	boundary := findSnippetBoundary(runes, end, maxEnd)
+	if boundary != -1 {
+		return boundary
+	}
+
+	// If no good boundary found, at least don't cut in the middle of a word
+	for i := end; i < maxEnd && i < len(runes); i++ {
+		if unicode.IsSpace(runes[i]) {
+			return i
+		}
+	}
+
+	return end
 }
 
 // sanitizeUTF8 is kept for potential edge cases in other parts of the codebase
