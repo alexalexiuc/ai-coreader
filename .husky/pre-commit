@@ -1,16 +1,5 @@
 
-cd coreader-app
-npm run lint-staged
-npm run typecheck
+npx lint-staged
 
-cd ..
-cd coreader-worker
-# Use full path if goimports is not in PATH
-if command -v goimports > /dev/null 2>&1; then
-  goimports -w .
-elif [ -f "$HOME/go/bin/goimports" ]; then
-  "$HOME/go/bin/goimports" -w .
-else
-  echo "Warning: goimports not found, skipping Go formatting"
-fi
-git add .
+cd coreader-app
+npm run typecheck
