@@ -300,9 +300,7 @@ export interface EntityMentionsDoc {
     /**
      * The fact value (can be string or object)
      */
-    value: {
-      [k: string]: unknown;
-    };
+    value: string;
     /**
      * Confidence score 0-1
      */

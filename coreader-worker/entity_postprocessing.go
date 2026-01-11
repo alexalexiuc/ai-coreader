@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-	"unicode/utf8"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -138,11 +137,11 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 		} else {
 			// Convert to inline struct type and add hashes
 			inlineFacts := make([]struct {
-				FactType   string      `bson:"factType" json:"factType"`
-				Value      interface{} `bson:"value" json:"value"`
-				Confidence float64     `bson:"confidence" json:"confidence"`
-				Evidence   string      `bson:"evidence,omitempty" json:"evidence,omitempty"`
-				Hash       string      `bson:"hash,omitempty" json:"hash,omitempty"`
+				FactType   string  `bson:"factType" json:"factType"`
+				Value      string  `bson:"value" json:"value"`
+				Confidence float64 `bson:"confidence" json:"confidence"`
+				Evidence   string  `bson:"evidence,omitempty" json:"evidence,omitempty"`
+				Hash       string  `bson:"hash,omitempty" json:"hash,omitempty"`
 			}, len(facts))
 
 			for i, fact := range facts {
@@ -177,7 +176,7 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 func extractSnippet(text string, offsets []int) string {
 	// Convert to runes to handle multi-byte UTF-8 characters correctly
 	runes := []rune(text)
-	
+
 	if len(offsets) == 0 {
 		// Return first N chars if no offsets
 		if len(runes) <= SNIPPET_CONTEXT_CHARS {
@@ -210,15 +209,15 @@ func extractSnippet(text string, offsets []int) string {
 
 	// If the resulting snippet is too large, extract max available chars with warning
 	if end-start > SNIPPET_CONTEXT_CHARS*3 {
-		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions", 
+		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions",
 			end-start, SNIPPET_CONTEXT_CHARS*3)
-		
+
 		// Try to center on the span of mentions, but cap at 3x context
 		spanCenter := (minOffset + maxOffset) / 2
 		halfWindow := (SNIPPET_CONTEXT_CHARS * 3) / 2
 		start = max(0, spanCenter-halfWindow)
 		end = min(len(runes), start+SNIPPET_CONTEXT_CHARS*3)
-		
+
 		// Adjust start if we hit the end boundary
 		if end == len(runes) && end-start < SNIPPET_CONTEXT_CHARS*3 {
 			start = max(0, end-SNIPPET_CONTEXT_CHARS*3)
@@ -314,36 +313,9 @@ func findSnippetEnd(runes []rune, end, maxEnd int) int {
 	return end
 }
 
-// sanitizeUTF8 is kept for potential edge cases in other parts of the codebase
-// Note: extractSnippet() no longer needs this since rune-based slicing guarantees valid UTF-8
-
-// sanitizeUTF8 removes invalid UTF-8 sequences from a string
-func sanitizeUTF8(s string) string {
-	// Convert to valid UTF-8 by replacing invalid sequences
-	if !utf8.ValidString(s) {
-		// Use strings.ToValidUTF8 to replace invalid sequences with replacement character
-		return strings.ToValidUTF8(s, "�")
-	}
-	return s
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func hashFact(fact llm.EntityFact) string {
 	// Create deterministic hash for deduplication
-	data := fmt.Sprintf("%s|%s|%v", fact.FactType, fact.Evidence, fact.Value)
+	data := fmt.Sprintf("%s|%s|%s", fact.FactType, fact.Evidence, fact.Value)
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
 }

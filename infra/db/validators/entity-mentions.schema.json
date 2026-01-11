@@ -70,7 +70,8 @@
             "bsonType": "string"
           },
           "value": {
-            "description": "The fact value (can be string or object)"
+            "description": "The fact value (can be string or object)",
+            "bsonType": "string"
           },
           "confidence": {
             "description": "Confidence score 0-1",

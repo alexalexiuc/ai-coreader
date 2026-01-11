@@ -100,11 +100,11 @@ type EntityMentionsDoc struct {
 	Offsets        []int              `bson:"offsets,omitempty" json:"offsets,omitempty"`
 	Snippet        string             `bson:"snippet,omitempty" json:"snippet,omitempty"`
 	FactsExtracted []struct {
-		FactType   string      `bson:"factType" json:"factType"`
-		Value      interface{} `bson:"value" json:"value"`
-		Confidence float64     `bson:"confidence" json:"confidence"`
-		Evidence   string      `bson:"evidence,omitempty" json:"evidence,omitempty"`
-		Hash       string      `bson:"hash,omitempty" json:"hash,omitempty"`
+		FactType   string  `bson:"factType" json:"factType"`
+		Value      string  `bson:"value" json:"value"`
+		Confidence float64 `bson:"confidence" json:"confidence"`
+		Evidence   string  `bson:"evidence,omitempty" json:"evidence,omitempty"`
+		Hash       string  `bson:"hash,omitempty" json:"hash,omitempty"`
 	} `bson:"factsExtracted,omitempty" json:"factsExtracted,omitempty"`
 	Confidence float64 `bson:"confidence,omitempty" json:"confidence,omitempty"`
 }

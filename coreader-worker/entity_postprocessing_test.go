@@ -248,195 +248,148 @@ func createTestHash(data string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func TestSanitizeUTF8(t *testing.T) {
-tests := []struct {
-name     string
-input    string
-expected string
-}{
-{
-name:     "valid UTF-8",
-input:    "Hello World",
-expected: "Hello World",
-},
-{
-name:     "empty string",
-input:    "",
-expected: "",
-},
-{
-name:     "unicode characters",
-input:    "Hello 世界",
-expected: "Hello 世界",
-},
-}
-
-for _, tt := range tests {
-t.Run(tt.name, func(t *testing.T) {
-result := sanitizeUTF8(tt.input)
-if result != tt.expected {
-t.Errorf("sanitizeUTF8(%q) = %q; want %q", tt.input, result, tt.expected)
-}
-})
-}
-
-// Test with actual invalid UTF-8
-t.Run("invalid UTF-8 bytes", func(t *testing.T) {
-// Create string with invalid UTF-8 sequence
-invalidBytes := []byte{0xFF, 0xFE, 0xFD}
-invalidStr := string(invalidBytes)
-
-result := sanitizeUTF8(invalidStr)
-
-// Result should be valid UTF-8
-if !utf8.ValidString(result) {
-t.Errorf("sanitizeUTF8() did not produce valid UTF-8 string")
-}
-})
-}
-
 func TestExtractSnippetUTF8Safety(t *testing.T) {
-// Test that extractSnippet doesn't break multi-byte UTF-8 characters
-// This addresses the issue where slicing at byte boundaries could split UTF-8 sequences
+	// Test that extractSnippet doesn't break multi-byte UTF-8 characters
+	// This addresses the issue where slicing at byte boundaries could split UTF-8 sequences
 
-// Create text with multi-byte UTF-8 characters
-text := "Hello 世界 こんにちは мир שלום مرحبا สวัสดี 你好 안녕하세요"
+	// Create text with multi-byte UTF-8 characters
+	text := "Hello 世界 こんにちは мир שלום مرحبا สวัสดี 你好 안녕하세요"
 
-tests := []struct {
-name    string
-offsets []int
-}{
-{
-name:    "offset near multi-byte chars",
-offsets: []int{6}, // Right at 世界
-},
-{
-name:    "offset in middle of multi-byte sequence",
-offsets: []int{15}, // Somewhere in the middle
-},
-{
-name:    "multiple offsets with multi-byte chars",
-offsets: []int{6, 20, 35},
-},
-}
+	tests := []struct {
+		name    string
+		offsets []int
+	}{
+		{
+			name:    "offset near multi-byte chars",
+			offsets: []int{6}, // Right at 世界
+		},
+		{
+			name:    "offset in middle of multi-byte sequence",
+			offsets: []int{15}, // Somewhere in the middle
+		},
+		{
+			name:    "multiple offsets with multi-byte chars",
+			offsets: []int{6, 20, 35},
+		},
+	}
 
-for _, tt := range tests {
-t.Run(tt.name, func(t *testing.T) {
-result := extractSnippet(text, tt.offsets)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractSnippet(text, tt.offsets)
 
-// Most important: result must be valid UTF-8
-if !utf8.ValidString(result) {
-t.Errorf("extractSnippet() produced invalid UTF-8 string with offsets %v", tt.offsets)
-}
+			// Most important: result must be valid UTF-8
+			if !utf8.ValidString(result) {
+				t.Errorf("extractSnippet() produced invalid UTF-8 string with offsets %v", tt.offsets)
+			}
 
-// Result should not be empty
-if len(result) == 0 {
-t.Errorf("extractSnippet() produced empty string with offsets %v", tt.offsets)
-}
-})
-}
+			// Result should not be empty
+			if len(result) == 0 {
+				t.Errorf("extractSnippet() produced empty string with offsets %v", tt.offsets)
+			}
+		})
+	}
 }
 
 func TestExtractSnippetSmartBoundaries(t *testing.T) {
-// Test that snippets end at natural boundaries (sentences, commas, spaces)
-// rather than cutting words mid-way
+	// Test that snippets end at natural boundaries (sentences, commas, spaces)
+	// rather than cutting words mid-way
 
-text := "This is a complete sentence. And here is another one with some words! What about questions? Yes, they work too. Here's a sentence with a comma, and more text follows. Final sentence here."
+	text := "This is a complete sentence. And here is another one with some words! What about questions? Yes, they work too. Here's a sentence with a comma, and more text follows. Final sentence here."
 
-tests := []struct {
-name            string
-offsets         []int
-shouldNotContain string // substring that indicates a word was cut
-shouldContain    string // substring that should be in result
-}{
-{
-name:            "cuts at sentence end, not mid-word",
-offsets:         []int{50},
-shouldContain:   "another",
-shouldNotContain: "", // Just verify it doesn't panic
-},
-{
-name:            "prefers comma boundary",
-offsets:         []int{120},
-shouldContain:   "comma",
-shouldNotContain: "", 
-},
-}
+	tests := []struct {
+		name             string
+		offsets          []int
+		shouldNotContain string // substring that indicates a word was cut
+		shouldContain    string // substring that should be in result
+	}{
+		{
+			name:             "cuts at sentence end, not mid-word",
+			offsets:          []int{50},
+			shouldContain:    "another",
+			shouldNotContain: "", // Just verify it doesn't panic
+		},
+		{
+			name:             "prefers comma boundary",
+			offsets:          []int{120},
+			shouldContain:    "comma",
+			shouldNotContain: "",
+		},
+	}
 
-for _, tt := range tests {
-t.Run(tt.name, func(t *testing.T) {
-result := extractSnippet(text, tt.offsets)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractSnippet(text, tt.offsets)
 
-// Result should not be empty
-if len(result) == 0 {
-t.Errorf("extractSnippet() produced empty string")
-}
+			// Result should not be empty
+			if len(result) == 0 {
+				t.Errorf("extractSnippet() produced empty string")
+			}
 
-// Check that result is valid UTF-8
-if !utf8.ValidString(result) {
-t.Errorf("extractSnippet() produced invalid UTF-8")
-}
+			// Check that result is valid UTF-8
+			if !utf8.ValidString(result) {
+				t.Errorf("extractSnippet() produced invalid UTF-8")
+			}
 
-// Verify expected content
-if tt.shouldContain != "" && !strings.Contains(result, tt.shouldContain) {
-t.Errorf("extractSnippet() result should contain %q, got: %q", tt.shouldContain, result)
-}
+			// Verify expected content
+			if tt.shouldContain != "" && !strings.Contains(result, tt.shouldContain) {
+				t.Errorf("extractSnippet() result should contain %q, got: %q", tt.shouldContain, result)
+			}
 
-// Basic sanity check: result should not end with partial word
-// (words are typically followed by space or punctuation)
-if len(result) > 0 {
-lastChar := rune(result[len(result)-1])
-// It's okay to end with punctuation, space, or letter at end of text
-// This is just a basic check
-_ = lastChar
-}
-})
-}
+			// Basic sanity check: result should not end with partial word
+			// (words are typically followed by space or punctuation)
+			if len(result) > 0 {
+				lastChar := rune(result[len(result)-1])
+				// It's okay to end with punctuation, space, or letter at end of text
+				// This is just a basic check
+				_ = lastChar
+			}
+		})
+	}
 }
 
 func TestFindSnippetBoundary(t *testing.T) {
-text := "First sentence. Second sentence! Third one? Yes, with comma. End here"
-runes := []rune(text)
+	text := "First sentence. Second sentence! Third one? Yes, with comma. End here"
+	runes := []rune(text)
 
-tests := []struct {
-name     string
-minIdx   int
-maxIdx   int
-expected int // -1 means no boundary found
-desc     string
-}{
-{
-name:     "finds sentence end",
-minIdx:   10,
-maxIdx:   20,
-expected: 16, // After "sentence."
-desc:     "Should find period + space",
-},
-{
-name:     "finds exclamation",
-minIdx:   30,
-maxIdx:   40,
-expected: 36, // After "sentence!"
-desc:     "Should find exclamation + space",
-},
-{
-name:     "finds comma when no sentence end",
-minIdx:   50,
-maxIdx:   58,
-expected: 58, // After "comma,"
-desc:     "Should find comma + space",
-},
-}
+	tests := []struct {
+		name     string
+		minIdx   int
+		maxIdx   int
+		expected int // -1 means no boundary found
+		desc     string
+	}{
+		{
+			name:     "finds sentence end",
+			minIdx:   10,
+			maxIdx:   20,
+			expected: 16, // After "sentence."
+			desc:     "Should find period + space",
+		},
+		{
+			name:     "finds exclamation",
+			minIdx:   30,
+			maxIdx:   40,
+			expected: 36, // After "sentence!"
+			desc:     "Should find exclamation + space",
+		},
+		{
+			name:     "finds comma when no sentence end",
+			minIdx:   50,
+			maxIdx:   58,
+			expected: 58, // After "comma,"
+			desc:     "Should find comma + space",
+		},
+	}
 
-for _, tt := range tests {
-t.Run(tt.name, func(t *testing.T) {
-result := findSnippetBoundary(runes, tt.minIdx, tt.maxIdx)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := findSnippetBoundary(runes, tt.minIdx, tt.maxIdx)
 
-// We're just checking it doesn't panic and returns a reasonable value
-if result != -1 && (result < tt.minIdx || result > tt.maxIdx) {
-t.Errorf("findSnippetBoundary() returned %d, which is outside range [%d, %d]", 
-result, tt.minIdx, tt.maxIdx)
-}
-})
-}
+			// We're just checking it doesn't panic and returns a reasonable value
+			if result != -1 && (result < tt.minIdx || result > tt.maxIdx) {
+				t.Errorf("findSnippetBoundary() returned %d, which is outside range [%d, %d]",
+					result, tt.minIdx, tt.maxIdx)
+			}
+		})
+	}
 }

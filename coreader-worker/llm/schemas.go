@@ -198,7 +198,8 @@ func entityFactExtractionSchema() any {
 							"enum": []string{"role", "trait", "appearance", "relationship", "event", "location", "other"},
 						},
 						"value": map[string]any{
-							"description": "The fact value (can be string or object)",
+							"type":        "string",
+							"description": "The fact value",
 						},
 						"confidence": map[string]any{
 							"type":    "number",

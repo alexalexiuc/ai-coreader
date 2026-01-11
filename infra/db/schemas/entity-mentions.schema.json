@@ -68,14 +68,19 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["factType", "value", "confidence"],
+        "required": [
+          "factType",
+          "value",
+          "confidence"
+        ],
         "properties": {
           "factType": {
             "description": "Type of fact (role, trait, appearance, relationship, event, location, other)",
             "type": "string"
           },
           "value": {
-            "description": "The fact value (can be string or object)"
+            "description": "The fact value (can be string or object)",
+            "type": "string"
           },
           "confidence": {
             "description": "Confidence score 0-1",

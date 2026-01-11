@@ -52,11 +52,11 @@ type ChunkLLMMetadata struct {
 
 // EntityFact represents a single extracted fact about an entity
 type EntityFact struct {
-	FactType   string      `json:"factType"`       // role, trait, appearance, relationship, event, location, other
-	Value      interface{} `json:"value"`          // The fact value
-	Confidence float64     `json:"confidence"`     // 0-1
-	Evidence   string      `json:"evidence"`       // Short quote from snippet
-	Hash       string      `json:"hash,omitempty"` // For deduplication
+	FactType   string  `json:"factType"`       // role, trait, appearance, relationship, event, location, other
+	Value      string  `json:"value"`          // The fact value
+	Confidence float64 `json:"confidence"`     // 0-1
+	Evidence   string  `json:"evidence"`       // Short quote from snippet
+	Hash       string  `json:"hash,omitempty"` // For deduplication
 }
 
 // EntityFactExtractionResult is the LLM response for fact extraction

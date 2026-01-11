@@ -73,7 +73,7 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
   "facts": [
     {
       "factType": "role" | "trait" | "appearance" | "relationship" | "event" | "location" | "other",
-      "value": string or object,
+      "value": string,
       "confidence": number (0-1),
       "evidence": string (max 20 words from snippet)
     }
@@ -82,7 +82,7 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
 
 	rules := []string{
 		"factType must be exactly one of the allowed values.",
-		"value should be atomic - one fact per object.",
+		"value should be atomic - one fact per item.",
 		"confidence: 1.0 for explicit facts, 0.7-0.9 for strong implications, lower for weak ones.",
 		"evidence must be a direct quote (or close paraphrase) from the snippet, max 20 words.",
 		"Do not invent facts not supported by the snippet.",
