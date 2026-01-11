@@ -180,9 +180,9 @@ func extractSnippet(text string, offsets []int) string {
 	if len(offsets) == 0 {
 		// Return first N chars if no offsets
 		if len(runes) <= SNIPPET_CONTEXT_CHARS {
-			return sanitizeUTF8(strings.TrimSpace(text))
+			return strings.TrimSpace(text)
 		}
-		return sanitizeUTF8(strings.TrimSpace(string(runes[:SNIPPET_CONTEXT_CHARS])))
+		return strings.TrimSpace(string(runes[:SNIPPET_CONTEXT_CHARS]))
 	}
 
 	// If multiple mentions in chunk, try to include them all in a larger window
@@ -220,8 +220,11 @@ func extractSnippet(text string, offsets []int) string {
 	}
 
 	snippet := string(runes[start:end])
-	return sanitizeUTF8(strings.TrimSpace(snippet))
+	return strings.TrimSpace(snippet)
 }
+
+// sanitizeUTF8 is kept for potential edge cases in other parts of the codebase
+// Note: extractSnippet() no longer needs this since rune-based slicing guarantees valid UTF-8
 
 // sanitizeUTF8 removes invalid UTF-8 sequences from a string
 func sanitizeUTF8(s string) string {
