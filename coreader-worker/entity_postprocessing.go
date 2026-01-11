@@ -191,10 +191,16 @@ func extractSnippet(text string, offsets []int) string {
 	}
 
 	// If multiple mentions in chunk, try to include them all in a larger window
-	// Find min and max offsets to determine span
-	minOffset := offsets[0]
-	maxOffset := offsets[0]
+	// Convert byte offsets to rune indices to avoid slicing issues.
+	runeOffsets := make([]int, 0, len(offsets))
 	for _, offset := range offsets {
+		runeOffsets = append(runeOffsets, byteOffsetToRuneIndex(text, offset))
+	}
+
+	// Find min and max offsets to determine span
+	minOffset := runeOffsets[0]
+	maxOffset := runeOffsets[0]
+	for _, offset := range runeOffsets {
 		if offset < minOffset {
 			minOffset = offset
 		}
@@ -230,6 +236,16 @@ func extractSnippet(text string, offsets []int) string {
 
 	snippet := string(runes[start:end])
 	return strings.TrimSpace(snippet)
+}
+
+func byteOffsetToRuneIndex(text string, offset int) int {
+	if offset <= 0 {
+		return 0
+	}
+	if offset > len(text) {
+		offset = len(text)
+	}
+	return utf8.RuneCountInString(text[:offset])
 }
 
 // findSnippetBoundary finds a good place to end a snippet, similar to findRuneBoundary in chunking.go
