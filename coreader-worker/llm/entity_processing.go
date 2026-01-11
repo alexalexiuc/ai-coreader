@@ -65,6 +65,10 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
 		"Read the snippet and extract ONLY facts that are explicitly stated or strongly implied.",
 		"Each fact must have supporting evidence (a short quote from the snippet).",
 		"If the snippet contains no useful information, return an empty facts array.",
+		"IMPORTANT:",
+		"- factType describes the TYPE OF STATEMENT about the entity, not the entity's category.",
+		"- NEVER use the entity type (e.g. \"artifact\", \"character\") as a factType.",
+		"- Even for artifacts, use factType such as \"appearance\", \"event\", or \"other\".",
 	}
 
 	schema := `STRICTLY a JSON object with this schema (no extra text):
@@ -81,7 +85,7 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
 }`
 
 	rules := []string{
-		"factType must be exactly one of the allowed values.",
+		"factType describes the KIND OF STATEMENT being made about the entity (e.g. appearance, event, role), NOT the entity's type. Never repeat the entity type as a factType.",
 		"value should be atomic - one fact per item.",
 		"confidence: 1.0 for explicit facts, 0.7-0.9 for strong implications, lower for weak ones.",
 		"evidence must be a direct quote (or close paraphrase) from the snippet, max 20 words.",

@@ -26,7 +26,7 @@
 - [coreader-worker]: When we got chapters, sometimes there may be intruders. Either ask AI to exclude intruders from chapters list or implement an algorithm that will only determine chapters based on certain patterns (e.g. "Chapter X", "CHAPTER X", etc.)
 
 - Post Processing
-  - [coreader-worker]: Replace character-window snippet extraction with sentence-window extraction centered on each entity mention offset
+  - [coreader-worker]: ~~Replace character-window snippet extraction with sentence-window extraction centered on each entity mention offset~~ ✅ Completed
   - [coreader-worker]: Append to current chunk one proposition from previous chunk and one from next chunk to improve sentence boundary detection
   - [coreader-worker]: Ensure every generated snippet always contains the entity surface form or the exact rune span around the mention offset
   - [coreader-worker]: Prevent snippet boundary logic from trimming away the entity mention when adjusting to word/sentence boundaries
@@ -42,3 +42,4 @@
   - [coreader-worker]: Strengthen entity discovery assumptions to keep extraction conservative and avoid noisy or generic entities
   - [coreader-worker]: Preserve exact entity surface forms from discovery through snippet extraction for reliable anchoring
   - [coreader-worker]: Add small unit tests for sentence boundary detection and the “snippet contains entity mention” invariant
+  - [coreader-worker]: If in a chunk we meet entity in multiple places, make sure we take all occurrences into account when extracting snippets

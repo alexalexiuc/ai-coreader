@@ -18,10 +18,11 @@ import (
 )
 
 const (
-	SNIPPET_CONTEXT_CHARS         = 250 // Characters before and after mention for context
-	MAX_FACTS_FOR_DISTILLATION    = 50  // Max facts to include in distillation
-	MAX_SNIPPETS_FOR_DISTILLATION = 10  // Max snippets to include in distillation
-	EARLY_MENTION_COUNT           = 3   // Number of early mentions to prioritize
+	SNIPPET_CONTEXT_SENTENCES     = 2    // Sentences before and after mention for context
+	MAX_SNIPPET_RUNES             = 1000 // Max runes in a snippet (fallback if sentence window too large)
+	MAX_FACTS_FOR_DISTILLATION    = 50   // Max facts to include in distillation
+	MAX_SNIPPETS_FOR_DISTILLATION = 10   // Max snippets to include in distillation
+	EARLY_MENTION_COUNT           = 3    // Number of early mentions to prioritize
 )
 
 // PostProcessEntityDescriptions runs after all chunks are processed
@@ -179,61 +180,162 @@ func extractSnippet(text string, offsets []int) string {
 	runes := []rune(text)
 
 	if len(offsets) == 0 {
-		// Return first N chars if no offsets
-		if len(runes) <= SNIPPET_CONTEXT_CHARS {
-			return strings.TrimSpace(text)
-		}
-		// Find a good boundary instead of cutting at arbitrary position
-		boundary := findSnippetBoundary(runes, SNIPPET_CONTEXT_CHARS, min(SNIPPET_CONTEXT_CHARS+50, len(runes)))
-		if boundary == -1 {
-			boundary = SNIPPET_CONTEXT_CHARS
-		}
-		return strings.TrimSpace(string(runes[:boundary]))
+		// No offsets - return first few sentences up to MAX_SNIPPET_RUNES
+		sentences := splitIntoSentences(runes)
+		return joinSentencesUpToLimit(runes, sentences, 0, MAX_SNIPPET_RUNES)
 	}
 
-	// If multiple mentions in chunk, try to include them all in a larger window
-	// Convert byte offsets to rune indices to avoid slicing issues.
+	// Convert byte offsets to rune indices
 	runeOffsets := make([]int, 0, len(offsets))
 	for _, offset := range offsets {
 		runeOffsets = append(runeOffsets, byteOffsetToRuneIndex(text, offset))
 	}
 
-	// Find min and max offsets to determine span
-	minOffset := runeOffsets[0]
-	maxOffset := runeOffsets[0]
+	// Use the earliest mention offset to avoid spanning far-apart mentions
+	targetOffset := runeOffsets[0]
 	for _, offset := range runeOffsets {
-		if offset < minOffset {
-			minOffset = offset
-		}
-		if offset > maxOffset {
-			maxOffset = offset
+		if offset < targetOffset {
+			targetOffset = offset
 		}
 	}
 
-	// Expand window around the span of mentions
-	start := max(0, minOffset-SNIPPET_CONTEXT_CHARS)
-	end := min(len(runes), maxOffset+SNIPPET_CONTEXT_CHARS)
+	// Split text into sentences
+	sentences := splitIntoSentences(runes)
+	if len(sentences) == 0 {
+		// Fallback if sentence splitting fails
+		return extractFallbackSnippet(runes, targetOffset)
+	}
 
-	// If the resulting snippet is too large, extract max available chars with warning
-	if end-start > SNIPPET_CONTEXT_CHARS*3 {
-		log.Printf("Warning: Entity span too large (%d chars), extracting max %d chars around mentions",
-			end-start, SNIPPET_CONTEXT_CHARS*3)
-
-		// Try to center on the span of mentions, but cap at 3x context
-		spanCenter := (minOffset + maxOffset) / 2
-		halfWindow := (SNIPPET_CONTEXT_CHARS * 3) / 2
-		start = max(0, spanCenter-halfWindow)
-		end = min(len(runes), start+SNIPPET_CONTEXT_CHARS*3)
-
-		// Adjust start if we hit the end boundary
-		if end == len(runes) && end-start < SNIPPET_CONTEXT_CHARS*3 {
-			start = max(0, end-SNIPPET_CONTEXT_CHARS*3)
+	// Find the sentence containing the target offset
+	targetSentenceIdx := -1
+	for i, sent := range sentences {
+		if targetOffset >= sent.startIdx && targetOffset < sent.endIdx {
+			targetSentenceIdx = i
+			break
 		}
 	}
+
+	if targetSentenceIdx == -1 {
+		// Target offset not in any sentence (shouldn't happen) - use fallback
+		log.Printf("Warning: Entity mention offset %d not found in any sentence, using fallback", targetOffset)
+		return extractFallbackSnippet(runes, targetOffset)
+	}
+
+	// Extract SNIPPET_CONTEXT_SENTENCES before and after the target sentence
+	startSentenceIdx := max(0, targetSentenceIdx-SNIPPET_CONTEXT_SENTENCES)
+	endSentenceIdx := min(len(sentences), targetSentenceIdx+SNIPPET_CONTEXT_SENTENCES+1)
+
+	// Build snippet from selected sentences
+	snippet := buildSnippetFromSentences(runes, sentences, startSentenceIdx, endSentenceIdx)
+
+	// Cap snippet length and ensure it contains the entity mention
+	if len([]rune(snippet)) > MAX_SNIPPET_RUNES {
+		log.Printf("Warning: Sentence-window snippet too large (%d runes), falling back to entity-centered snippet", len([]rune(snippet)))
+		return extractFallbackSnippet(runes, targetOffset)
+	}
+
+	// Verify snippet contains entity mention
+	snippetStart := sentences[startSentenceIdx].startIdx
+	snippetEnd := sentences[endSentenceIdx-1].endIdx
+	if targetOffset < snippetStart || targetOffset >= snippetEnd {
+		log.Printf("Warning: Entity mention lost in snippet extraction, using fallback")
+		return extractFallbackSnippet(runes, targetOffset)
+	}
+
+	return strings.TrimSpace(snippet)
+}
+
+// sentence represents a sentence boundary in the text
+type sentence struct {
+	startIdx int
+	endIdx   int
+}
+
+// splitIntoSentences splits runes into sentences based on sentence-ending punctuation
+func splitIntoSentences(runes []rune) []sentence {
+	var sentences []sentence
+	sentStart := 0
+
+	for i := 0; i < len(runes); i++ {
+		// Sentence ends with . ! ? followed by whitespace or end of text
+		if runes[i] == '.' || runes[i] == '!' || runes[i] == '?' {
+			// Look ahead to confirm sentence boundary
+			if i+1 >= len(runes) || unicode.IsSpace(runes[i+1]) {
+				// Avoid very short sentences (likely abbreviations)
+				if i-sentStart > 10 {
+					sentences = append(sentences, sentence{startIdx: sentStart, endIdx: i + 1})
+					// Skip whitespace after sentence
+					for i+1 < len(runes) && unicode.IsSpace(runes[i+1]) {
+						i++
+					}
+					sentStart = i + 1
+				}
+			}
+		}
+	}
+
+	// Add final sentence if text doesn't end with punctuation
+	if sentStart < len(runes) {
+		sentences = append(sentences, sentence{startIdx: sentStart, endIdx: len(runes)})
+	}
+
+	return sentences
+}
+
+// buildSnippetFromSentences builds a snippet from a range of sentences
+func buildSnippetFromSentences(runes []rune, sentences []sentence, startIdx, endIdx int) string {
+	if startIdx >= endIdx || startIdx >= len(sentences) {
+		return ""
+	}
+
+	start := sentences[startIdx].startIdx
+	end := sentences[endIdx-1].endIdx
+
+	return string(runes[start:end])
+}
+
+// joinSentencesUpToLimit joins sentences from startIdx until reaching runeLimit
+func joinSentencesUpToLimit(runes []rune, sentences []sentence, startIdx, runeLimit int) string {
+	if startIdx >= len(sentences) {
+		return ""
+	}
+
+	totalRunes := 0
+	endIdx := startIdx
+
+	for i := startIdx; i < len(sentences); i++ {
+		sentLen := sentences[i].endIdx - sentences[i].startIdx
+		if totalRunes+sentLen > runeLimit && i > startIdx {
+			break
+		}
+		totalRunes += sentLen
+		endIdx = i + 1
+	}
+
+	if endIdx <= startIdx {
+		return ""
+	}
+
+	return buildSnippetFromSentences(runes, sentences, startIdx, endIdx)
+}
+
+// extractFallbackSnippet extracts a snippet centered on targetOffset when sentence extraction fails
+func extractFallbackSnippet(runes []rune, targetOffset int) string {
+	// Ensure we capture the entity mention
+	start := max(0, targetOffset-200)
+	end := min(len(runes), targetOffset+200)
 
 	// Adjust boundaries to avoid cutting words
 	start = findSnippetStart(runes, start)
 	end = findSnippetEnd(runes, end, min(end+50, len(runes)))
+
+	// Ensure we don't trim away the entity mention
+	if targetOffset < start {
+		start = targetOffset
+	}
+	if targetOffset >= end {
+		end = min(len(runes), targetOffset+50)
+	}
 
 	snippet := string(runes[start:end])
 	return strings.TrimSpace(snippet)
@@ -247,42 +349,6 @@ func byteOffsetToRuneIndex(text string, offset int) int {
 		offset = len(text)
 	}
 	return utf8.RuneCountInString(text[:offset])
-}
-
-// findSnippetBoundary finds a good place to end a snippet, similar to findRuneBoundary in chunking.go
-// Priorities: sentence end > comma > whitespace
-func findSnippetBoundary(runes []rune, minIdx, maxIdx int) int {
-	if minIdx >= len(runes) {
-		return -1
-	}
-	if maxIdx > len(runes) {
-		maxIdx = len(runes)
-	}
-
-	// 1) Sentence end: . ! ? followed by whitespace
-	for i := maxIdx - 1; i >= minIdx; i-- {
-		if runes[i] == '.' || runes[i] == '!' || runes[i] == '?' {
-			if i+1 < len(runes) && unicode.IsSpace(runes[i+1]) {
-				return i + 1
-			}
-		}
-	}
-
-	// 2) Comma + whitespace
-	for i := maxIdx - 1; i >= minIdx; i-- {
-		if runes[i] == ',' && i+1 < len(runes) && unicode.IsSpace(runes[i+1]) {
-			return i + 1
-		}
-	}
-
-	// 3) Last whitespace
-	for i := maxIdx - 1; i >= minIdx; i-- {
-		if unicode.IsSpace(runes[i]) {
-			return i + 1
-		}
-	}
-
-	return -1
 }
 
 // findSnippetStart adjusts the start position to begin at a word boundary
@@ -308,19 +374,13 @@ func findSnippetStart(runes []rune, start int) int {
 	return start
 }
 
-// findSnippetEnd adjusts the end position to a natural boundary
+// findSnippetEnd adjusts the end position to a natural boundary (prefers not cutting mid-word)
 func findSnippetEnd(runes []rune, end, maxEnd int) int {
 	if end >= len(runes) {
 		return len(runes)
 	}
 
-	// Try to find a good boundary
-	boundary := findSnippetBoundary(runes, end, maxEnd)
-	if boundary != -1 {
-		return boundary
-	}
-
-	// If no good boundary found, at least don't cut in the middle of a word
+	// Try to find whitespace within reasonable distance
 	for i := end; i < maxEnd && i < len(runes); i++ {
 		if unicode.IsSpace(runes[i]) {
 			return i
