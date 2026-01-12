@@ -10,19 +10,12 @@ export const runtime = 'nodejs';
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export async function POST(req: NextRequest): Promise<Response> {
+
   const user = await getCurrentUser();
   if (!user) {
     return new Response('Authentication required', { status: 401 });
   }
   const userId = new ObjectId(user.id);
-  
-  const contentLength = req.headers.get('content-length');
-  if (contentLength) {
-    const bytes = Number(contentLength);
-    if (Number.isFinite(bytes) && bytes > MAX_UPLOAD_BYTES) {
-      return new Response('Body exceeded 10 MB limit.', { status: 413 });
-    }
-  }
 
   let formData: FormData;
   try {
