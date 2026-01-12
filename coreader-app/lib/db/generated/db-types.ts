@@ -188,64 +188,6 @@ export interface EntitiesDoc {
 }
 
 /**
- * LLM-generated description of a book entity (character, place, spell, etc.)
- */
-export interface EntityDescriptionsDoc {
-  /**
-   * Entity description unique identifier
-   */
-  _id?: ObjectId;
-  /**
-   * Creation timestamp
-   */
-  createdAt: Date;
-  /**
-   * Last update timestamp
-   */
-  updatedAt: Date;
-  /**
-   * Reference to the parent book
-   */
-  bookId: ObjectId;
-  /**
-   * Reference to the originating book chunk
-   */
-  bookChunkId: ObjectId;
-  /**
-   * References to book chunks where the entity is found
-   */
-  bookChunkIds?: ObjectId[];
-  /**
-   * Entity name
-   */
-  name: string;
-  /**
-   * Entity type (character, place, spell, etc.)
-   */
-  type: string;
-  /**
-   * LLM-generated summary of the entity
-   */
-  summary?: string;
-  /**
-   * Narrative role of the entity
-   */
-  role?: string;
-  /**
-   * List of notable traits
-   */
-  traits?: string[];
-  /**
-   * Important locations associated with the entity
-   */
-  importantLocations?: string[];
-  /**
-   * Important relationships with other entities
-   */
-  importantRelationships?: string[];
-}
-
-/**
  * Individual entity mention within a chunk with extracted facts
  */
 export interface EntityMentionsDoc {

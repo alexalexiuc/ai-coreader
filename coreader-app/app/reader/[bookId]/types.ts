@@ -16,13 +16,12 @@ export type Book = {
 
 export type EntityDescription = {
   id: string;
-  name: string;
+  nameCanonical: string;
   type: string;
-  summary?: string;
-  role?: string;
-  traits?: string[];
-  importantLocations?: string[];
-  importantRelationships?: string[];
+  aliases?: string[];
+  descriptionCurrent?: string;
+  keyFacts?: string[];
+  uncertainties?: string[];
 };
 
 export type BlockEntity = {

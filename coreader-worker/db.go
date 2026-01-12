@@ -48,18 +48,6 @@ func (b *BooksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
-func (e *EntityDescriptionsDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        e.ID,
-		CreatedAt: e.CreatedAt,
-		UpdatedAt: e.UpdatedAt,
-	}
-}
-
-func (e *EntityDescriptionsDoc) SetDocID(id primitive.ObjectID) {
-	e.ID = id
-}
-
 func (b *BookChunksDoc) GetBaseDoc() *BaseDoc {
 	return &BaseDoc{
 		ID:        b.ID,
@@ -120,27 +108,25 @@ func query(coll *mongo.Collection, filter interface{}, result interface{}) error
 }
 
 type DB struct {
-	Client                       *mongo.Client
-	LLMDatabase                  *mongo.Database
-	FilesCollection              *mongo.Collection
-	BooksCollection              *mongo.Collection
-	BooksChunksCollection        *mongo.Collection
-	EntityDescriptionsCollection *mongo.Collection
-	EntitiesCollection           *mongo.Collection
-	EntityMentionsCollection     *mongo.Collection
-	UsersCollection              *mongo.Collection
-	UserBooksCollection          *mongo.Collection
+	Client                   *mongo.Client
+	LLMDatabase              *mongo.Database
+	FilesCollection          *mongo.Collection
+	BooksCollection          *mongo.Collection
+	BooksChunksCollection    *mongo.Collection
+	EntitiesCollection       *mongo.Collection
+	EntityMentionsCollection *mongo.Collection
+	UsersCollection          *mongo.Collection
+	UserBooksCollection      *mongo.Collection
 }
 
 const (
-	FilesCollectionName              = "files"
-	BooksCollectionName              = "books"
-	BooksChunksCollectionName        = "books-chunks"
-	EntityDescriptionsCollectionName = "entity-descriptions"
-	EntitiesCollectionName           = "entities"
-	EntityMentionsCollectionName     = "entity-mentions"
-	UsersCollectionName              = "users"
-	UserBooksCollectionName          = "user-books"
+	FilesCollectionName          = "files"
+	BooksCollectionName          = "books"
+	BooksChunksCollectionName    = "books-chunks"
+	EntitiesCollectionName       = "entities"
+	EntityMentionsCollectionName = "entity-mentions"
+	UsersCollectionName          = "users"
+	UserBooksCollectionName      = "user-books"
 )
 
 func InitDB() *DB {
@@ -162,22 +148,20 @@ func InitDB() *DB {
 	filesCollection := llmDatabase.Collection(FilesCollectionName)
 	booksCollection := llmDatabase.Collection(BooksCollectionName)
 	booksChunksCollection := llmDatabase.Collection(BooksChunksCollectionName)
-	entityDescriptionsCollection := llmDatabase.Collection(EntityDescriptionsCollectionName)
 	entitiesCollection := llmDatabase.Collection(EntitiesCollectionName)
 	entityMentionsCollection := llmDatabase.Collection(EntityMentionsCollectionName)
 	usersCollection := llmDatabase.Collection(UsersCollectionName)
 	userBooksCollection := llmDatabase.Collection(UserBooksCollectionName)
 	return &DB{
-		Client:                       client,
-		LLMDatabase:                  llmDatabase,
-		FilesCollection:              filesCollection,
-		BooksCollection:              booksCollection,
-		BooksChunksCollection:        booksChunksCollection,
-		EntityDescriptionsCollection: entityDescriptionsCollection,
-		EntitiesCollection:           entitiesCollection,
-		EntityMentionsCollection:     entityMentionsCollection,
-		UsersCollection:              usersCollection,
-		UserBooksCollection:          userBooksCollection,
+		Client:                   client,
+		LLMDatabase:              llmDatabase,
+		FilesCollection:          filesCollection,
+		BooksCollection:          booksCollection,
+		BooksChunksCollection:    booksChunksCollection,
+		EntitiesCollection:       entitiesCollection,
+		EntityMentionsCollection: entityMentionsCollection,
+		UsersCollection:          usersCollection,
+		UserBooksCollection:      userBooksCollection,
 	}
 }
 
@@ -345,53 +329,15 @@ func (db *DB) AddLLMDataToBookChunk(chunkID primitive.ObjectID, entities []Chunk
 	return UpdateOneWithMeta(context.TODO(), db.BooksChunksCollection, chunkID, updateFields)
 }
 
-func (db *DB) GetEntityByNameAndBook(bookID primitive.ObjectID, name string) (*EntityDescriptionsDoc, error) {
-	var entity EntityDescriptionsDoc
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	filter := bson.D{
-		{Key: "bookId", Value: bookID},
-		{Key: "name", Value: name},
-	}
-
-	err := db.EntityDescriptionsCollection.FindOne(ctx, filter).Decode(&entity)
-	if err != nil {
-		return nil, err
-	}
-	return &entity, nil
-}
-
-func (db *DB) CreateEntityDescriptionDoc(entityDesc *EntityDescriptionsDoc) (*EntityDescriptionsDoc, error) {
-	entityDesc, err := InsertOneWithMeta(context.TODO(), db.EntityDescriptionsCollection, entityDesc)
-	return entityDesc, err
-}
-
-func (db *DB) AddChunkToEntityDescription(entityID primitive.ObjectID, chunkID primitive.ObjectID) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	update := bson.M{
-		"$addToSet": bson.M{"bookChunkIds": chunkID},
-		"$set":      bson.M{"updatedAt": time.Now().UTC()},
-	}
-	_, err := db.EntityDescriptionsCollection.UpdateByID(ctx, entityID, update)
-	return err
-}
-
 func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Delete from new entity collections
+	// Delete from entity collections
 	if _, err := db.EntitiesCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
 		return err
 	}
 	if _, err := db.EntityMentionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
-		return err
-	}
-	// Delete from legacy entity-descriptions collection
-	if _, err := db.EntityDescriptionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
 		return err
 	}
 	if _, err := db.BooksChunksCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {

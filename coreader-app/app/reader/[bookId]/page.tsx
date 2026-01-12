@@ -4,7 +4,7 @@ import type { Book } from './types';
 import { chunkToBlocks, fallbackBlocks } from './chunkUtils';
 import { findBookById } from '@/lib/db/books';
 import { countBookChunks, findBookChunkByIndex } from '@/lib/db/book-chunks';
-import { findEntityDescriptionsByIds } from '@/lib/db/entity-descriptions';
+import { findEntitiesByIds } from '@/lib/db/entities';
 import { getCurrentUser } from '@/lib/auth/cookies';
 import { userOwnsBook, updateReadingProgress } from '@/lib/db/user-books';
 
@@ -47,8 +47,8 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
 
   const chunk = await findBookChunkByIndex(bookDto.id, pageIndex);
   const entityIds = (chunk?.entities ?? []).map((e) => e.entityId);
-  const entityDescriptions = entityIds.length > 0 ? await findEntityDescriptionsByIds(entityIds) : [];
-  const entityMap = new Map(entityDescriptions.map((e) => [e.id, e]));
+  const entities = entityIds.length > 0 ? await findEntitiesByIds(entityIds) : [];
+  const entityMap = new Map(entities.map((e) => [e.id, e]));
 
   const blocks = chunk ? chunkToBlocks(chunk.text, pageIndex, chunk.entities ?? [], entityMap) : fallbackBlocks(pageIndex);
 
