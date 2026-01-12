@@ -434,13 +434,13 @@ func (w *Worker) distillEntityDescription(ctx context.Context, bookID primitive.
 		}
 	}
 
-	// Convert map to slice and select top facts
+	// Convert map to slice
 	var facts []llm.EntityFact
 	for _, fact := range factMap {
 		facts = append(facts, fact)
 	}
 
-	// Sort by confidence (simple selection)
+	// Sort facts by confidence (descending) before selection
 	selectedFacts := selectTopFacts(facts, MAX_FACTS_FOR_DISTILLATION)
 
 	// Select snippets: prioritize early mentions
@@ -474,13 +474,30 @@ func selectTopFacts(facts []llm.EntityFact, maxCount int) []llm.EntityFact {
 		return facts
 	}
 
-	// Simple selection: prioritize higher confidence facts
-	// Could be improved with more sophisticated ranking
+	// Sort by confidence (descending), then by factType as secondary sort
+	sortFactsByConfidence(facts)
+
+	// Select top maxCount facts
 	selected := make([]llm.EntityFact, 0, maxCount)
-	for i := 0; i < len(facts) && i < maxCount; i++ {
+	for i := 0; i < maxCount && i < len(facts); i++ {
 		selected = append(selected, facts[i])
 	}
 	return selected
+}
+
+// sortFactsByConfidence sorts facts in-place by confidence (descending) with factType as tiebreaker
+func sortFactsByConfidence(facts []llm.EntityFact) {
+	// Simple bubble sort is fine for small fact lists (typically < 100)
+	n := len(facts)
+	for i := 0; i < n-1; i++ {
+		for j := 0; j < n-i-1; j++ {
+			// Sort by confidence descending, then by factType ascending (for stability)
+			if facts[j].Confidence < facts[j+1].Confidence ||
+				(facts[j].Confidence == facts[j+1].Confidence && facts[j].FactType > facts[j+1].FactType) {
+				facts[j], facts[j+1] = facts[j+1], facts[j]
+			}
+		}
+	}
 }
 
 func selectSnippets(mentions []EntityMentionsDoc, allSnippets []string, maxCount int) []string {

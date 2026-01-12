@@ -34,7 +34,7 @@
   - [coreader-worker]: Add optional LLM-only entity anchor markers (e.g. <<ENTITY:NAME>>) around the mention nearest the offset
   - [coreader-worker]: Avoid spanning min→max offsets when an entity appears far apart in the same chunk; prefer the earliest or most informative mention
   - [coreader-worker]: Cap LLM input snippet length and fall back to the sentence containing the earliest mention when exceeded
-  - [coreader-worker]: Sort extracted facts by confidence (and secondary heuristics) before selecting top facts for distillation
+  - [coreader-worker]: ~~Sort extracted facts by confidence (and secondary heuristics) before selecting top facts for distillation~~ ✅ Completed
   - [coreader-worker]: Prefer fact-rich snippets (those producing high-confidence facts) when selecting snippets for distillation
   - [coreader-worker]: Always include the earliest entity introduction snippet in distillation input
   - [coreader-worker]: Deduplicate snippets used for distillation (exact and near-duplicate after normalization)
