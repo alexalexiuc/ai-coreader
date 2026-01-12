@@ -28,19 +28,20 @@ type SidePanelProps = {
 
 export function SidePanel(props: SidePanelProps) {
   if (!props.openPanel) {
-    return (
-      <Section paddingClass="p-4">
-        <div className="text-sm text-slate-400">
-          <p className="font-semibold text-slate-200">Tools</p>
-          <p className="mt-1">
-            Open <span className="text-slate-200">Entities</span>, <span className="text-slate-200">TOC</span>,{' '}
-            <span className="text-slate-200">Search</span>, <span className="text-slate-200">Coach</span>, or{' '}
-            <span className="text-slate-200">Highlights</span>.
-          </p>
-          <p className="mt-3 text-xs text-slate-500">Tip: Ctrl/Cmd + K opens search.</p>
-        </div>
-      </Section>
-    );
+    return null;
+    // return (
+    //   <Section paddingClass="p-4">
+    //     <div className="text-sm text-slate-400">
+    //       <p className="font-semibold text-slate-200">Tools</p>
+    //       <p className="mt-1">
+    //         Open <span className="text-slate-200">Entities</span>, <span className="text-slate-200">TOC</span>,{' '}
+    //         <span className="text-slate-200">Search</span>, <span className="text-slate-200">Coach</span>, or{' '}
+    //         <span className="text-slate-200">Highlights</span>.
+    //       </p>
+    //       <p className="mt-3 text-xs text-slate-500">Tip: Ctrl/Cmd + K opens search.</p>
+    //     </div>
+    //   </Section>
+    // );
   }
 
   return (

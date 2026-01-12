@@ -10,7 +10,7 @@ const isLink = (props: Omit<ButtonProps, keyof CommonProps>): props is ButtonAsL
 };
 
 type CommonProps = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   variant?: 'primary' | 'danger';
   isLoading?: boolean;
   disabled?: boolean;
@@ -45,7 +45,7 @@ const variantStyles: Record<string, string> = {
 
 export const Button: React.FC<ButtonProps> = (props) => {
   const {
-    children,
+    children = null,
     variant = 'primary',
     isLoading = false,
     disabled = false,

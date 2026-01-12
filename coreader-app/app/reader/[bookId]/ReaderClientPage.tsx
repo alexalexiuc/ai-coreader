@@ -223,6 +223,8 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
     scrollToBlock(h.blockId);
   };
 
+  const hasPages = true;
+
   return (
     <div className="min-h-screen w-full bg-linear-to-b from-black via-slate-950 to-black">
       <div className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
@@ -237,6 +239,9 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
           </button>
 
           <div className="flex items-center gap-2">
+            <div className="rounded-full border border-slate-800 bg-slate-950/70 px-4 py-1 text-xs text-slate-400">
+              {hasPages ? `Page ${pageNumber} / ${totalPages}` : 'Page -'}
+            </div>
             {TOOL_BUTTONS.map(({ key, icon: Icon, title }) => (
               <SquareButton key={key} title={title} onClick={() => togglePanel(key)}>
                 <Icon />

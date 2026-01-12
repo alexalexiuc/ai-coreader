@@ -2,9 +2,9 @@
 
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
 import type { Block, BlockEntity } from './types';
 import { Button } from '@/ui/Button';
+import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
 
 type ReaderTextViewProps = {
   blocks: Block[];
@@ -50,51 +50,72 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
   const nextPage = Math.min(totalPages, pageNumber + 1);
   const makePageHref = (page: number) => `/reader/${bookId}?page=${page}`;
 
+  const sideButtonWidthPx = 56;
+  const containerGapPx = 12; // gap-3
+  const containerMaxWidth = contentWidth + sideButtonWidthPx * 2 + containerGapPx * 2;
+
   return (
     <>
       <div
         className="mx-auto h-[calc(100vh-140px)]"
         style={{
-          maxWidth: contentWidth,
-          fontSize,
-          lineHeight,
+          maxWidth: containerMaxWidth,
         }}
       >
-        <div className="h-full space-y-4 overflow-y-auto pr-2">
-          {blocks.map((b) => (
-            <p
-              key={b.id}
-              id={b.id}
-              data-block-id={b.id}
-              className={clsx(
-                'rounded-xl px-3 py-2 text-slate-100/95',
-                b.text.toUpperCase() === b.text && b.text.length < 60 && 'font-semibold text-slate-200',
-                'selection:bg-slate-200/20',
-              )}
-            >
-              <BlockContent
-                block={b}
-                onHover={setHoveredEntityId}
-                hoveredEntityId={hoveredEntityId}
-                activeEntityId={activeEntity?.entity.id ?? null}
-                onEntityClick={onEntityClick}
-              />
-            </p>
-          ))}
-        </div>
-      </div>
+        <div className="grid h-full grid-cols-[56px_minmax(0,1fr)_56px] gap-3">
+          <Button
+            href={makePageHref(prevPage)}
+            disabled={!canPrev}
+            aria-label="Previous page"
+            title="Previous page"
+            paddingClass="p-0"
+            textSizeClass="text-3xl"
+            className="h-full w-14 rounded-2xl text-slate-200"
+            leftIcon={<IoChevronBackOutline />}
+          />
 
-      <div className="mx-auto mt-6 flex max-w-6xl flex-wrap items-center justify-center gap-3 pb-8">
-        <Button href={makePageHref(prevPage)} disabled={!canPrev} leftIcon={<IoChevronBackOutline />}>
-          Prev
-        </Button>
-        <div className="rounded-full border border-slate-800 bg-slate-950/70 px-4 py-1 text-xs text-slate-400">
-          {hasPages ? `Page ${pageNumber} / ${totalPages}` : 'Page -'}
-          {canNext && ` · Next ${nextPage}`}
+          <div
+            className="h-full"
+            style={{
+              fontSize,
+              lineHeight,
+            }}
+          >
+            <div className="h-full space-y-4 overflow-hidden pr-2">
+              {blocks.map((b) => (
+                <p
+                  key={b.id}
+                  id={b.id}
+                  data-block-id={b.id}
+                  className={clsx(
+                    'rounded-xl px-3 py-2 text-slate-100/95',
+                    b.text.toUpperCase() === b.text && b.text.length < 60 && 'font-semibold text-slate-200',
+                    'selection:bg-slate-200/20',
+                  )}
+                >
+                  <BlockContent
+                    block={b}
+                    onHover={setHoveredEntityId}
+                    hoveredEntityId={hoveredEntityId}
+                    activeEntityId={activeEntity?.entity.id ?? null}
+                    onEntityClick={onEntityClick}
+                  />
+                </p>
+              ))}
+            </div>
+          </div>
+
+          <Button
+            href={makePageHref(nextPage)}
+            disabled={!canNext}
+            aria-label="Next page"
+            title="Next page"
+            paddingClass="p-0"
+            textSizeClass="text-3xl"
+            className="h-full w-14 rounded-2xl text-slate-200"
+            rightIcon={<IoChevronForwardOutline />}
+          />
         </div>
-        <Button href={makePageHref(nextPage)} disabled={!canNext} rightIcon={<IoChevronForwardOutline />}>
-          Next
-        </Button>
       </div>
 
       {activeEntity && (
