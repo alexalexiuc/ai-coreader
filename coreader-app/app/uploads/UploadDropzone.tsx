@@ -1,11 +1,11 @@
 import { useState, useTransition } from 'react';
 import { IoCheckmarkCircleOutline, IoCloudUploadOutline, IoWarningOutline } from 'react-icons/io5';
-import { uploadFileAction } from './actions';
 import { FileUpload } from '@/ui/FileUpload';
 import { Button } from '@/ui/Button';
 import { Section } from '@/ui/Section';
 import type { UploadedFile } from './types';
 import { toUploadedFile } from './utils';
+import type { FileDTO } from '@/lib/db/files';
 
 type UploadDropzoneProps = {
   onUploadSuccess?: (file: UploadedFile) => void;
@@ -40,7 +40,17 @@ export function UploadDropzone({ onUploadSuccess }: UploadDropzoneProps) {
 
     startTransition(async () => {
       try {
-        const inserted = await uploadFileAction(formData);
+        const res = await fetch('/api/files/uploads', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || 'Upload failed. Please try again.');
+        }
+
+        const inserted = (await res.json()) as FileDTO;
         onUploadSuccess?.(toUploadedFile(inserted));
         setMessage('Uploaded! We will process the book and add it to your library shortly.');
         setStatus('success');
