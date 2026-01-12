@@ -63,19 +63,26 @@ func (w *Worker) PostProcessEntityDescriptions(ctx context.Context, bookID primi
 
 	log.Printf("Found %d unique entities across %d chunks", len(entityGroups), len(chunks))
 
+	totalEntities := len(entityGroups)
+	processedEntities := 0
+	startTime := time.Now()
+
 	// Process each entity group
 	for key, group := range entityGroups {
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("context cancelled during entity processing: %w", err)
 		}
 
+		processedEntities++
+
+		log.Printf("Processing entity %d/%d: %q (type=%s)", processedEntities, totalEntities, group.name, group.typ)
 		if err := w.processEntityGroup(ctx, bookID, key, group); err != nil {
 			log.Printf("Warning: Failed to process entity %q (type=%s): %v", group.name, group.typ, err)
 			// Continue with other entities
 		}
 	}
 
-	log.Printf("Completed entity post-processing for book %s", bookID.Hex())
+	log.Printf("Completed entity post-processing for book %s in %s", bookID.Hex(), time.Since(startTime))
 	return nil
 }
 
