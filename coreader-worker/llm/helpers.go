@@ -11,6 +11,29 @@ import (
 	"strings"
 )
 
+// Precompiled regex patterns for chapter validation to avoid repeated compilation
+var (
+	chapterPatterns = []*regexp.Regexp{
+		regexp.MustCompile(`(?i)^chapter\s+[0-9]+`),                                          // Chapter 1, Chapter 42
+		regexp.MustCompile(`(?i)^chapter\s+[IVXLCDM]+`),                                      // Chapter I, Chapter XII
+		regexp.MustCompile(`(?i)^part\s+[0-9]+`),                                             // Part 1, Part 2
+		regexp.MustCompile(`(?i)^part\s+[IVXLCDM]+`),                                         // Part I, Part II
+		regexp.MustCompile(`(?i)^part\s+(one|two|three|four|five|six|seven|eight|nine|ten)`), // Part One
+		regexp.MustCompile(`(?i)^book\s+[0-9]+`),                                             // Book 1, Book 2
+		regexp.MustCompile(`(?i)^book\s+[IVXLCDM]+`),                                         // Book I, Book II
+		regexp.MustCompile(`(?i)^section\s+[0-9]+`),                                          // Section 1
+		regexp.MustCompile(`(?i)^section\s+[IVXLCDM]+`),                                      // Section I
+		regexp.MustCompile(`(?i)^volume\s+[0-9]+`),                                           // Volume 1
+		regexp.MustCompile(`(?i)^volume\s+[IVXLCDM]+`),                                       // Volume I
+		regexp.MustCompile(`(?i)^(prologue|epilogue|introduction|preface|afterword)$`),       // Special sections (exact match)
+	}
+
+	actScenePatterns = []*regexp.Regexp{
+		regexp.MustCompile(`(?i)^act\s+[0-9IVXLCDM]+`),   // ACT I, Act 1
+		regexp.MustCompile(`(?i)^scene\s+[0-9IVXLCDM]+`), // SCENE 1, Scene II
+	}
+)
+
 // AnalyzeChunk sends a TextChunk to the LLM and returns structured metadata.
 // This is a helper function that works with any Client implementation.
 func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk string) (*ChunkLLMMetadata, error) {
@@ -393,36 +416,14 @@ func validateChapterHeading(heading string) bool {
 		return false
 	}
 
-	// Define allowed chapter patterns (case-insensitive)
-	// Chapter/Part/Book/Section/Volume followed by number or roman numeral
-	chapterPatterns := []*regexp.Regexp{
-		regexp.MustCompile(`(?i)^chapter\s+[0-9]+`),                                          // Chapter 1, Chapter 42
-		regexp.MustCompile(`(?i)^chapter\s+[IVXLCDM]+`),                                      // Chapter I, Chapter XII
-		regexp.MustCompile(`(?i)^part\s+[0-9]+`),                                             // Part 1, Part 2
-		regexp.MustCompile(`(?i)^part\s+[IVXLCDM]+`),                                         // Part I, Part II
-		regexp.MustCompile(`(?i)^part\s+(one|two|three|four|five|six|seven|eight|nine|ten)`), // Part One
-		regexp.MustCompile(`(?i)^book\s+[0-9]+`),                                             // Book 1, Book 2
-		regexp.MustCompile(`(?i)^book\s+[IVXLCDM]+`),                                         // Book I, Book II
-		regexp.MustCompile(`(?i)^section\s+[0-9]+`),                                          // Section 1
-		regexp.MustCompile(`(?i)^section\s+[IVXLCDM]+`),                                      // Section I
-		regexp.MustCompile(`(?i)^volume\s+[0-9]+`),                                           // Volume 1
-		regexp.MustCompile(`(?i)^volume\s+[IVXLCDM]+`),                                       // Volume I
-		regexp.MustCompile(`(?i)^(prologue|epilogue|introduction|preface|afterword)$`),       // Special sections (exact match)
-	}
-
-	// Check if matches any allowed pattern
+	// Check if matches any allowed pattern (using precompiled package-level patterns)
 	for _, pattern := range chapterPatterns {
 		if pattern.MatchString(clean) {
 			return true
 		}
 	}
 
-	// Explicit rejections for play/poem structures
-	actScenePatterns := []*regexp.Regexp{
-		regexp.MustCompile(`(?i)^act\s+[0-9IVXLCDM]+`),   // ACT I, Act 1
-		regexp.MustCompile(`(?i)^scene\s+[0-9IVXLCDM]+`), // SCENE 1, Scene II
-	}
-
+	// Explicit rejections for play/poem structures (using precompiled package-level patterns)
 	for _, pattern := range actScenePatterns {
 		if pattern.MatchString(clean) {
 			return false
