@@ -587,7 +587,12 @@ type scoredMention struct {
 }
 
 // selectFactRichSnippets prefers snippets with high-confidence facts and early mentions
+// Always includes the earliest entity introduction (first mention)
 func selectFactRichSnippets(mentions []EntityMentionsDoc, maxCount int) []string {
+	if len(mentions) == 0 {
+		return []string{}
+	}
+
 	if len(mentions) <= maxCount {
 		// Return all snippets
 		snippets := make([]string, 0, len(mentions))
@@ -599,8 +604,15 @@ func selectFactRichSnippets(mentions []EntityMentionsDoc, maxCount int) []string
 		return snippets
 	}
 
-	scored := make([]scoredMention, 0, len(mentions))
-	for i := range mentions {
+	// Always include the first mention (earliest introduction)
+	selected := make([]string, 0, maxCount)
+	if mentions[0].Snippet != "" {
+		selected = append(selected, mentions[0].Snippet)
+	}
+
+	// Score remaining mentions by fact richness
+	scored := make([]scoredMention, 0, len(mentions)-1)
+	for i := 1; i < len(mentions); i++ {
 		score := calculateMentionScore(&mentions[i], i, len(mentions))
 		if mentions[i].Snippet != "" {
 			scored = append(scored, scoredMention{mention: &mentions[i], score: score})
@@ -610,9 +622,9 @@ func selectFactRichSnippets(mentions []EntityMentionsDoc, maxCount int) []string
 	// Sort by score descending
 	sortScoredMentions(scored)
 
-	// Select top maxCount
-	selected := make([]string, 0, maxCount)
-	for i := 0; i < maxCount && i < len(scored); i++ {
+	// Select top (maxCount - 1) from scored mentions (since we already added first)
+	remaining := maxCount - len(selected)
+	for i := 0; i < remaining && i < len(scored); i++ {
 		selected = append(selected, scored[i].mention.Snippet)
 	}
 
