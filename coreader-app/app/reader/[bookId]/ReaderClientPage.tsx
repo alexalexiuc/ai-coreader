@@ -7,13 +7,14 @@ import {
   IoInformationCircleOutline,
   IoListOutline,
   IoOptionsOutline,
+  IoPeopleOutline,
   IoSearchOutline,
   IoSparklesOutline,
 } from 'react-icons/io5';
 import { BottomSheet, PanelBody, SidePanel, panelTitle } from './ReaderPanels';
 import { SelectionToolbar } from './SelectionToolbar';
 import { getNearestBlockIdToViewportTop, getSelectionBlockId, getSelectionText, safeId, scrollToBlock } from './readerUtils';
-import type { Block, Book, Chapter, Highlight, PanelKey, SearchHit } from './types';
+import type { Block, Book, Chapter, Highlight, PageEntity, PanelKey, SearchHit } from './types';
 import { Button } from '@/ui/Button';
 import { SquareButton } from '@/ui/SquareButton';
 import { clamp } from '@/lib/number';
@@ -22,6 +23,7 @@ import { ReaderTextView } from './ReaderTextView';
 const TOOL_BUTTONS = [
   { key: 'overview', icon: IoInformationCircleOutline, title: 'Overview' },
   { key: 'toc', icon: IoListOutline, title: 'Table of Contents' },
+  { key: 'entities', icon: IoPeopleOutline, title: 'Entities' },
   { key: 'search', icon: IoSearchOutline, title: 'Search' },
   { key: 'coach', icon: IoSparklesOutline, title: 'Coach' },
   { key: 'highlights', icon: IoBookmarkOutline, title: 'Highlights' },
@@ -67,6 +69,38 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
     }
     return hits;
   }, [blocks, searchQuery]);
+
+  const pageEntities = useMemo<PageEntity[]>(() => {
+    const map = new Map<string, PageEntity>();
+
+    for (const block of blocks) {
+      for (const entity of block.entities ?? []) {
+        const existing = map.get(entity.entityId);
+        if (!existing) {
+          map.set(entity.entityId, {
+            entityId: entity.entityId,
+            name: entity.name,
+            type: entity.type,
+            mentionCount: 1,
+            firstBlockId: block.id,
+            description: entity.description,
+          });
+          continue;
+        }
+
+        existing.mentionCount += 1;
+        if (!existing.description && entity.description) {
+          existing.description = entity.description;
+        }
+      }
+    }
+
+    return [...map.values()].sort((a, b) => {
+      const typeCmp = a.type.localeCompare(b.type);
+      if (typeCmp !== 0) return typeCmp;
+      return a.name.localeCompare(b.name);
+    });
+  }, [blocks]);
 
   const [selOpen, setSelOpen] = useState(false);
   const [selText, setSelText] = useState('');
@@ -223,6 +257,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
             progressPct={progressPct}
             chapters={book.chapters}
             highlights={highlights}
+            pageEntities={pageEntities}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             searchHits={searchHits}
@@ -249,6 +284,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
           progressPct={progressPct}
           chapters={book.chapters}
           highlights={highlights}
+          pageEntities={pageEntities}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchHits={searchHits}

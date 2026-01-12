@@ -1,4 +1,4 @@
-export type PanelKey = 'overview' | 'toc' | 'search' | 'coach' | 'highlights' | 'settings' | null;
+export type PanelKey = 'overview' | 'toc' | 'entities' | 'search' | 'coach' | 'highlights' | 'settings' | null;
 
 export type Chapter = {
   id: string;
@@ -22,6 +22,15 @@ export type EntityDescription = {
   descriptionCurrent?: string;
   keyFacts?: string[];
   uncertainties?: string[];
+};
+
+export type PageEntity = {
+  entityId: string;
+  name: string;
+  type: string;
+  mentionCount: number;
+  firstBlockId: string;
+  description?: EntityDescription;
 };
 
 export type BlockEntity = {

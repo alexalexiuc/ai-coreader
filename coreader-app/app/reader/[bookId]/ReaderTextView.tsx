@@ -209,8 +209,10 @@ function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) 
     <span
       data-entity-id={segment.entity.id}
       className={clsx(
-        'cursor-pointer rounded-sm px-0.5 transition-colors',
-        isActive ? 'bg-amber-400/30 text-amber-50' : 'text-slate-100 hover:bg-amber-300/20 hover:text-amber-50',
+        'cursor-pointer rounded-sm px-0.5 underline decoration-amber-400/40 decoration-dotted underline-offset-2 transition-colors',
+        isActive
+          ? 'bg-amber-400/30 text-amber-50 decoration-amber-300/80'
+          : 'text-slate-100 hover:bg-amber-300/20 hover:text-amber-50 hover:decoration-amber-300/80',
       )}
       onMouseEnter={() => onHover(segment.entity.id)}
       onMouseLeave={() => onHover(null)}

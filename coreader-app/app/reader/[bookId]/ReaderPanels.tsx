@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { IoCloseOutline, IoFlashOutline, IoSearchOutline } from 'react-icons/io5';
 import { formatRelativeDate } from '@/lib/date';
 import { scrollToBlock } from './readerUtils';
-import type { Book, Chapter, Highlight, PanelKey, ReaderSettings, SearchHit } from './types';
+import type { Book, Chapter, Highlight, PageEntity, PanelKey, ReaderSettings, SearchHit } from './types';
 import { SquareButton } from '@/ui/SquareButton';
 import { Section } from '@/ui/Section';
 import { SectionHeader } from '@/ui/SectionHeader';
@@ -15,6 +15,7 @@ type SidePanelProps = {
   progressPct: number;
   chapters: Chapter[];
   highlights: Highlight[];
+  pageEntities: PageEntity[];
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   searchHits: SearchHit[];
@@ -32,8 +33,9 @@ export function SidePanel(props: SidePanelProps) {
         <div className="text-sm text-slate-400">
           <p className="font-semibold text-slate-200">Tools</p>
           <p className="mt-1">
-            Open <span className="text-slate-200">TOC</span>, <span className="text-slate-200">Search</span>,{' '}
-            <span className="text-slate-200">Coach</span>, or <span className="text-slate-200">Highlights</span>.
+            Open <span className="text-slate-200">Entities</span>, <span className="text-slate-200">TOC</span>,{' '}
+            <span className="text-slate-200">Search</span>, <span className="text-slate-200">Coach</span>, or{' '}
+            <span className="text-slate-200">Highlights</span>.
           </p>
           <p className="mt-3 text-xs text-slate-500">Tip: Ctrl/Cmd + K opens search.</p>
         </div>
@@ -73,6 +75,8 @@ export function PanelBody(props: PanelBodyProps) {
       return <OverviewPanel book={props.book} progressPct={props.progressPct} onStart={props.onStartReading} />;
     case 'toc':
       return <TocPanel chapters={props.chapters} onJump={props.onJumpToChapter} />;
+    case 'entities':
+      return <EntitiesPanel entities={props.pageEntities} />;
     case 'search':
       return (
         <SearchPanel
@@ -101,6 +105,8 @@ export function panelTitle(p: PanelKey) {
       return 'Overview';
     case 'toc':
       return 'Chapters';
+    case 'entities':
+      return 'Entities';
     case 'search':
       return 'Search';
     case 'coach':
@@ -302,6 +308,55 @@ function CoachPanel() {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EntitiesPanel({ entities }: { entities: PageEntity[] }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-white">Entities on this page</p>
+          <p className="mt-1 text-xs text-slate-500">Click an entity to jump to its first mention.</p>
+        </div>
+        <Badge>{entities.length}</Badge>
+      </div>
+
+      {entities.length === 0 ? (
+        <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
+          No entities detected on this page yet.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {entities.map((entity) => (
+            <button
+              key={entity.entityId}
+              type="button"
+              onClick={() => scrollToBlock(entity.firstBlockId)}
+              className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-left hover:border-slate-700"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-slate-100">{entity.name}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge colorClass="border-amber-400/30 bg-amber-500/10 text-amber-100">{entity.type}</Badge>
+                    <Badge>
+                      {entity.mentionCount} mention{entity.mentionCount === 1 ? '' : 's'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {entity.description?.descriptionCurrent ? (
+                <p className="mt-2 line-clamp-3 text-sm text-slate-300">{entity.description.descriptionCurrent}</p>
+              ) : (
+                <p className="mt-2 text-xs text-slate-500">No description available yet.</p>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
