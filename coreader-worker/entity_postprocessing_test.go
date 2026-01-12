@@ -89,8 +89,8 @@ func TestExtractSnippet(t *testing.T) {
 					t.Errorf("extractSnippet() result %q does not contain expected %q", result, tt.expected)
 				}
 			}
-			if tt.checkLen && len(result) > SNIPPET_CONTEXT_CHARS*3+100 {
-				t.Errorf("extractSnippet() result length %d exceeds expected max %d", len(result), SNIPPET_CONTEXT_CHARS*3+100)
+			if tt.checkLen && len([]rune(result)) > MAX_SNIPPET_RUNES*2 {
+				t.Errorf("extractSnippet() result length %d exceeds expected max %d", len([]rune(result)), MAX_SNIPPET_RUNES*2)
 			}
 		})
 	}
@@ -347,48 +347,180 @@ func TestExtractSnippetSmartBoundaries(t *testing.T) {
 	}
 }
 
-func TestFindSnippetBoundary(t *testing.T) {
-	text := "First sentence. Second sentence! Third one? Yes, with comma. End here"
-	runes := []rune(text)
+// TestFindSnippetBoundary is now deprecated - the function was removed/renamed
+// Remove this test if findSnippetBoundary is no longer in use
+func TestFindSnippetBoundaryDeprecated(t *testing.T) {
+	t.Skip("findSnippetBoundary function no longer exists or was renamed")
+}
 
+// TestSplitIntoSentences tests sentence boundary detection
+func TestSplitIntoSentences(t *testing.T) {
 	tests := []struct {
-		name     string
-		minIdx   int
-		maxIdx   int
-		expected int // -1 means no boundary found
-		desc     string
+		name          string
+		text          string
+		expectedCount int
+		checkFirst    string // substring that should be in first sentence
+		checkLast     string // substring that should be in last sentence
 	}{
 		{
-			name:     "finds sentence end",
-			minIdx:   10,
-			maxIdx:   20,
-			expected: 16, // After "sentence."
-			desc:     "Should find period + space",
+			name:          "simple sentences",
+			text:          "This is sentence one. This is sentence two! And this is three?",
+			expectedCount: 3,
+			checkFirst:    "sentence one",
+			checkLast:     "three",
 		},
 		{
-			name:     "finds exclamation",
-			minIdx:   30,
-			maxIdx:   40,
-			expected: 36, // After "sentence!"
-			desc:     "Should find exclamation + space",
+			name:          "no ending punctuation",
+			text:          "This is a sentence without ending punctuation",
+			expectedCount: 1,
+			checkFirst:    "sentence",
+			checkLast:     "punctuation",
 		},
 		{
-			name:     "finds comma when no sentence end",
-			minIdx:   50,
-			maxIdx:   58,
-			expected: 58, // After "comma,"
-			desc:     "Should find comma + space",
+			name:          "abbreviations should not split",
+			text:          "Dr. Smith went to the store. He bought milk.",
+			expectedCount: 2,
+			checkFirst:    "Dr",
+			checkLast:     "milk",
+		},
+		{
+			name:          "mixed punctuation",
+			text:          "What is happening? Yes, it is! Really true. Okay then.",
+			expectedCount: 3, // "Really true." is too short so gets merged
+			checkFirst:    "What",
+			checkLast:     "then",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := findSnippetBoundary(runes, tt.minIdx, tt.maxIdx)
+			runes := []rune(tt.text)
+			sentences := splitIntoSentences(runes)
 
-			// We're just checking it doesn't panic and returns a reasonable value
-			if result != -1 && (result < tt.minIdx || result > tt.maxIdx) {
-				t.Errorf("findSnippetBoundary() returned %d, which is outside range [%d, %d]",
-					result, tt.minIdx, tt.maxIdx)
+			if len(sentences) != tt.expectedCount {
+				t.Errorf("splitIntoSentences() returned %d sentences; want %d", len(sentences), tt.expectedCount)
+			}
+
+			if len(sentences) > 0 && tt.checkFirst != "" {
+				firstSent := string(runes[sentences[0].startIdx:sentences[0].endIdx])
+				if !strings.Contains(firstSent, tt.checkFirst) {
+					t.Errorf("First sentence %q does not contain %q", firstSent, tt.checkFirst)
+				}
+			}
+
+			if len(sentences) > 0 && tt.checkLast != "" {
+				lastSent := string(runes[sentences[len(sentences)-1].startIdx:sentences[len(sentences)-1].endIdx])
+				if !strings.Contains(lastSent, tt.checkLast) {
+					t.Errorf("Last sentence %q does not contain %q", lastSent, tt.checkLast)
+				}
+			}
+		})
+	}
+}
+
+// TestSnippetContainsEntityMention tests the invariant that extracted snippets always contain the entity mention
+func TestSnippetContainsEntityMention(t *testing.T) {
+	tests := []struct {
+		name       string
+		text       string
+		entityName string
+		offsets    []int
+	}{
+		{
+			name:       "entity at start",
+			text:       "Harry Potter is the main character. He studies at Hogwarts. Harry is brave.",
+			entityName: "Harry",
+			offsets:    []int{0}, // "Harry" at position 0
+		},
+		{
+			name:       "entity in middle",
+			text:       "The story follows Harry Potter through his adventures. Harry faces many challenges.",
+			entityName: "Harry",
+			offsets:    []int{19}, // "Harry" at position 19
+		},
+		{
+			name:       "entity at end",
+			text:       "The brave wizard known throughout the land was none other than Harry Potter.",
+			entityName: "Harry",
+			offsets:    []int{63}, // "Harry" near end
+		},
+		{
+			name:       "multiple occurrences - uses earliest",
+			text:       "Harry went to the store. Then Harry came back. Harry was tired.",
+			entityName: "Harry",
+			offsets:    []int{0, 30, 48},
+		},
+		{
+			name:       "entity with multi-byte chars",
+			text:       "The wizard 世界 named Harry Potter lived in London.",
+			entityName: "Harry",
+			offsets:    []int{20}, // Approximate, depends on UTF-8 encoding
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			snippet := extractSnippet(tt.text, tt.offsets)
+
+			// Snippet must not be empty
+			if len(snippet) == 0 {
+				t.Errorf("extractSnippet() returned empty snippet for entity %q", tt.entityName)
+			}
+
+			// Snippet must contain the entity name (case-insensitive check)
+			snippetLower := strings.ToLower(snippet)
+			entityLower := strings.ToLower(tt.entityName)
+			if !strings.Contains(snippetLower, entityLower) {
+				t.Errorf("extractSnippet() result does not contain entity %q\nSnippet: %q", tt.entityName, snippet)
+			}
+
+			// Snippet must be valid UTF-8
+			if !utf8.ValidString(snippet) {
+				t.Errorf("extractSnippet() produced invalid UTF-8 for entity %q", tt.entityName)
+			}
+		})
+	}
+}
+
+// TestNormalizeSnippet tests snippet normalization
+func TestNormalizeSnippet(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "collapses newlines",
+			input:    "Line one\nLine two\nLine three",
+			expected: "Line one Line two Line three",
+		},
+		{
+			name:     "collapses multiple spaces",
+			input:    "Too    many     spaces",
+			expected: "Too many spaces",
+		},
+		{
+			name:     "trims edges",
+			input:    "  text with spaces  ",
+			expected: "text with spaces",
+		},
+		{
+			name:     "mixed whitespace",
+			input:    "Text\n\nwith\t\ttabs  and\n   newlines",
+			expected: "Text with tabs and newlines",
+		},
+		{
+			name:     "preserves single spaces",
+			input:    "Normal text here",
+			expected: "Normal text here",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := normalizeSnippet(tt.input)
+			if result != tt.expected {
+				t.Errorf("normalizeSnippet(%q) = %q; want %q", tt.input, result, tt.expected)
 			}
 		})
 	}
