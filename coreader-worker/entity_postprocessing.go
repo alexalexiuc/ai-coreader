@@ -134,8 +134,11 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 			Snippet:     snippet,
 		}
 
-		// Extract facts from snippet
-		facts, err := llm.ExtractEntityFacts(ctx, w.llmClient, group.name, group.typ, snippet)
+		// Add entity anchor markers for LLM focus (only for fact extraction, not stored)
+		snippetWithMarker := addEntityAnchorMarker(snippet, mention.entityRef.Name, mention.entityRef.StartOffsets, mention.chunk.Text)
+
+		// Extract facts from snippet with marker
+		facts, err := llm.ExtractEntityFacts(ctx, w.llmClient, group.name, group.typ, snippetWithMarker)
 		if err != nil {
 			log.Printf("Warning: Failed to extract facts for entity %q in chunk %d: %v", group.name, mention.chunk.Index, err)
 			// Continue without facts
@@ -369,6 +372,53 @@ func normalizeSnippet(s string) string {
 	}
 
 	return strings.TrimSpace(string(result))
+}
+
+// addEntityAnchorMarker adds LLM-only markers around the entity mention for better focus
+// The marker helps the LLM identify which entity is being discussed in the snippet
+func addEntityAnchorMarker(snippet string, entityName string, offsets []int, originalText string) string {
+	if len(offsets) == 0 || snippet == "" {
+		return snippet
+	}
+
+	// Use the first offset to find where the entity appears in the snippet
+	snippetRunes := []rune(snippet)
+	originalRunes := []rune(originalText)
+
+	// Convert first byte offset to rune index in original text
+	runeOffset := byteOffsetToRuneIndex(originalText, offsets[0])
+
+	// Find the entity mention in the original text (approximate match)
+	if runeOffset < 0 || runeOffset >= len(originalRunes) {
+		return snippet
+	}
+
+	// Try to find the entity name in the snippet (case-insensitive)
+	entityLower := strings.ToLower(entityName)
+	snippetLower := strings.ToLower(snippet)
+
+	idx := strings.Index(snippetLower, entityLower)
+	if idx == -1 {
+		// Entity name not found directly, return unchanged
+		return snippet
+	}
+
+	// Calculate rune position of the entity in the snippet
+	runeIdxStart := utf8.RuneCountInString(snippet[:idx])
+	runeIdxEnd := runeIdxStart + utf8.RuneCountInString(entityName)
+
+	// Build snippet with markers
+	if runeIdxStart < 0 || runeIdxEnd > len(snippetRunes) {
+		return snippet
+	}
+
+	result := string(snippetRunes[:runeIdxStart]) +
+		"<<ENTITY:" + entityName + ">>" +
+		string(snippetRunes[runeIdxStart:runeIdxEnd]) +
+		"<</ENTITY>>" +
+		string(snippetRunes[runeIdxEnd:])
+
+	return result
 }
 
 func byteOffsetToRuneIndex(text string, offset int) int {
