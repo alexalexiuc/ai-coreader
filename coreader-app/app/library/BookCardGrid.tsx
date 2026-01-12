@@ -48,7 +48,7 @@ export function BookCardGrid({ book, onTogglePin }: BookCardGridProps) {
           {(isReading || isFinished) && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>{isFinished ? 'Finished' : 'Progress'}</span>
+                <span>{isFinished ? 'Finished' : 'Reading Progress'}</span>
                 <span>{pct}%</span>
               </div>
               <div className="mt-2 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">

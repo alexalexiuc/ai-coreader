@@ -29,7 +29,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: 'lastOpened', label: 'Last opened' },
   { key: 'recentlyAdded', label: 'Recently added' },
   { key: 'title', label: 'Title A-Z' },
-  { key: 'progress', label: 'Progress' },
+  { key: 'progress', label: 'Reading Progress' },
 ];
 
 const ViewToggleOptions = [
@@ -94,7 +94,7 @@ export default function LibraryClientPage({ initialBooks }: LibraryClientPagePro
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-40" />
+            <Select value={sort} onChange={setSort} options={SORTS} aria-label="Sort" className="w-40 text-nowrap" />
             <ViewToggle<'grid' | 'list'> value={view} onChange={setView} options={ViewToggleOptions} />
           </div>
         </div>
