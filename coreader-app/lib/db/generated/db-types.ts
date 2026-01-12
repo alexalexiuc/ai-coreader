@@ -126,11 +126,11 @@ export interface BooksDoc {
 }
 
 /**
- * LLM-generated description of a book entity (character, place, spell, etc.)
+ * Canonical entity record with consolidated description per book
  */
-export interface EntityDescriptionsDoc {
+export interface EntitiesDoc {
   /**
-   * Entity description unique identifier
+   * Entity unique identifier
    */
   _id?: ObjectId;
   /**
@@ -146,41 +146,120 @@ export interface EntityDescriptionsDoc {
    */
   bookId: ObjectId;
   /**
-   * Reference to the originating book chunk
+   * Canonical name of the entity
    */
-  bookChunkId: ObjectId;
+  nameCanonical: string;
   /**
-   * References to book chunks where the entity is found
-   */
-  bookChunkIds?: ObjectId[];
-  /**
-   * Entity name
-   */
-  name: string;
-  /**
-   * Entity type (character, place, spell, etc.)
+   * Entity type (character, place, organization, artifact, event, work, other)
    */
   type: string;
   /**
-   * LLM-generated summary of the entity
+   * Alternative names for the entity
    */
-  summary?: string;
+  aliases?: string[];
   /**
-   * Narrative role of the entity
+   * Total number of mentions across all chunks
    */
-  role?: string;
+  mentionCount?: number;
   /**
-   * List of notable traits
+   * Index of the first chunk where entity appears
    */
-  traits?: string[];
+  firstSeenChunkIndex?: number;
   /**
-   * Important locations associated with the entity
+   * Index of the last chunk where entity appears
    */
-  importantLocations?: string[];
+  lastSeenChunkIndex?: number;
   /**
-   * Important relationships with other entities
+   * Current consolidated description of the entity
    */
-  importantRelationships?: string[];
+  descriptionCurrent?: string;
+  /**
+   * Version number for the description
+   */
+  descriptionVersion?: number;
+  /**
+   * List of key facts about the entity
+   */
+  keyFacts?: string[];
+  /**
+   * List of unclear or contradictory aspects
+   */
+  uncertainties?: string[];
+}
+
+/**
+ * Individual entity mention within a chunk with extracted facts
+ */
+export interface EntityMentionsDoc {
+  /**
+   * Mention unique identifier
+   */
+  _id?: ObjectId;
+  /**
+   * Creation timestamp
+   */
+  createdAt: Date;
+  /**
+   * Last update timestamp
+   */
+  updatedAt: Date;
+  /**
+   * Reference to the parent book
+   */
+  bookId: ObjectId;
+  /**
+   * Reference to the canonical entity
+   */
+  entityId: ObjectId;
+  /**
+   * Reference to the chunk where entity is mentioned
+   */
+  chunkId: ObjectId;
+  /**
+   * Index of the chunk in the book
+   */
+  chunkIndex: number;
+  /**
+   * The actual text form of the entity mention
+   */
+  surfaceForm: string;
+  /**
+   * Character offsets of mentions within the chunk
+   */
+  offsets?: number[];
+  /**
+   * Text snippet around the mention for context
+   */
+  snippet?: string;
+  /**
+   * Array of extracted facts from this mention
+   */
+  factsExtracted?: {
+    /**
+     * Type of fact (role, trait, appearance, relationship, event, location, other)
+     */
+    factType: string;
+    /**
+     * The fact value (can be string or object)
+     */
+    value: string;
+    /**
+     * Confidence score 0-1
+     */
+    confidence: number;
+    /**
+     * Short quote from snippet supporting the fact
+     */
+    evidence?: string;
+    /**
+     * Hash for deduplication
+     */
+    hash?: string;
+  }[];
+  /**
+   * Overall confidence for this mention
+   */
+  confidence?: number;
 }
 
 /**

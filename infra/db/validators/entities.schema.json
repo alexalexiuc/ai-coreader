@@ -1,0 +1,80 @@
+{
+  "title": "EntitiesDoc",
+  "description": "Canonical entity record with consolidated description per book",
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "updatedAt",
+    "bookId",
+    "nameCanonical",
+    "type"
+  ],
+  "properties": {
+    "_id": {
+      "description": "Entity unique identifier",
+      "bsonType": "objectId"
+    },
+    "createdAt": {
+      "description": "Creation timestamp",
+      "bsonType": "date"
+    },
+    "updatedAt": {
+      "description": "Last update timestamp",
+      "bsonType": "date"
+    },
+    "bookId": {
+      "description": "Reference to the parent book",
+      "bsonType": "objectId"
+    },
+    "nameCanonical": {
+      "description": "Canonical name of the entity",
+      "bsonType": "string"
+    },
+    "type": {
+      "description": "Entity type (character, place, organization, artifact, event, work, other)",
+      "bsonType": "string"
+    },
+    "aliases": {
+      "description": "Alternative names for the entity",
+      "items": {
+        "bsonType": "string"
+      },
+      "bsonType": "array"
+    },
+    "mentionCount": {
+      "description": "Total number of mentions across all chunks",
+      "bsonType": "int"
+    },
+    "firstSeenChunkIndex": {
+      "description": "Index of the first chunk where entity appears",
+      "bsonType": "int"
+    },
+    "lastSeenChunkIndex": {
+      "description": "Index of the last chunk where entity appears",
+      "bsonType": "int"
+    },
+    "descriptionCurrent": {
+      "description": "Current consolidated description of the entity",
+      "bsonType": "string"
+    },
+    "descriptionVersion": {
+      "description": "Version number for the description",
+      "bsonType": "int"
+    },
+    "keyFacts": {
+      "description": "List of key facts about the entity",
+      "items": {
+        "bsonType": "string"
+      },
+      "bsonType": "array"
+    },
+    "uncertainties": {
+      "description": "List of unclear or contradictory aspects",
+      "items": {
+        "bsonType": "string"
+      },
+      "bsonType": "array"
+    }
+  },
+  "bsonType": "object"
+}

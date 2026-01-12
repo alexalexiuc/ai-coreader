@@ -10,36 +10,6 @@ import (
 	"strings"
 )
 
-// DescribeEntity analyzes entity context and returns a structured description.
-// This is a helper function that works with any Client implementation.
-func DescribeEntity(ctx context.Context, client LLMClient, in EntityDescriptionInput) (*EntityDescription, error) {
-	prompt := buildEntityDescriptionPrompt(in)
-
-	options := Options{
-		Temperature: 0.1,
-		Format:      EntityDescriptionFormat(),
-	}
-
-	response, err := client.GenerateCompletion(ctx, prompt, options)
-	logRequest(ctx, "DescribeEntity", prompt, &options, response, err)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse the model's response as JSON into EntityDescription
-	var desc EntityDescription
-	if err := json.Unmarshal([]byte(response), &desc); err != nil {
-		return nil, fmt.Errorf("parse llm JSON: %w\nraw=%s", err, response)
-	}
-
-	// If model didn't fill name, set it from input
-	if desc.Name == "" {
-		desc.Name = in.EntityName
-	}
-
-	return &desc, nil
-}
-
 // AnalyzeChunk sends a TextChunk to the LLM and returns structured metadata.
 // This is a helper function that works with any Client implementation.
 func AnalyzeChunk(ctx context.Context, client LLMClient, bookTitle string, chunk string) (*ChunkLLMMetadata, error) {
@@ -106,50 +76,6 @@ func GenerateEmbedding(ctx context.Context, client LLMClient, text string) ([]fl
 	return response, err
 }
 
-// =======================
-// Prompt builders
-// =======================
-
-func buildEntityDescriptionPrompt(in EntityDescriptionInput) string {
-	entityLabel := in.EntityName
-	if in.EntityType != "" {
-		entityLabel = fmt.Sprintf("%s (%s)", in.EntityName, in.EntityType)
-	}
-
-	bookPart := ""
-	if in.BookTitle != "" {
-		bookPart = fmt.Sprintf(" from the book \"%s\"", in.BookTitle)
-	}
-
-	setup := "You are an assistant that summarizes entities in books. Entities can be characters, places, songs, artifacts, organizations, events, works, or other notable concepts."
-	tasks := []string{
-		"Read the provided context carefully.",
-		fmt.Sprintf("Describe the entity \"%s\"%s.", entityLabel, bookPart),
-		"Focus on what this entity is, why it matters, and how it is portrayed in the context.",
-		"Use ONLY the information in the context; do not add outside knowledge or guesses.",
-	}
-	schema := `STRICTLY a JSON object with this schema (no extra text):
-
-{
-  "name": string,
-  "summary": string,
-  "role": string,
-  "traits": string[],
-  "importantLocations": string[],
-  "importantRelationships": string[]
-}`
-	rules := []string{
-		"\"summary\" is a concise, neutral description (2-4 sentences max) grounded in the context.",
-		"\"role\" is a short phrase capturing why the entity matters (e.g. \"main protagonist\", \"capital city\", \"anthem song\", \"legendary artifact\", \"secretive organization\").",
-		"\"traits\" lists key attributes or properties (for non-people, note defining qualities like \"ancient\", \"enchanted\", \"fortified\").",
-		"\"importantLocations\" lists places strongly tied to the entity (for locations, list notable sub-areas; for songs/artifacts/organizations, list places where they appear or are stored).",
-		"\"importantRelationships\" lists other entities meaningfully connected to this one (people, places, groups, or artifacts).",
-		"If some fields are unknown, use empty string or empty array.",
-	}
-
-	return buildPrompt(setup, tasks, PromptChunk{Label: "Context", Text: in.Context}, schema, rules)
-}
-
 func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	bookPart := ""
 	if strings.TrimSpace(bookTitle) != "" {
@@ -176,6 +102,10 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	rules := []string{
 		"Only include entities that are explicitly named or titled (proper nouns, capitalized names, or quoted titles).",
 		"Ignore generic objects, common nouns, plants/animals/food, or one-off incidental items unless they are uniquely named.",
+		"Be CONSERVATIVE: do not extract vague, ambiguous, or overly generic entities (like \"the wizard\", \"the city\", \"the organization\").",
+		"Require specific names: \"Gandalf\" (not \"the wizard\"), \"London\" (not \"the city\"), \"Hogwarts\" (not \"the school\").",
+		"Skip pronouns, job titles, family relations (\"his brother\", \"the captain\") unless used as proper names.",
+		"Skip common items, everyday objects, body parts, weather, emotions, or abstract concepts unless they are uniquely named (e.g., \"The Dark Mark\" is okay, \"darkness\" is not).",
 		"type MUST be exactly one of the allowed strings above. If unsure, set type = \"other\"",
 		"Each entity should be listed only ONCE with its name and type.",
 		"If no entities are found, use an empty array for \"entities\".",

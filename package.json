@@ -28,6 +28,7 @@
     "db:reset": "npm run db:drop && npm run db:migrate",
     "infra:reset": "bash ./scripts/reset-infra.sh",
     "infra:reset:win": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-infra.ps1",
+    "check:invalid-utf8": "node ./scripts/check-invalid-utf8.cjs",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -35,11 +36,23 @@
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
     "json-schema-to-typescript": "^15.0.4",
+    "lint-staged": "^16.2.7",
     "mongodb": "^7.0.0",
     "prettier": "^3.7.4",
     "quicktype": "^23.2.6"
   },
   "dependencies": {
     "dotenv-mono": "^1.5.1"
+  },
+  "lint-staged": {
+    "coreader-app/**/*.{ts,tsx,js,jsx,json,md}": [
+      "prettier --write"
+    ],
+    "coreader-app/**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "coreader-worker/**/*.go": [
+      "goimports -w"
+    ]
   }
 }

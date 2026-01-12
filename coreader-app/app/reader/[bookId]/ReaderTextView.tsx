@@ -225,16 +225,15 @@ function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) 
 function EntityDetails({ description }: { description: NonNullable<BlockEntity['description']> }) {
   return (
     <div className="mt-3 space-y-2 text-sm">
-      {description.summary && <p className="text-slate-100">{description.summary}</p>}
-      {description.role && (
+      {description.descriptionCurrent && <p className="text-slate-100">{description.descriptionCurrent}</p>}
+      {description.aliases && description.aliases.length > 0 && (
         <p className="text-slate-200">
-          <span className="text-slate-400">Role: </span>
-          {description.role}
+          <span className="text-slate-400">Also known as: </span>
+          {description.aliases.join(', ')}
         </p>
       )}
-      {renderList('Traits', description.traits)}
-      {renderList('Locations', description.importantLocations)}
-      {renderList('Relationships', description.importantRelationships)}
+      {renderList('Key Facts', description.keyFacts)}
+      {renderList('Uncertainties', description.uncertainties)}
     </div>
   );
 }

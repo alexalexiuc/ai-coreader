@@ -320,57 +320,76 @@ const bookChunks = [
   },
 ];
 
-const entityDescriptions = [
+const entities = [
   {
     _id: entityIds.rin,
     createdAt: primaryDate,
     updatedAt: primaryDate,
     bookId: bookIds.emberArchive,
-    bookChunkId: chunkIds.emberArchiveIntro,
-    name: "Rin Calder",
+    nameCanonical: "Rin Calder",
     type: "character",
-    summary:
+    aliases: ["Rin"],
+    mentionCount: new Int32(2),
+    firstSeenChunkIndex: new Int32(0),
+    lastSeenChunkIndex: new Int32(1),
+    descriptionCurrent:
       "An archivist who safeguards stories rescued from the ashes. Meticulous and steady, Rin prefers lantern-lit stacks to crowded markets.",
-    role: "archivist",
-    traits: ["curious", "methodical"],
-    importantLocations: ["Ashen Library", "Ember Archive"],
-    importantRelationships: ["Mentored by Archivist Mael"],
+    descriptionVersion: new Int32(1),
+    keyFacts: [
+      "Role: archivist",
+      "Traits: curious, methodical",
+      "Locations: Ashen Library, Ember Archive",
+      "Mentored by Archivist Mael",
+    ],
   },
   {
     _id: entityIds.theAtlas,
     createdAt: secondaryDate,
     updatedAt: secondaryDate,
     bookId: bookIds.atlasNotes,
-    bookChunkId: chunkIds.emberArchiveField,
-    name: "Atlas of Rivers",
+    nameCanonical: "Atlas of Rivers",
     type: "artifact",
-    summary:
+    mentionCount: new Int32(1),
+    firstSeenChunkIndex: new Int32(1),
+    lastSeenChunkIndex: new Int32(1),
+    descriptionCurrent:
       "A stitched collection of annotated river charts rumored to predict seasonal shifts. Traveling cartographers copy fragments to stay ahead of flooding routes.",
-    traits: ["waterlogged cover", "handwritten marginalia"],
-    importantLocations: ["Ashen Library"],
-    importantRelationships: ["Referenced alongside the Surveyor's Almanac"],
+    descriptionVersion: new Int32(1),
+    keyFacts: [
+      "Physical traits: waterlogged cover, handwritten marginalia",
+      "Location: Ashen Library",
+      "Referenced alongside the Surveyor's Almanac",
+    ],
   },
   {
     _id: entityIds.emberArchive,
     createdAt: primaryDate,
     updatedAt: primaryDate,
     bookId: bookIds.emberArchive,
-    bookChunkId: chunkIds.emberArchiveIntro,
-    name: "Ember Archive",
+    nameCanonical: "Ember Archive",
     type: "place",
-    summary: "A storied repository of ash-scarred manuscripts and maps.",
-    traits: ["dusty vaults", "sealed stacks"],
+    mentionCount: new Int32(1),
+    firstSeenChunkIndex: new Int32(0),
+    lastSeenChunkIndex: new Int32(0),
+    descriptionCurrent:
+      "A storied repository of ash-scarred manuscripts and maps.",
+    descriptionVersion: new Int32(1),
+    keyFacts: ["Features: dusty vaults, sealed stacks"],
   },
   {
     _id: entityIds.northernRanges,
     createdAt: secondaryDate,
     updatedAt: secondaryDate,
     bookId: bookIds.atlasNotes,
-    bookChunkId: chunkIds.atlasNotesOverview,
-    name: "northern ranges",
+    nameCanonical: "northern ranges",
     type: "place",
-    summary: "A mountainous stretch marked by seasonal storms and miner camps.",
-    traits: ["storm-prone", "remote"],
+    mentionCount: new Int32(1),
+    firstSeenChunkIndex: new Int32(0),
+    lastSeenChunkIndex: new Int32(0),
+    descriptionCurrent:
+      "A mountainous stretch marked by seasonal storms and miner camps.",
+    descriptionVersion: new Int32(1),
+    keyFacts: ["Characteristics: storm-prone, remote"],
   },
 ];
 
@@ -409,8 +428,6 @@ module.exports.seed = async (db) => {
   await db.collection("files").insertMany(files, { ordered: true });
   await db.collection("books").insertMany(books, { ordered: true });
   await db.collection("books-chunks").insertMany(bookChunks, { ordered: true });
-  await db
-    .collection("entity-descriptions")
-    .insertMany(entityDescriptions, { ordered: true });
+  await db.collection("entities").insertMany(entities, { ordered: true });
   await db.collection("user-books").insertMany(userBooks, { ordered: true });
 };

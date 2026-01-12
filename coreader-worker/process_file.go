@@ -79,13 +79,6 @@ func (w *Worker) ProcessFile(ctx context.Context, file *FilesDoc) error {
 func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *ErrorInfo {
 	ctx = llm.WithRequestLogger(ctx, generateSessionID(file.StorageName))
 
-	type entityRecord struct {
-		Name string
-		Type string
-		ID   primitive.ObjectID
-	}
-	insertedEntities := make([]entityRecord, 0)
-
 	// Track chapters found across all chunks
 	allChapterOccurrences := make([]chapterOccurrence, 0)
 
@@ -252,64 +245,19 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 			}
 		}
 
-		// Store entities in the database collection and capture IDs on the chunk refs.
+		// Store entity references on the chunk (entities collection will be created during post-processing)
 		entitiesWithIDs := make([]ChunkEntityRef, 0, len(chunkEntities.Entities))
 		for _, llmEntity := range chunkEntities.Entities {
-			entityID := primitive.NilObjectID
-			entityCreated := false
-			for _, inserted := range insertedEntities {
-				if inserted.Name == llmEntity.Name && inserted.Type == llmEntity.Type {
-					entityID = inserted.ID
-					break
-				}
-			}
-			if entityID == primitive.NilObjectID {
-				createdEntity, err := w.db.CreateEntityDescriptionDoc(&EntityDescriptionsDoc{
-					BookID:       book.ID,
-					BookChunkID:  chunk.ID,
-					BookChunkIds: []primitive.ObjectID{chunk.ID},
-					Name:         llmEntity.Name,
-					Type:         llmEntity.Type,
-					Summary:      "", // Will be filled later with more detailed analysis
-				})
-				if err != nil {
-					return &ErrorInfo{
-						RawError:        fmt.Errorf("failed to create entity description: %w", err),
-						FriendlyMessage: "Failed to create entity description",
-						BookID:          &bookID,
-					}
-				}
-				entityID = createdEntity.ID
-				insertedEntities = append(insertedEntities, entityRecord{
-					Name: llmEntity.Name,
-					Type: llmEntity.Type,
-					ID:   createdEntity.ID,
-				})
-				log.Printf("Created new entity: %s (%s)", llmEntity.Name, llmEntity.Type)
-				entityCreated = true
-			}
-
-			if !entityCreated {
-				if err := w.db.AddChunkToEntityDescription(entityID, chunk.ID); err != nil {
-					return &ErrorInfo{
-						RawError:        fmt.Errorf("failed to update entity chunk references: %w", err),
-						FriendlyMessage: "Failed to update entity references",
-						BookID:          &bookID,
-					}
-				}
-			}
-
 			startOffsets := llmEntity.StartOffsets
 			if startOffsets == nil {
 				startOffsets = []int{}
 			}
-			dbEntity := ChunkEntityRef{
-				EntityID:     entityID,
+			entitiesWithIDs = append(entitiesWithIDs, ChunkEntityRef{
+				EntityID:     primitive.NilObjectID, // Will be populated during post-processing
 				Name:         llmEntity.Name,
 				Type:         llmEntity.Type,
 				StartOffsets: startOffsets,
-			}
-			entitiesWithIDs = append(entitiesWithIDs, dbEntity)
+			})
 		}
 
 		// Update book chunk with LLM metadata
@@ -380,6 +328,15 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 			FriendlyMessage: "Failed to finalize book record",
 			BookID:          &bookID,
 		}
+	}
+
+	// Post-process entity descriptions
+	log.Printf("Starting entity post-processing for book %s", book.ID.Hex())
+	if err := w.PostProcessEntityDescriptions(ctx, book.ID); err != nil {
+		log.Printf("Warning: Entity post-processing failed for book %s: %v", book.ID.Hex(), err)
+		// Non-fatal: we still mark the file as processed
+	} else {
+		log.Printf("Successfully completed entity post-processing for book %s", book.ID.Hex())
 	}
 
 	// Update file status in DB

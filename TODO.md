@@ -24,3 +24,22 @@
 - [coreader-app]: If book has no name, but it is being processed, show "Processing..." instead of "Untitled".
 - [coreader-worker]: Improve chapter detection when processing chunks. Currently we pick the middle occurrence of chapter headings, but we can do better by avoiding first and last if there are multiple occurrences.
 - [coreader-worker]: When we got chapters, sometimes there may be intruders. Either ask AI to exclude intruders from chapters list or implement an algorithm that will only determine chapters based on certain patterns (e.g. "Chapter X", "CHAPTER X", etc.)
+
+- Post Processing
+  - [coreader-worker]: ~~Replace character-window snippet extraction with sentence-window extraction centered on each entity mention offset~~ ✅ Completed
+  - [coreader-worker]: Append to current chunk one proposition from previous chunk and one from next chunk to improve sentence boundary detection
+  - [coreader-worker]: ~~Ensure every generated snippet always contains the entity surface form or the exact rune span around the mention offset~~ ✅ Completed
+  - [coreader-worker]: ~~Prevent snippet boundary logic from trimming away the entity mention when adjusting to word/sentence boundaries~~ ✅ Completed
+  - [coreader-worker]: ~~Normalize snippet text before sending it to the LLM (collapse newlines and repeated whitespace, trim)~~ ✅ Completed
+  - [coreader-worker]: ~~Add optional LLM-only entity anchor markers (e.g. <<ENTITY:NAME>>) around the mention nearest the offset~~ ✅ Completed
+  - [coreader-worker]: ~~Avoid spanning min→max offsets when an entity appears far apart in the same chunk; prefer the earliest or most informative mention~~ ✅ Completed
+  - [coreader-worker]: ~~Cap LLM input snippet length and fall back to the sentence containing the earliest mention when exceeded~~ ✅ Completed
+  - [coreader-worker]: ~~Sort extracted facts by confidence (and secondary heuristics) before selecting top facts for distillation~~ ✅ Completed
+  - [coreader-worker]: ~~Prefer fact-rich snippets (those producing high-confidence facts) when selecting snippets for distillation~~ ✅ Completed
+  - [coreader-worker]: ~~Always include the earliest entity introduction snippet in distillation input~~ ✅ Completed
+  - [coreader-worker]: ~~Deduplicate snippets used for distillation (exact and near-duplicate after normalization)~~ ✅ Completed
+  - [coreader-worker]: ~~Tighten fact-extraction prompt rules to forbid absence claims unless explicitly stated in the snippet~~ ✅ Completed
+  - [coreader-worker]: ~~Strengthen entity discovery assumptions to keep extraction conservative and avoid noisy or generic entities~~ ✅ Completed
+  - [coreader-worker]: ~~Preserve exact entity surface forms from discovery through snippet extraction for reliable anchoring~~ ✅ Completed
+  - [coreader-worker]: ~~Add small unit tests for sentence boundary detection and the "snippet contains entity mention" invariant~~ ✅ Completed
+  - [coreader-worker]: ~~If in a chunk we meet entity in multiple places, make sure we take all occurrences into account when extracting snippets~~ ✅ Completed (all offsets stored, earliest used for snippet extraction)

@@ -9,7 +9,7 @@ test('converts chunk text and applies entity offsets', () => {
     { entityId: 'ent2', name: 'Alice', type: 'person', startOffsets: [0] },
   ];
 
-  const description: EntityDescription = { id: 'ent1', name: 'Bob', type: 'person', summary: 'Loves coding.' };
+  const description: EntityDescription = { id: 'ent1', nameCanonical: 'Bob', type: 'person', descriptionCurrent: 'Loves coding.' };
   const blocks = chunkToBlocks(text, 0, entities, new Map([[description.id, description]]));
 
   expect(blocks).toHaveLength(1);
@@ -21,7 +21,7 @@ test('converts chunk text and applies entity offsets', () => {
   const bob = block.entities?.find((e) => e.entityId === 'ent1');
   expect(bob?.start).toBe(25);
   expect(bob?.length).toBe(3);
-  expect(bob?.description?.summary).toBe('Loves coding.');
+  expect(bob?.description?.descriptionCurrent).toBe('Loves coding.');
 
   const alice = block.entities?.find((e) => e.entityId === 'ent2');
   expect(alice?.start).toBe(0);

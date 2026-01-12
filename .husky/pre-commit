@@ -1,9 +1,5 @@
 
-cd coreader-app
-npm run lint-staged
-npm run typecheck
+npx lint-staged
 
-cd ..
-cd coreader-worker
-goimports -w .
-git add .
+cd coreader-app
+npm run typecheck

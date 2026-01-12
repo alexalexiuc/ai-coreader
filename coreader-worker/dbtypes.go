@@ -7,9 +7,8 @@ Do not modify it by hand
 package main
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type ChunkEntityRef struct {
@@ -55,20 +54,42 @@ type BooksDoc struct {
 	} `bson:"chapters,omitempty" json:"chapters,omitempty"`
 }
 
-type EntityDescriptionsDoc struct {
-	ID                     primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
-	CreatedAt              time.Time            `bson:"createdAt" json:"createdAt"`
-	UpdatedAt              time.Time            `bson:"updatedAt" json:"updatedAt"`
-	BookID                 primitive.ObjectID   `bson:"bookId" json:"bookId"`
-	BookChunkID            primitive.ObjectID   `bson:"bookChunkId" json:"bookChunkId"`
-	BookChunkIds           []primitive.ObjectID `bson:"bookChunkIds,omitempty" json:"bookChunkIds,omitempty"`
-	Name                   string               `bson:"name" json:"name"`
-	Type                   string               `bson:"type" json:"type"`
-	Summary                string               `bson:"summary,omitempty" json:"summary,omitempty"`
-	Role                   string               `bson:"role,omitempty" json:"role,omitempty"`
-	Traits                 []string             `bson:"traits,omitempty" json:"traits,omitempty"`
-	ImportantLocations     []string             `bson:"importantLocations,omitempty" json:"importantLocations,omitempty"`
-	ImportantRelationships []string             `bson:"importantRelationships,omitempty" json:"importantRelationships,omitempty"`
+type EntitiesDoc struct {
+	ID                  primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt           time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt           time.Time          `bson:"updatedAt" json:"updatedAt"`
+	BookID              primitive.ObjectID `bson:"bookId" json:"bookId"`
+	NameCanonical       string             `bson:"nameCanonical" json:"nameCanonical"`
+	Type                string             `bson:"type" json:"type"`
+	Aliases             []string           `bson:"aliases,omitempty" json:"aliases,omitempty"`
+	MentionCount        int                `bson:"mentionCount,omitempty" json:"mentionCount,omitempty"`
+	FirstSeenChunkIndex int                `bson:"firstSeenChunkIndex,omitempty" json:"firstSeenChunkIndex,omitempty"`
+	LastSeenChunkIndex  int                `bson:"lastSeenChunkIndex,omitempty" json:"lastSeenChunkIndex,omitempty"`
+	DescriptionCurrent  string             `bson:"descriptionCurrent,omitempty" json:"descriptionCurrent,omitempty"`
+	DescriptionVersion  int                `bson:"descriptionVersion,omitempty" json:"descriptionVersion,omitempty"`
+	KeyFacts            []string           `bson:"keyFacts,omitempty" json:"keyFacts,omitempty"`
+	Uncertainties       []string           `bson:"uncertainties,omitempty" json:"uncertainties,omitempty"`
+}
+
+type EntityMentionsDoc struct {
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	CreatedAt      time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt      time.Time          `bson:"updatedAt" json:"updatedAt"`
+	BookID         primitive.ObjectID `bson:"bookId" json:"bookId"`
+	EntityID       primitive.ObjectID `bson:"entityId" json:"entityId"`
+	ChunkID        primitive.ObjectID `bson:"chunkId" json:"chunkId"`
+	ChunkIndex     int                `bson:"chunkIndex" json:"chunkIndex"`
+	SurfaceForm    string             `bson:"surfaceForm" json:"surfaceForm"`
+	Offsets        []int              `bson:"offsets,omitempty" json:"offsets,omitempty"`
+	Snippet        string             `bson:"snippet,omitempty" json:"snippet,omitempty"`
+	FactsExtracted []struct {
+		FactType   string  `bson:"factType" json:"factType"`
+		Value      string  `bson:"value" json:"value"`
+		Confidence float64 `bson:"confidence" json:"confidence"`
+		Evidence   string  `bson:"evidence,omitempty" json:"evidence,omitempty"`
+		Hash       string  `bson:"hash,omitempty" json:"hash,omitempty"`
+	} `bson:"factsExtracted,omitempty" json:"factsExtracted,omitempty"`
+	Confidence float64 `bson:"confidence,omitempty" json:"confidence,omitempty"`
 }
 
 type FilesDoc struct {
