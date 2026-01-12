@@ -9,14 +9,6 @@ type JSONSchemaFormat struct {
 	Schema      any
 }
 
-func EntityDescriptionFormat() *JSONSchemaFormat {
-	return &JSONSchemaFormat{
-		Name:        "entity_description",
-		Description: "Strict JSON output for entity description",
-		Schema:      entityDescriptionSchema(),
-	}
-}
-
 func ChunkMetadataFormat() *JSONSchemaFormat {
 	return &JSONSchemaFormat{
 		Name:        "chunk_metadata",
@@ -54,11 +46,6 @@ func EntityDistillationFormat() *JSONSchemaFormat {
 func InferJSONSchemaFromPrompt(prompt string) *JSONSchemaFormat {
 	p := strings.ToLower(prompt)
 
-	// Entity description prompt
-	if strings.Contains(p, `"importantlocations"`) && strings.Contains(p, `"importantrelationships"`) {
-		return EntityDescriptionFormat()
-	}
-
 	// Chunk analysis prompt
 	if strings.Contains(p, `"chapters"`) && strings.Contains(p, `"entities"`) {
 		return ChunkMetadataFormat()
@@ -70,38 +57,6 @@ func InferJSONSchemaFromPrompt(prompt string) *JSONSchemaFormat {
 	}
 
 	return nil
-}
-
-func entityDescriptionSchema() any {
-	return map[string]any{
-		"type":                 "object",
-		"additionalProperties": false,
-		"required": []string{
-			"name",
-			"summary",
-			"role",
-			"traits",
-			"importantLocations",
-			"importantRelationships",
-		},
-		"properties": map[string]any{
-			"name":    map[string]any{"type": "string"},
-			"summary": map[string]any{"type": "string"},
-			"role":    map[string]any{"type": "string"},
-			"traits": map[string]any{
-				"type":  "array",
-				"items": map[string]any{"type": "string"},
-			},
-			"importantLocations": map[string]any{
-				"type":  "array",
-				"items": map[string]any{"type": "string"},
-			},
-			"importantRelationships": map[string]any{
-				"type":  "array",
-				"items": map[string]any{"type": "string"},
-			},
-		},
-	}
 }
 
 func chunkMetadataSchema() any {

@@ -4,24 +4,6 @@ import (
 	"context"
 )
 
-// EntityDescriptionInput describes what we send into the LLM to describe an entity.
-type EntityDescriptionInput struct {
-	EntityName string
-	EntityType string // optional, e.g. "character", "place"
-	BookTitle  string // optional, just for nicer prompts
-	Context    string // text from chunks (already concatenated)
-}
-
-// EntityDescription is what we expect back from the LLM as JSON.
-type EntityDescription struct {
-	Name                   string   `json:"name"`
-	Summary                string   `json:"summary"`
-	Role                   string   `json:"role,omitempty"`
-	Traits                 []string `json:"traits,omitempty"`
-	ImportantLocations     []string `json:"importantLocations,omitempty"`
-	ImportantRelationships []string `json:"importantRelationships,omitempty"`
-}
-
 // BookHeaderMetadata represents metadata extracted from the book header.
 type BookHeaderMetadata struct {
 	HasHeader bool   `json:"hasHeader"`
