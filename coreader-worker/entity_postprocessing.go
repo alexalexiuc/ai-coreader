@@ -523,8 +523,8 @@ func (w *Worker) distillEntityDescription(ctx context.Context, bookID primitive.
 	// Sort facts by confidence (descending) before selection
 	selectedFacts := selectTopFacts(facts, MAX_FACTS_FOR_DISTILLATION)
 
-	// Select snippets: prioritize early mentions
-	selectedSnippets := selectSnippets(mentions, allSnippets, MAX_SNIPPETS_FOR_DISTILLATION)
+	// Select snippets: prefer fact-rich snippets and early mentions
+	selectedSnippets := selectFactRichSnippets(mentions, MAX_SNIPPETS_FOR_DISTILLATION)
 
 	// Call LLM to distill description
 	input := llm.EntityDistillationInput{
@@ -575,6 +575,87 @@ func sortFactsByConfidence(facts []llm.EntityFact) {
 			if facts[j].Confidence < facts[j+1].Confidence ||
 				(facts[j].Confidence == facts[j+1].Confidence && facts[j].FactType > facts[j+1].FactType) {
 				facts[j], facts[j+1] = facts[j+1], facts[j]
+			}
+		}
+	}
+}
+
+// Score each mention by fact richness
+type scoredMention struct {
+	mention *EntityMentionsDoc
+	score   float64
+}
+
+// selectFactRichSnippets prefers snippets with high-confidence facts and early mentions
+func selectFactRichSnippets(mentions []EntityMentionsDoc, maxCount int) []string {
+	if len(mentions) <= maxCount {
+		// Return all snippets
+		snippets := make([]string, 0, len(mentions))
+		for _, m := range mentions {
+			if m.Snippet != "" {
+				snippets = append(snippets, m.Snippet)
+			}
+		}
+		return snippets
+	}
+
+	scored := make([]scoredMention, 0, len(mentions))
+	for i := range mentions {
+		score := calculateMentionScore(&mentions[i], i, len(mentions))
+		if mentions[i].Snippet != "" {
+			scored = append(scored, scoredMention{mention: &mentions[i], score: score})
+		}
+	}
+
+	// Sort by score descending
+	sortScoredMentions(scored)
+
+	// Select top maxCount
+	selected := make([]string, 0, maxCount)
+	for i := 0; i < maxCount && i < len(scored); i++ {
+		selected = append(selected, scored[i].mention.Snippet)
+	}
+
+	return selected
+}
+
+// calculateMentionScore scores a mention based on fact count, confidence, and position
+func calculateMentionScore(mention *EntityMentionsDoc, position, total int) float64 {
+	score := 0.0
+
+	// Factor 1: Number of facts (weight: 1.0 per fact)
+	factCount := float64(len(mention.FactsExtracted))
+	score += factCount * 1.0
+
+	// Factor 2: Average confidence of facts (weight: 2.0)
+	if len(mention.FactsExtracted) > 0 {
+		totalConf := 0.0
+		for _, fact := range mention.FactsExtracted {
+			totalConf += fact.Confidence
+		}
+		avgConf := totalConf / float64(len(mention.FactsExtracted))
+		score += avgConf * 2.0
+	}
+
+	// Factor 3: Early position bonus (weight: 1.0 for first mention, decaying)
+	// First 3 mentions get bonus: 1.0, 0.7, 0.4
+	if position < EARLY_MENTION_COUNT {
+		earlyBonus := 1.0 - (float64(position) * 0.3)
+		if earlyBonus > 0 {
+			score += earlyBonus
+		}
+	}
+
+	return score
+}
+
+// sortScoredMentions sorts in-place by score descending
+func sortScoredMentions(scored []scoredMention) {
+	n := len(scored)
+	for i := 0; i < n-1; i++ {
+		for j := 0; j < n-i-1; j++ {
+			if scored[j].score < scored[j+1].score {
+				scored[j], scored[j+1] = scored[j+1], scored[j]
 			}
 		}
 	}
