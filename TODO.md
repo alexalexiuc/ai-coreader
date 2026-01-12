@@ -37,7 +37,7 @@
   - [coreader-worker]: ~~Sort extracted facts by confidence (and secondary heuristics) before selecting top facts for distillation~~ ✅ Completed
   - [coreader-worker]: ~~Prefer fact-rich snippets (those producing high-confidence facts) when selecting snippets for distillation~~ ✅ Completed
   - [coreader-worker]: ~~Always include the earliest entity introduction snippet in distillation input~~ ✅ Completed
-  - [coreader-worker]: Deduplicate snippets used for distillation (exact and near-duplicate after normalization)
+  - [coreader-worker]: ~~Deduplicate snippets used for distillation (exact and near-duplicate after normalization)~~ ✅ Completed
   - [coreader-worker]: Tighten fact-extraction prompt rules to forbid absence claims unless explicitly stated in the snippet
   - [coreader-worker]: Strengthen entity discovery assumptions to keep extraction conservative and avoid noisy or generic entities
   - [coreader-worker]: Preserve exact entity surface forms from discovery through snippet extraction for reliable anchoring

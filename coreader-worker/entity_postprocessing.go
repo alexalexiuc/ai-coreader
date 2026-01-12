@@ -628,7 +628,72 @@ func selectFactRichSnippets(mentions []EntityMentionsDoc, maxCount int) []string
 		selected = append(selected, scored[i].mention.Snippet)
 	}
 
+	// Deduplicate snippets (exact and near-duplicate after normalization)
+	selected = deduplicateSnippets(selected)
+
 	return selected
+}
+
+// deduplicateSnippets removes exact and near-duplicate snippets after normalization
+func deduplicateSnippets(snippets []string) []string {
+	if len(snippets) <= 1 {
+		return snippets
+	}
+
+	seen := make(map[string]bool)
+	unique := make([]string, 0, len(snippets))
+
+	for _, snippet := range snippets {
+		// Normalize for comparison (already normalized, but double-check)
+		normalized := normalizeSnippet(snippet)
+
+		// Check exact match
+		if seen[normalized] {
+			continue
+		}
+
+		// Check near-duplicate by comparing similarity
+		isDuplicate := false
+		for seenSnippet := range seen {
+			if isNearDuplicate(normalized, seenSnippet) {
+				isDuplicate = true
+				break
+			}
+		}
+
+		if !isDuplicate {
+			seen[normalized] = true
+			unique = append(unique, snippet) // Keep original (not normalized) for readability
+		}
+	}
+
+	return unique
+}
+
+// isNearDuplicate checks if two normalized snippets are near-duplicates
+// Uses simple character overlap heuristic
+func isNearDuplicate(s1, s2 string) bool {
+	if s1 == s2 {
+		return true
+	}
+
+	// If one is a substring of the other (90%+ overlap), consider duplicate
+	len1, len2 := len(s1), len(s2)
+	if len1 == 0 || len2 == 0 {
+		return false
+	}
+
+	shorter, longer := s1, s2
+	if len1 > len2 {
+		shorter, longer = s2, s1
+	}
+
+	// If shorter is 90%+ contained in longer, it's a near-duplicate
+	if strings.Contains(longer, shorter) && len(shorter)*10 >= len(longer)*9 {
+		return true
+	}
+
+	return false
 }
 
 // calculateMentionScore scores a mention based on fact count, confidence, and position
