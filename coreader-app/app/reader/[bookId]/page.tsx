@@ -1,9 +1,9 @@
 import { notFound, redirect } from 'next/navigation';
 import ReaderClientPage from './ReaderClientPage';
-import type { Book } from './types';
+import type { Book, Chapter } from './types';
 import { chunkToBlocks, fallbackBlocks } from './chunkUtils';
 import { findBookById } from '@/lib/db/books';
-import { countBookChunks, findBookChunkByIndex } from '@/lib/db/book-chunks';
+import { countBookChunks, findBookChunkByIndex, findBookChunkIndexesByIds } from '@/lib/db/book-chunks';
 import { findEntitiesByIds } from '@/lib/db/entities';
 import { getCurrentUser } from '@/lib/auth/cookies';
 import { userOwnsBook, updateReadingProgress } from '@/lib/db/user-books';
@@ -52,6 +52,21 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
 
   const blocks = chunk ? chunkToBlocks(chunk.text, pageIndex, chunk.entities ?? [], entityMap) : fallbackBlocks(pageIndex);
 
+  const rawChapters = (bookDto.chapters ?? []).slice().sort((a, b) => a.startOffset - b.startOffset);
+  const uniqueChunkIds = Array.from(new Set(rawChapters.map((ch) => ch.chunkId)));
+  const chunkIndexMap = await findBookChunkIndexesByIds(uniqueChunkIds);
+
+  const chapters: Chapter[] = rawChapters.map((ch) => {
+    const chunkIndex = chunkIndexMap.get(ch.chunkId);
+    const pageNumber = typeof chunkIndex === 'number' && Number.isFinite(chunkIndex) ? chunkIndex + 1 : undefined;
+
+    return {
+      id: `${ch.chunkId}:${ch.startOffset}`,
+      title: ch.name,
+      pageNumber,
+    };
+  });
+
   // Update reading progress
   const progressPercent = totalPages > 0 ? Math.round((safePageNumber / totalPages) * 100) : 0;
   await updateReadingProgress(user.id, bookDto.id, {
@@ -65,7 +80,7 @@ export default async function ReaderPage({ params, searchParams }: ReaderPagePro
     title: bookDto.title ?? 'Untitled book',
     author: bookDto.author,
     description: bookDto.description,
-    chapters: [],
+    chapters,
   };
 
   return <ReaderClientPage book={book} blocks={blocks} pageNumber={safePageNumber} totalPages={totalPages} />;

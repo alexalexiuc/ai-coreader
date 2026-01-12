@@ -189,21 +189,40 @@ function OverviewPanel({ book, progressPct, onStart }: { book: Book; progressPct
 }
 
 function TocPanel({ chapters, onJump }: { chapters: Chapter[]; onJump: (ch: Chapter) => void }) {
+  const hasChapters = chapters.length > 0;
   return (
     <div>
       <p className="text-sm font-semibold text-white">Chapters</p>
-      <div className="mt-3 space-y-2">
-        {chapters.map((ch) => (
-          <button
-            key={ch.id}
-            type="button"
-            onClick={() => onJump(ch)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-slate-700"
-          >
-            {ch.title}
-          </button>
-        ))}
-      </div>
+      {!hasChapters ? (
+        <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">No chapters detected.</div>
+      ) : (
+        <div className="mt-3 space-y-2">
+          {chapters.map((ch) => {
+            const isClickable = typeof ch.pageNumber === 'number' || !!ch.blockId;
+            return (
+              <button
+                key={ch.id}
+                type="button"
+                onClick={() => onJump(ch)}
+                disabled={!isClickable}
+                className={clsx(
+                  'w-full rounded-xl border px-4 py-3 text-left text-sm',
+                  isClickable
+                    ? 'border-slate-800 bg-slate-950/50 text-slate-200 hover:border-slate-700'
+                    : 'cursor-not-allowed border-slate-900 bg-slate-950/30 text-slate-500',
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 flex-1 truncate">{ch.title}</span>
+                  {typeof ch.pageNumber === 'number' && Number.isFinite(ch.pageNumber) && ch.pageNumber > 0 && (
+                    <span className="shrink-0 text-[11px] text-slate-500">p. {ch.pageNumber}</span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

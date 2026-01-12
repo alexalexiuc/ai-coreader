@@ -11,6 +11,11 @@ export type BookDTO = {
   year?: string;
   genre?: string;
   description?: string;
+  chapters?: {
+    name: string;
+    chunkId: string;
+    startOffset: number;
+  }[];
   totalChars: number;
   totalChunks: number;
   processed: boolean;
@@ -34,6 +39,11 @@ function toDTO(doc: BooksDoc): BookDTO {
     year: doc.year,
     genre: doc.genre,
     description: doc.description,
+    chapters: doc.chapters?.map((ch) => ({
+      name: ch.name,
+      chunkId: ch.chunkId.toHexString(),
+      startOffset: toNumber(ch.startOffset),
+    })),
     totalChars: toNumber(doc.totalChars),
     totalChunks: toNumber(doc.totalChunks),
     processed: doc.processed,

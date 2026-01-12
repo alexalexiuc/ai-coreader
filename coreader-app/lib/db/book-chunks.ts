@@ -51,6 +51,34 @@ export async function findBookChunkByIndex(bookId: string, index: number): Promi
   return doc ? toDTO(doc) : null;
 }
 
+export async function findBookChunkIndexesByIds(chunkIds: string[]): Promise<Map<string, number>> {
+  const objectIds: ObjectId[] = [];
+  for (const chunkId of chunkIds) {
+    try {
+      objectIds.push(new ObjectId(chunkId));
+    } catch {
+      // ignore invalid ids
+    }
+  }
+
+  if (objectIds.length === 0) {
+    return new Map();
+  }
+
+  const db = await getDb();
+  const docs = await db
+    .collection<BookChunksDoc>(collections.BOOK_CHUNKS)
+    .find({ _id: { $in: objectIds } }, { projection: { index: 1 } })
+    .toArray();
+
+  const map = new Map<string, number>();
+  for (const doc of docs) {
+    if (!doc._id) continue;
+    map.set(doc._id.toHexString(), doc.index);
+  }
+  return map;
+}
+
 export async function countBookChunks(bookId: string): Promise<number> {
   let objectId: ObjectId;
   try {

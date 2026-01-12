@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   IoBookmarkOutline,
   IoChevronBackOutline,
@@ -39,6 +40,7 @@ type ReaderClientPageProps = {
 
 export default function ReaderClientPage({ book, blocks, pageNumber, totalPages }: ReaderClientPageProps) {
   const [openPanel, setOpenPanel] = useState<PanelKey>(null);
+  const router = useRouter();
 
   const [fontSize, setFontSize] = useState(18); // px
   const [lineHeight, setLineHeight] = useState(1.7);
@@ -206,7 +208,14 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
 
   const onJumpToChapter = (ch: Chapter) => {
     setOpenPanel(null);
-    scrollToBlock(ch.blockId);
+    if (typeof ch.pageNumber === 'number' && Number.isFinite(ch.pageNumber) && ch.pageNumber > 0) {
+      router.push(`/reader/${book.id}?page=${ch.pageNumber}`);
+      return;
+    }
+
+    if (ch.blockId) {
+      scrollToBlock(ch.blockId);
+    }
   };
 
   const onJumpToHighlight = (h: Highlight) => {

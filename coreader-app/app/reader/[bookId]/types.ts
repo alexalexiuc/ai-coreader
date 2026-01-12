@@ -3,7 +3,8 @@ export type PanelKey = 'overview' | 'toc' | 'entities' | 'search' | 'coach' | 'h
 export type Chapter = {
   id: string;
   title: string;
-  blockId: string; // anchor block id to scroll to
+  pageNumber?: number; // 1-based `?page=` value
+  blockId?: string; // optional anchor block id to scroll to (within current page)
 };
 
 export type Book = {
