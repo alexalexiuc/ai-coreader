@@ -120,6 +120,9 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 
 		snippet := extractSnippet(mention.chunk.Text, mention.entityRef.StartOffsets)
 
+		// Normalize snippet for consistent processing
+		snippet = normalizeSnippet(snippet)
+
 		// Create mention record
 		mentionDoc := &EntityMentionsDoc{
 			BookID:      bookID,
@@ -339,6 +342,33 @@ func extractFallbackSnippet(runes []rune, targetOffset int) string {
 
 	snippet := string(runes[start:end])
 	return strings.TrimSpace(snippet)
+}
+
+// normalizeSnippet collapses whitespace and normalizes text for LLM processing
+func normalizeSnippet(s string) string {
+	if s == "" {
+		return s
+	}
+
+	// Convert to runes for proper handling
+	runes := []rune(s)
+	var result []rune
+	prevWasSpace := false
+
+	for _, r := range runes {
+		if unicode.IsSpace(r) {
+			// Collapse consecutive whitespace (including newlines) to single space
+			if !prevWasSpace && len(result) > 0 {
+				result = append(result, ' ')
+			}
+			prevWasSpace = true
+		} else {
+			result = append(result, r)
+			prevWasSpace = false
+		}
+	}
+
+	return strings.TrimSpace(string(result))
 }
 
 func byteOffsetToRuneIndex(text string, offset int) int {
