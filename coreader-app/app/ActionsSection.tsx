@@ -40,7 +40,7 @@ const actions: ActionItem[] = [
     description: 'Email, password, and notifications.',
     pathTo: '/account',
     badge: 'Soon',
-    disabled: true,
+    disabled: false,
   },
 ];
 
