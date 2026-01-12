@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -86,7 +87,7 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	tasks := []string{
 		"Find named entities of interest: CHARACTERS, PLACES, ORGANIZATIONS, ARTIFACTS, EVENTS, WORKS (book titles), and other notable named concepts.",
 		"Work ONLY within this chunk. You do NOT have the rest of the book.",
-		"Detect every chapter heading present in the chunk (e.g. \"Chapter 3\", \"Part II\", or similar). Include all chapter headings found, not just the first.",
+		"Detect ONLY book-style chapter headings (standalone structural markers, not prose or dialogue).",
 	}
 	schema := `STRICTLY a JSON object with this structure (no extra text):
 
@@ -109,7 +110,19 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 		"type MUST be exactly one of the allowed strings above. If unsure, set type = \"other\"",
 		"Each entity should be listed only ONCE with its name and type.",
 		"If no entities are found, use an empty array for \"entities\".",
-		"If there are no chapter headings, return an empty array for \"chapters\".",
+		"CHAPTER RULES - ONLY detect these exact patterns:",
+		"  • \"Chapter <number or roman numeral>\" (e.g., \"Chapter 1\", \"Chapter III\") with optional short subtitle",
+		"  • \"Part <number or roman numeral>\" (e.g., \"Part 1\", \"Part II\")",
+		"  • \"Book <number or roman numeral>\" (e.g., \"Book 1\", \"Book IV\")",
+		"  • \"Section <number or roman numeral>\" (e.g., \"Section 1\", \"Section V\")",
+		"  • \"Volume <number or roman numeral>\" (e.g., \"Volume 1\", \"Volume II\")",
+		"  • \"Prologue\", \"Epilogue\", \"Introduction\", \"Preface\", \"Afterword\" (case-insensitive)",
+		"CHAPTER EXCLUSIONS - NEVER include:",
+		"  • \"ACT\" or \"SCENE\" (these are play/poem structures, NOT book chapters)",
+		"  • Speaker labels (e.g., \"HAMLET\", \"ROMEO\", \"NARRATOR\")",
+		"  • Prose sentences or dialogue (anything that looks like regular text)",
+		"  • Long lines (must be standalone headings, typically under 80 characters)",
+		"If there are no valid chapter headings, return an empty array for \"chapters\".",
 	}
 
 	return buildPrompt(setup, tasks, PromptChunk{Label: "Chunk", Text: text}, schema, rules)
@@ -365,6 +378,79 @@ func normalizeChunkEntities(entities []ChunkEntityRef) []ChunkEntityRef {
 	return result
 }
 
+// validateChapterHeading checks if a string is a valid book chapter heading.
+// Returns true for book-style structural headings, false for prose, dialogue, plays, etc.
+func validateChapterHeading(heading string) bool {
+	clean := strings.TrimSpace(heading)
+
+	// Reject empty strings
+	if clean == "" {
+		return false
+	}
+
+	// Reject lines that are too long (likely prose)
+	if len(clean) > 80 {
+		return false
+	}
+
+	// Define allowed chapter patterns (case-insensitive)
+	// Chapter/Part/Book/Section/Volume followed by number or roman numeral
+	chapterPatterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)^chapter\s+[0-9]+`),                                          // Chapter 1, Chapter 42
+		regexp.MustCompile(`(?i)^chapter\s+[IVXLCDM]+`),                                      // Chapter I, Chapter XII
+		regexp.MustCompile(`(?i)^part\s+[0-9]+`),                                             // Part 1, Part 2
+		regexp.MustCompile(`(?i)^part\s+[IVXLCDM]+`),                                         // Part I, Part II
+		regexp.MustCompile(`(?i)^part\s+(one|two|three|four|five|six|seven|eight|nine|ten)`), // Part One
+		regexp.MustCompile(`(?i)^book\s+[0-9]+`),                                             // Book 1, Book 2
+		regexp.MustCompile(`(?i)^book\s+[IVXLCDM]+`),                                         // Book I, Book II
+		regexp.MustCompile(`(?i)^section\s+[0-9]+`),                                          // Section 1
+		regexp.MustCompile(`(?i)^section\s+[IVXLCDM]+`),                                      // Section I
+		regexp.MustCompile(`(?i)^volume\s+[0-9]+`),                                           // Volume 1
+		regexp.MustCompile(`(?i)^volume\s+[IVXLCDM]+`),                                       // Volume I
+		regexp.MustCompile(`(?i)^(prologue|epilogue|introduction|preface|afterword)$`),       // Special sections (exact match)
+	}
+
+	// Check if matches any allowed pattern
+	for _, pattern := range chapterPatterns {
+		if pattern.MatchString(clean) {
+			return true
+		}
+	}
+
+	// Explicit rejections for play/poem structures
+	actScenePatterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)^act\s+[0-9IVXLCDM]+`),   // ACT I, Act 1
+		regexp.MustCompile(`(?i)^scene\s+[0-9IVXLCDM]+`), // SCENE 1, Scene II
+	}
+
+	for _, pattern := range actScenePatterns {
+		if pattern.MatchString(clean) {
+			return false
+		}
+	}
+
+	// Reject ALL-CAPS single words (likely speaker labels like HAMLET, ROMEO)
+	// But allow if it matches our special sections like PROLOGUE
+	if clean == strings.ToUpper(clean) && !strings.Contains(clean, " ") {
+		// Check if it's one of our allowed special sections
+		lowerClean := strings.ToLower(clean)
+		allowedSpecial := []string{"prologue", "epilogue", "introduction", "preface", "afterword"}
+		isAllowedSpecial := false
+		for _, special := range allowedSpecial {
+			if lowerClean == special {
+				isAllowedSpecial = true
+				break
+			}
+		}
+		if !isAllowedSpecial {
+			return false
+		}
+	}
+
+	// If we get here, it didn't match any allowed pattern
+	return false
+}
+
 func normalizeChapters(chapters []string) []string {
 	result := make([]string, 0, len(chapters))
 	seen := make(map[string]struct{}, len(chapters))
@@ -373,6 +459,12 @@ func normalizeChapters(chapters []string) []string {
 		if clean == "" {
 			continue
 		}
+
+		// Apply validation to filter out invalid chapters
+		if !validateChapterHeading(clean) {
+			continue
+		}
+
 		key := strings.ToLower(clean)
 		if _, ok := seen[key]; ok {
 			continue
