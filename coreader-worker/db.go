@@ -445,3 +445,31 @@ func (db *DB) CreateOrUpdateUserBook(userID primitive.ObjectID, bookID primitive
 
 	return result, true, nil
 }
+
+// UpdateChunkEntityID updates the entityId field for a specific entity in a chunk's entities array
+func (db *DB) UpdateChunkEntityID(chunkID primitive.ObjectID, entityName, entityType string, entityID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"_id":           chunkID,
+		"entities.name": entityName,
+		"entities.type": entityType,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"entities.$[elem].entityId": entityID,
+			"updatedAt":                 time.Now().UTC(),
+		},
+	}
+
+	arrayFilters := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{"elem.name": entityName, "elem.type": entityType},
+		},
+	})
+
+	_, err := db.BooksChunksCollection.UpdateOne(ctx, filter, update, arrayFilters)
+	return err
+}

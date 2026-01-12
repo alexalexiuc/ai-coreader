@@ -103,7 +103,15 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 
 	log.Printf("Processing entity %q (type=%s) with %d mentions", group.name, group.typ, len(group.mentions))
 
-	// 2. Create entity mentions and extract facts
+	// 2. Update chunk entities with the canonical entity ID
+	for _, mention := range group.mentions {
+		if err := w.db.UpdateChunkEntityID(mention.chunk.ID, group.name, group.typ, entity.ID); err != nil {
+			log.Printf("Warning: Failed to update chunk entity ID for entity %q in chunk %s: %v", group.name, mention.chunk.ID.Hex(), err)
+			// Non-fatal: continue processing
+		}
+	}
+
+	// 3. Create entity mentions and extract facts
 	for i, mention := range group.mentions {
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("context cancelled: %w", err)
@@ -173,7 +181,7 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 		}
 	}
 
-	// 3. Distill entity description
+	// 4. Distill entity description
 	if err := w.distillEntityDescription(ctx, bookID, entity); err != nil {
 		return fmt.Errorf("failed to distill description: %w", err)
 	}
