@@ -42,4 +42,4 @@
   - [coreader-worker]: ~~Strengthen entity discovery assumptions to keep extraction conservative and avoid noisy or generic entities~~ ✅ Completed
   - [coreader-worker]: ~~Preserve exact entity surface forms from discovery through snippet extraction for reliable anchoring~~ ✅ Completed
   - [coreader-worker]: ~~Add small unit tests for sentence boundary detection and the "snippet contains entity mention" invariant~~ ✅ Completed
-  - [coreader-worker]: If in a chunk we meet entity in multiple places, make sure we take all occurrences into account when extracting snippets
+  - [coreader-worker]: ~~If in a chunk we meet entity in multiple places, make sure we take all occurrences into account when extracting snippets~~ ✅ Completed (all offsets stored, earliest used for snippet extraction)
