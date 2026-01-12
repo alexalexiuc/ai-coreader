@@ -149,11 +149,8 @@ func (w *Worker) processEntityGroup(ctx context.Context, bookID primitive.Object
 			Snippet:     snippet,
 		}
 
-		// Add entity anchor markers for LLM focus (only for fact extraction, not stored)
-		snippetWithMarker := addEntityAnchorMarker(snippet, mention.entityRef.Name, mention.entityRef.StartOffsets, mention.chunk.Text)
-
-		// Extract facts from snippet with marker
-		facts, err := llm.ExtractEntityFacts(ctx, w.llmClient, group.name, group.typ, snippetWithMarker)
+		// Extract facts - handle large snippets by splitting
+		facts, err := w.extractFactsFromSnippet(ctx, snippet, mention.entityRef.Name, mention.entityRef.StartOffsets, mention.chunk.Text, group.name, group.typ)
 		if err != nil {
 			log.Printf("Warning: Failed to extract facts for entity %q in chunk %d: %v", group.name, mention.chunk.Index, err)
 			// Continue without facts
@@ -249,10 +246,9 @@ func extractSnippet(text string, offsets []int) string {
 	// Build snippet from selected sentences
 	snippet := buildSnippetFromSentences(runes, sentences, startSentenceIdx, endSentenceIdx)
 
-	// Cap snippet length and ensure it contains the entity mention
+	// Log if snippet is large (caller will handle splitting)
 	if len([]rune(snippet)) > MAX_SNIPPET_RUNES {
-		log.Printf("Warning: Sentence-window snippet too large (%d runes), falling back to entity-centered snippet", len([]rune(snippet)))
-		return extractFallbackSnippet(runes, targetOffset)
+		log.Printf("Info: Sentence-window snippet is large (%d runes), caller should split for multiple LLM calls", len([]rune(snippet)))
 	}
 
 	// Verify snippet contains entity mention
@@ -483,6 +479,58 @@ func findSnippetEnd(runes []rune, end, maxEnd int) int {
 	}
 
 	return end
+}
+
+// extractFactsFromSnippet handles fact extraction from a snippet, splitting if too large
+func (w *Worker) extractFactsFromSnippet(ctx context.Context, snippet, entityName string, offsets []int, originalText, canonicalName, entityType string) ([]llm.EntityFact, error) {
+	snippetRunes := []rune(snippet)
+
+	// If snippet is within limits, process normally
+	if len(snippetRunes) <= MAX_SNIPPET_RUNES {
+		snippetWithMarker := addEntityAnchorMarker(snippet, entityName, offsets, originalText)
+		return llm.ExtractEntityFacts(ctx, w.llmClient, canonicalName, entityType, snippetWithMarker)
+	}
+
+	// Snippet too large - split into overlapping windows
+	log.Printf("Splitting large snippet (%d runes) for entity %q into multiple LLM calls", len(snippetRunes), canonicalName)
+
+	windowSize := MAX_SNIPPET_RUNES - 100 // Leave buffer for markers
+	overlapSize := 200                    // Overlap to maintain context
+
+	var allFacts []llm.EntityFact
+	factHashes := make(map[string]bool) // Deduplicate facts across windows
+
+	for start := 0; start < len(snippetRunes); start += (windowSize - overlapSize) {
+		end := min(start+windowSize, len(snippetRunes))
+		windowSnippet := string(snippetRunes[start:end])
+
+		// Add markers for this window
+		windowWithMarker := addEntityAnchorMarker(windowSnippet, entityName, offsets, originalText)
+
+		// Extract facts from this window
+		windowFacts, err := llm.ExtractEntityFacts(ctx, w.llmClient, canonicalName, entityType, windowWithMarker)
+		if err != nil {
+			log.Printf("Warning: Failed to extract facts from window [%d:%d]: %v", start, end, err)
+			continue
+		}
+
+		// Deduplicate facts using hash
+		for _, fact := range windowFacts {
+			hash := hashFact(fact)
+			if !factHashes[hash] {
+				factHashes[hash] = true
+				allFacts = append(allFacts, fact)
+			}
+		}
+
+		// If we've processed the entire snippet, break
+		if end >= len(snippetRunes) {
+			break
+		}
+	}
+
+	log.Printf("Extracted %d unique facts from large snippet (%d windows)", len(allFacts), (len(snippetRunes)+windowSize-overlapSize-1)/(windowSize-overlapSize))
+	return allFacts, nil
 }
 
 func hashFact(fact llm.EntityFact) string {
