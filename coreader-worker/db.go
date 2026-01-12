@@ -383,6 +383,14 @@ func (db *DB) DeleteBookData(bookID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Delete from new entity collections
+	if _, err := db.EntitiesCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
+		return err
+	}
+	if _, err := db.EntityMentionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
+		return err
+	}
+	// Delete from legacy entity-descriptions collection
 	if _, err := db.EntityDescriptionsCollection.DeleteMany(ctx, bson.M{"bookId": bookID}); err != nil {
 		return err
 	}
