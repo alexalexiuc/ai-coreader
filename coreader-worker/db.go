@@ -22,76 +22,50 @@ type BaseDoc struct {
 }
 
 type HasBaseDoc interface {
-	GetBaseDoc() *BaseDoc
+	GetCreatedAt() time.Time
+	SetCreatedAt(time.Time)
+	SetUpdatedAt(time.Time)
 	SetDocID(primitive.ObjectID)
 }
 
-func (f *FilesDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        f.ID,
-		CreatedAt: f.CreatedAt,
-		UpdatedAt: f.UpdatedAt,
-	}
-}
+func (f *FilesDoc) GetCreatedAt() time.Time  { return f.CreatedAt }
+func (f *FilesDoc) SetCreatedAt(t time.Time) { f.CreatedAt = t }
+func (f *FilesDoc) SetUpdatedAt(t time.Time) { f.UpdatedAt = t }
 func (f *FilesDoc) SetDocID(id primitive.ObjectID) {
 	f.ID = id
 }
 
-func (b *BooksDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        b.ID,
-		CreatedAt: b.CreatedAt,
-		UpdatedAt: b.UpdatedAt,
-	}
-}
+func (b *BooksDoc) GetCreatedAt() time.Time  { return b.CreatedAt }
+func (b *BooksDoc) SetCreatedAt(t time.Time) { b.CreatedAt = t }
+func (b *BooksDoc) SetUpdatedAt(t time.Time) { b.UpdatedAt = t }
 func (b *BooksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
-func (b *BookChunksDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        b.ID,
-		CreatedAt: b.CreatedAt,
-		UpdatedAt: b.UpdatedAt,
-	}
-}
-
+func (b *BookChunksDoc) GetCreatedAt() time.Time  { return b.CreatedAt }
+func (b *BookChunksDoc) SetCreatedAt(t time.Time) { b.CreatedAt = t }
+func (b *BookChunksDoc) SetUpdatedAt(t time.Time) { b.UpdatedAt = t }
 func (b *BookChunksDoc) SetDocID(id primitive.ObjectID) {
 	b.ID = id
 }
 
-func (u *UserBooksDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        u.ID,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
-	}
-}
-
+func (u *UserBooksDoc) GetCreatedAt() time.Time  { return u.CreatedAt }
+func (u *UserBooksDoc) SetCreatedAt(t time.Time) { u.CreatedAt = t }
+func (u *UserBooksDoc) SetUpdatedAt(t time.Time) { u.UpdatedAt = t }
 func (u *UserBooksDoc) SetDocID(id primitive.ObjectID) {
 	u.ID = id
 }
 
-func (e *EntitiesDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        e.ID,
-		CreatedAt: e.CreatedAt,
-		UpdatedAt: e.UpdatedAt,
-	}
-}
-
+func (e *EntitiesDoc) GetCreatedAt() time.Time  { return e.CreatedAt }
+func (e *EntitiesDoc) SetCreatedAt(t time.Time) { e.CreatedAt = t }
+func (e *EntitiesDoc) SetUpdatedAt(t time.Time) { e.UpdatedAt = t }
 func (e *EntitiesDoc) SetDocID(id primitive.ObjectID) {
 	e.ID = id
 }
 
-func (e *EntityMentionsDoc) GetBaseDoc() *BaseDoc {
-	return &BaseDoc{
-		ID:        e.ID,
-		CreatedAt: e.CreatedAt,
-		UpdatedAt: e.UpdatedAt,
-	}
-}
-
+func (e *EntityMentionsDoc) GetCreatedAt() time.Time  { return e.CreatedAt }
+func (e *EntityMentionsDoc) SetCreatedAt(t time.Time) { e.CreatedAt = t }
+func (e *EntityMentionsDoc) SetUpdatedAt(t time.Time) { e.UpdatedAt = t }
 func (e *EntityMentionsDoc) SetDocID(id primitive.ObjectID) {
 	e.ID = id
 }
@@ -223,11 +197,10 @@ func queryPendingFiles(db *DB) ([]FilesDoc, error) {
 func InsertOneWithMeta[T HasBaseDoc](ctx context.Context, coll *mongo.Collection, doc T) (T, error) {
 	now := time.Now().UTC()
 
-	base := doc.GetBaseDoc()
-	if base.CreatedAt.IsZero() {
-		base.CreatedAt = now
+	if doc.GetCreatedAt().IsZero() {
+		doc.SetCreatedAt(now)
 	}
-	base.UpdatedAt = now
+	doc.SetUpdatedAt(now)
 
 	res, err := coll.InsertOne(ctx, doc)
 	if err != nil {
