@@ -176,6 +176,10 @@ func buildChunkAnalysisPrompt(bookTitle, text string) string {
 	rules := []string{
 		"Only include entities that are explicitly named or titled (proper nouns, capitalized names, or quoted titles).",
 		"Ignore generic objects, common nouns, plants/animals/food, or one-off incidental items unless they are uniquely named.",
+		"Be CONSERVATIVE: do not extract vague, ambiguous, or overly generic entities (like \"the wizard\", \"the city\", \"the organization\").",
+		"Require specific names: \"Gandalf\" (not \"the wizard\"), \"London\" (not \"the city\"), \"Hogwarts\" (not \"the school\").",
+		"Skip pronouns, job titles, family relations (\"his brother\", \"the captain\") unless used as proper names.",
+		"Skip common items, everyday objects, body parts, weather, emotions, or abstract concepts unless they are uniquely named (e.g., \"The Dark Mark\" is okay, \"darkness\" is not).",
 		"type MUST be exactly one of the allowed strings above. If unsure, set type = \"other\"",
 		"Each entity should be listed only ONCE with its name and type.",
 		"If no entities are found, use an empty array for \"entities\".",
