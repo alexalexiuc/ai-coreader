@@ -13,7 +13,7 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 ## Project at a glance
 
 - Next.js app (`coreader-app`) handles uploads, library, and reading; Go worker (`coreader-worker`) processes files into books with LLM help; MongoDB + local storage power persistence; infra (`infra/`) wires Mongo/Ollama/docker helpers.
-- Text diagram: Users -> Next.js upload/API -> Mongo `files` + disk storage -> Go worker reads `files`, creates `books` + `bookChunks` + `entityDescriptions` -> Next.js Library/Reader render from Mongo.
+- Text diagram: Users -> Next.js upload/API -> Mongo `files` + disk storage -> Go worker reads `files`, creates `books` + `bookChunks` + `entities` + `entity-mentions` -> Next.js Library/Reader render from Mongo.
 
 ## Services and responsibilities
 
@@ -33,7 +33,8 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
   - `files`: Stored files with processing status; includes `userId` to track uploader.
   - `books`: Book metadata created by worker from files; `source` field indicates origin.
   - `books-chunks`: Text chunks of books with LLM-analyzed entities.
-  - `entity-descriptions`: LLM-generated entity descriptions (characters, places, etc.).
+  - `entities`: Canonical entity records with distilled descriptions (characters, places, etc.).
+  - `entity-mentions`: Individual entity mentions within chunks with extracted facts.
   - `users`: User authentication and profile data.
   - `sessions`: User authentication sessions.
   - `user-books`: Links users to books (ownership + reading progress); used for authorization and "My Library" queries. Has unique index on `(userId, bookId)`, indexes on `userId` and `bookId`.
@@ -41,7 +42,7 @@ Default instructions for AI agents working in this repository. Nested AGENTS.md 
 ## Core workflows (paths to change)
 
 - Upload -> file doc: `/uploads` UI + server actions `app/uploads/actions.ts` call `lib/files/storage.ts` (writes to `FILE_STORAGE_ROOT`) and `lib/db/files.ts` (inserts `files` doc with `userId` of uploader, status `pending`, revalidates `/uploads`).
-- Processing -> book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks`, `entityDescriptions` (`db.go`), updates `files.status`/`percentage`. If file has `userId`, creates `user-books` link to establish ownership.
+- Processing -> book creation: Worker entry `coreader-worker/main.go` finds pending/processing files (`db.go:GetUnprocessedFiles`), reads from storage (`storage.go`), splits (`chunking.go`), LLM header/entity analysis (`llm.go`), writes `books`, `bookChunks` with entity references (`db.go`), then post-processes to create canonical `entities` and `entity-mentions` (`entity_postprocessing.go`), updates `files.status`/`percentage`. If file has `userId`, creates `user-books` link to establish ownership.
 - Reading UI: Library listing `app/library/page.tsx` via `lib/db/books.ts` filtered by user ownership (via `user-books`); Reader page `app/reader/[bookId]/page.tsx` checks ownership via `user-books`, pulls chunks via `lib/db/book-chunks.ts`, updates reading progress in `user-books`; uploads list with book links via `lib/db/files.ts`.
 - Download: `/api/files/[id]/download/route.ts` streams stored file from `FILE_STORAGE_ROOT` after checking ownership via `files.userId`.
 - Authorization: All book/file operations check ownership via `user-books` collection or `files.userId` field; unauthenticated users see empty lists.
