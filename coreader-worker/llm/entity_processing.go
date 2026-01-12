@@ -90,6 +90,8 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
 		"confidence: 1.0 for explicit facts, 0.7-0.9 for strong implications, lower for weak ones.",
 		"evidence must be a direct quote (or close paraphrase) from the snippet, max 20 words.",
 		"Do not invent facts not supported by the snippet.",
+		"NEVER make absence claims (e.g. \"has no X\", \"lacks Y\", \"not mentioned as Z\") unless the text EXPLICITLY states the absence.",
+		"Only extract positive facts that are actually present or clearly implied in the snippet.",
 		"If nothing useful is in the snippet, return empty facts array: {\"facts\": []}",
 	}
 
