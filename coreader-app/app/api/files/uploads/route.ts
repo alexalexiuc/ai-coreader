@@ -35,7 +35,10 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const user = await getCurrentUser();
-  const userId = user ? new ObjectId(user.id) : undefined;
+  if (!user) {
+    return new Response('Authentication required', { status: 401 });
+  }
+  const userId = new ObjectId(user.id);
 
   try {
     const { storageName, storagePath, size } = await saveUploadedFile(file, FOLDERS.FILES);
