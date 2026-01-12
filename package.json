@@ -46,10 +46,10 @@
   },
   "lint-staged": {
     "coreader-app/**/*.{ts,tsx,js,jsx,json,md}": [
-      "prettier --write"
+      "node scripts/lint-staged-coreader-app.cjs prettier"
     ],
     "coreader-app/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix"
+      "node scripts/lint-staged-coreader-app.cjs eslint"
     ],
     "coreader-worker/**/*.go": [
       "goimports -w"
