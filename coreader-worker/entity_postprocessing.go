@@ -957,11 +957,21 @@ func (db *DB) UpdateEntityDescription(entityID primitive.ObjectID, description *
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Ensure arrays are never nil (schema requires arrays, not null)
+	keyFacts := description.KeyFacts
+	if keyFacts == nil {
+		keyFacts = []string{}
+	}
+	uncertainties := description.Uncertainties
+	if uncertainties == nil {
+		uncertainties = []string{}
+	}
+
 	update := bson.M{
 		"$set": bson.M{
 			"descriptionCurrent": description.Description,
-			"keyFacts":           description.KeyFacts,
-			"uncertainties":      description.Uncertainties,
+			"keyFacts":           keyFacts,
+			"uncertainties":      uncertainties,
 			"updatedAt":          time.Now().UTC(),
 		},
 		"$inc": bson.M{

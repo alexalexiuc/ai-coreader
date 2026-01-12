@@ -78,12 +78,27 @@ func (l *Logger) LogRequest(reqName string, prompt string, options *Options, res
 
 	// Create filename with timestamp
 	filename := fmt.Sprintf("request_%d_%s.log", time.Now().UnixNano(), reqName)
-	filepath := filepath.Join(logDir, filename)
+	logFilePath := filepath.Join(logDir, filename)
 
 	// Write to file
-	if err := os.WriteFile(filepath, []byte(log), 0644); err != nil {
+	if err := os.WriteFile(logFilePath, []byte(log), 0644); err != nil {
 		fmt.Printf("Failed to write log file: %v\n", err)
 		return err
+	}
+
+	// If there's an error, duplicate log to errors subfolder
+	if errStr != "" {
+		errorsDir := filepath.Join(logDir, "errors")
+		if err := os.MkdirAll(errorsDir, 0755); err != nil {
+			fmt.Printf("Failed to create errors directory: %v\n", err)
+			// Non-fatal: main log was written successfully
+		} else {
+			errorLogPath := filepath.Join(errorsDir, filename)
+			if err := os.WriteFile(errorLogPath, []byte(log), 0644); err != nil {
+				fmt.Printf("Failed to write error log file: %v\n", err)
+				// Non-fatal: main log was written successfully
+			}
+		}
 	}
 
 	return nil

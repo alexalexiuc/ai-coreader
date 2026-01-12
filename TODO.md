@@ -43,3 +43,4 @@
   - [coreader-worker]: ~~Preserve exact entity surface forms from discovery through snippet extraction for reliable anchoring~~ ✅ Completed
   - [coreader-worker]: ~~Add small unit tests for sentence boundary detection and the "snippet contains entity mention" invariant~~ ✅ Completed
   - [coreader-worker]: ~~If in a chunk we meet entity in multiple places, make sure we take all occurrences into account when extracting snippets~~ ✅ Completed (all offsets stored, earliest used for snippet extraction)
+- [coreader-worker]: When schema returned by LLM is invalid, repeat the request givving previous prompt and result, telling schema is wrong and to fix it.

@@ -87,6 +87,7 @@ func buildFactExtractionPrompt(entityName, entityType, snippet string) string {
 	rules := []string{
 		"factType describes the KIND OF STATEMENT being made about the entity (e.g. appearance, event, role), NOT the entity's type. Never repeat the entity type as a factType.",
 		"value should be atomic - one fact per item.",
+		"value MUST ALWAYS be a string",
 		"confidence: 1.0 for explicit facts, 0.7-0.9 for strong implications, lower for weak ones.",
 		"evidence must be a direct quote (or close paraphrase) from the snippet, max 20 words.",
 		"Do not invent facts not supported by the snippet.",
