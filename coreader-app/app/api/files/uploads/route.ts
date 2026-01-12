@@ -10,6 +10,13 @@ export const runtime = 'nodejs';
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export async function POST(req: NextRequest): Promise<Response> {
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return new Response('Authentication required', { status: 401 });
+  }
+  const userId = new ObjectId(user.id);
+
   let formData: FormData;
   try {
     formData = await req.formData();
@@ -25,12 +32,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (file.size > MAX_UPLOAD_BYTES) {
     return new Response('File exceeded 10 MB limit.', { status: 413 });
   }
-
-  const user = await getCurrentUser();
-  if (!user) {
-    return new Response('Authentication required', { status: 401 });
-  }
-  const userId = new ObjectId(user.id);
 
   try {
     const { storageName, storagePath, size } = await saveUploadedFile(file, FOLDERS.FILES);
