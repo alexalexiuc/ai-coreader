@@ -1,6 +1,18 @@
 import { expect, Page, test } from '@playwright/test';
 
 async function navigateToReader(page: Page) {
+  // Login as test user first
+  await page.goto('/');
+  const loginButton = page.getByRole('button', { name: /Log in/i }).first();
+  
+  if (await loginButton.isVisible()) {
+    await loginButton.click();
+    await page.getByLabel(/Email/i).fill('testuser@example.com');
+    await page.getByLabel(/Password/i).fill('TestPassword123!');
+    await page.getByRole('button', { name: /Sign In/i }).click();
+    await page.waitForTimeout(1000);
+  }
+
   await page.goto('/library');
   const emberArchiveLink = page.getByRole('link', { name: /The Ember Archive/i }).first();
 

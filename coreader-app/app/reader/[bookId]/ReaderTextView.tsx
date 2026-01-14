@@ -81,7 +81,7 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
               lineHeight,
             }}
           >
-            <div className="h-full space-y-4 overflow-hidden pr-2">
+            <div className="h-full space-y-4 overflow-y-auto pr-2">
               {blocks.map((b) => (
                 <p
                   key={b.id}
