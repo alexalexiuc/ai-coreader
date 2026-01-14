@@ -33,6 +33,7 @@ const mockBookIds = {
 const userBookIds = {
   foundation: new ObjectId("66f000000000000000000701"),
   martianChronicles: new ObjectId("66f000000000000000000702"),
+  emberArchive: new ObjectId("66f000000000000000000703"),
 };
 
 const chunkIds = {
@@ -420,6 +421,19 @@ const userBooks = [
     lastCharOffset: new Int32(12000),
     progressPercent: new Int32(8),
     startedAt: mockMartianAddedAt,
+  },
+  {
+    _id: userBookIds.emberArchive,
+    userId: userIds.testUser,
+    bookId: bookIds.emberArchive,
+    createdAt: primaryDate,
+    updatedAt: primaryDate,
+    lastOpenedAt: primaryDate,
+    lastPageIndex: new Int32(0),
+    lastChunkIndex: new Int32(0),
+    lastCharOffset: new Int32(0),
+    progressPercent: new Int32(0),
+    startedAt: primaryDate,
   },
 ];
 
