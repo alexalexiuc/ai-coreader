@@ -1,10 +1,11 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Block, BlockEntity } from './types';
 import { Button } from '@/ui/Button';
 import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
+import { EntityPopup } from './EntityPopup';
 
 type ReaderTextViewProps = {
   blocks: Block[];
@@ -18,26 +19,12 @@ type ReaderTextViewProps = {
 
 export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, contentWidth, fontSize, lineHeight }: ReaderTextViewProps) {
   const [hoveredEntityId, setHoveredEntityId] = useState<string | null>(null);
-  const [activeEntity, setActiveEntity] = useState<{ entity: BlockEntity; anchor: { x: number; y: number } } | null>(null);
-  const popupRef = useRef<HTMLDivElement | null>(null);
+  const [activeEntity, setActiveEntity] = useState<{ entity: BlockEntity; anchorElement: HTMLElement } | null>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
-      if (popupRef.current && popupRef.current.contains(target)) return;
-      if (target.closest('[data-entity-id]')) return;
-      setActiveEntity(null);
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const onEntityClick = (entity: BlockEntity, rect: DOMRect) => {
+  const onEntityClick = (entity: BlockEntity, element: HTMLElement) => {
     setActiveEntity({
       entity,
-      anchor: { x: rect.left + rect.width / 2, y: rect.bottom + 8 },
+      anchorElement: element,
     });
   };
 
@@ -119,31 +106,12 @@ export function ReaderTextView({ blocks, pageNumber, totalPages, bookId, content
       </div>
 
       {activeEntity && (
-        <div
-          ref={popupRef}
-          className="fixed z-40 w-80 max-w-[calc(100vw-32px)] rounded-xl border border-amber-400/30 bg-slate-950/95 p-4 text-sm text-slate-100 shadow-2xl shadow-amber-500/10 backdrop-blur"
-          style={{ left: activeEntity.anchor.x, top: activeEntity.anchor.y, transform: 'translate(-50%, 0)' }}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-base font-semibold text-amber-100">{activeEntity.entity.name}</div>
-              <div className="text-xs tracking-wide text-amber-200/80 uppercase">{activeEntity.entity.type}</div>
-            </div>
-            <button
-              type="button"
-              onClick={closePopup}
-              className="rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-slate-800/80 hover:text-slate-100"
-            >
-              Close
-            </button>
-          </div>
-
-          {activeEntity.entity.description ? (
-            <EntityDetails description={activeEntity.entity.description} />
-          ) : (
-            <p className="mt-2 text-xs text-slate-400">No extra details available for this entity yet.</p>
-          )}
-        </div>
+        <EntityPopup
+          entity={activeEntity.entity}
+          anchorElement={activeEntity.anchorElement}
+          isOpen={true}
+          onClose={closePopup}
+        />
       )}
     </>
   );
@@ -154,7 +122,7 @@ type BlockContentProps = {
   hoveredEntityId: string | null;
   activeEntityId: string | null;
   onHover: (entityId: string | null) => void;
-  onEntityClick: (entity: BlockEntity, rect: DOMRect) => void;
+  onEntityClick: (entity: BlockEntity, element: HTMLElement) => void;
 };
 
 function BlockContent({ block, hoveredEntityId, activeEntityId, onHover, onEntityClick }: BlockContentProps) {
@@ -222,7 +190,7 @@ type EntityTokenProps = {
   segment: Extract<TextSegment, { type: 'entity' }>;
   isActive: boolean;
   onHover: (entityId: string | null) => void;
-  onClick: (entity: BlockEntity, rect: DOMRect) => void;
+  onClick: (entity: BlockEntity, element: HTMLElement) => void;
 };
 
 function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) {
@@ -237,7 +205,7 @@ function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) 
       )}
       onMouseEnter={() => onHover(segment.entity.id)}
       onMouseLeave={() => onHover(null)}
-      onClick={(e) => onClick(segment.entity, e.currentTarget.getBoundingClientRect())}
+      onClick={(e) => onClick(segment.entity, e.currentTarget)}
       title={`${segment.entity.name} (${segment.entity.type})`}
     >
       {segment.text}
@@ -245,32 +213,4 @@ function EntityToken({ segment, isActive, onHover, onClick }: EntityTokenProps) 
   );
 }
 
-function EntityDetails({ description }: { description: NonNullable<BlockEntity['description']> }) {
-  return (
-    <div className="mt-3 space-y-2 text-sm">
-      {description.descriptionCurrent && <p className="text-slate-100">{description.descriptionCurrent}</p>}
-      {description.aliases && description.aliases.length > 0 && (
-        <p className="text-slate-200">
-          <span className="text-slate-400">Also known as: </span>
-          {description.aliases.join(', ')}
-        </p>
-      )}
-      {renderList('Key Facts', description.keyFacts)}
-      {renderList('Uncertainties', description.uncertainties)}
-    </div>
-  );
-}
 
-function renderList(label: string, items?: string[]) {
-  if (!items || items.length === 0) return null;
-  return (
-    <div>
-      <div className="text-xs tracking-wide text-amber-200/80 uppercase">{label}</div>
-      <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-100">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
