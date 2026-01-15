@@ -69,13 +69,14 @@ export function EntityPopup({ entity, anchorElement, isOpen, onClose }: EntityPo
 
   return (
     <FloatingPortal>
+      {/* eslint-disable react-hooks/refs */}
       <div
-        /* eslint-disable-next-line react-hooks/refs */
         ref={refs.setFloating}
         style={floatingStyles}
         {...getFloatingProps()}
         className="z-40 w-80 max-w-[calc(100vw-32px)] rounded-xl border border-amber-400/30 bg-slate-950/95 shadow-2xl shadow-amber-500/10 backdrop-blur"
       >
+        {/* eslint-enable react-hooks/refs */}
         <div className="flex max-h-[inherit] flex-col overflow-hidden p-4">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
@@ -137,4 +138,3 @@ function renderList(label: string, items?: string[]) {
     </div>
   );
 }
-
