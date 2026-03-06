@@ -226,7 +226,7 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
   const hasPages = true;
 
   return (
-    <div className="min-h-screen w-full bg-linear-to-b from-black via-slate-950 to-black">
+    <div className="flex h-full w-full flex-col overflow-y-auto bg-gradient-to-b from-black via-slate-950 to-black">
       <div className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Button href="/library" leftIcon={<IoChevronBackOutline />}>
@@ -251,8 +251,8 @@ export default function ReaderClientPage({ book, blocks, pageNumber, totalPages 
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-6xl gap-0 px-4 py-6">
-        <div className="min-w-0 flex-1">
+      <div className="mx-auto flex max-w-6xl flex-1 gap-0 px-4 py-6 pb-8">
+        <div className="min-h-0 min-w-0 flex-1">
           <ReaderTextView
             blocks={blocks}
             pageNumber={pageNumber}
