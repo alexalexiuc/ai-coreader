@@ -1,3 +1,4 @@
+- [coreader-app]: After password change, invalidate all existing NextAuth JWT sessions (e.g. via a per-user "sessionVersion" counter stored in MongoDB, embedded in the JWT, and validated in the `jwt` callback).
 - [coreader-app]: ~~togglePin function should change pin state in DB and update UI accordingly~~ ✅ Completed
 - [coreader-app]: Make pin and unpin icons more distinguishable
 - [coreader-app]: ~~Add user concept~~ ✅ Completed

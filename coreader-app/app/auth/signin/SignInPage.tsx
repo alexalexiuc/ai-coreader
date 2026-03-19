@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { signIn } from 'next-auth/react';
+import { registerAction } from '@/app/auth/actions';
 
 interface SignInPageProps {
   callbackUrl: string;
@@ -10,7 +11,6 @@ interface SignInPageProps {
 type View = 'login' | 'register';
 
 export function SignInPage({ callbackUrl }: SignInPageProps) {
-  const { login, register } = useAuth();
   const [view, setView] = useState<View>('login');
 
   // Login state
@@ -28,8 +28,7 @@ export function SignInPage({ callbackUrl }: SignInPageProps) {
   const [regLoading, setRegLoading] = useState(false);
 
   // Use a full-page navigation so the browser follows cross-domain redirects
-  // required by the OAuth flow (callbackUrl is on a different origin than this app).
-  // Next.js router.push() only handles same-origin client-side navigation.
+  // required by the OAuth flow (callbackUrl may be on a different origin).
   const redirectToCallback = () => {
     window.location.href = callbackUrl;
   };
@@ -39,10 +38,18 @@ export function SignInPage({ callbackUrl }: SignInPageProps) {
     setLoginError('');
     setLoginLoading(true);
     try {
-      await login(loginEmail, loginPassword);
-      redirectToCallback();
-    } catch (err) {
-      setLoginError((err as Error).message || 'Failed to login');
+      const result = await signIn('credentials', {
+        email: loginEmail,
+        password: loginPassword,
+        redirect: false,
+      });
+      if (result?.error) {
+        setLoginError('Invalid email or password');
+      } else {
+        redirectToCallback();
+      }
+    } catch {
+      setLoginError('Failed to sign in');
     } finally {
       setLoginLoading(false);
     }
@@ -53,10 +60,31 @@ export function SignInPage({ callbackUrl }: SignInPageProps) {
     setRegError('');
     setRegLoading(true);
     try {
-      await register(regEmail, regPassword, regFirstName || undefined, regLastName || undefined);
+      // Step 1: create the user in the database
+      const result = await registerAction({
+        email: regEmail,
+        password: regPassword,
+        firstName: regFirstName || undefined,
+        lastName: regLastName || undefined,
+      });
+      if (result.error) {
+        setRegError(result.error);
+        return;
+      }
+      // Step 2: sign in via NextAuth so a session cookie is created
+      const signInResult = await signIn('credentials', {
+        email: regEmail,
+        password: regPassword,
+        redirect: false,
+      });
+      if (signInResult?.error) {
+        setRegError('Account created successfully. Please sign in with your credentials.');
+        setView('login');
+        return;
+      }
       redirectToCallback();
-    } catch (err) {
-      setRegError((err as Error).message || 'Failed to register');
+    } catch {
+      setRegError('Failed to create account');
     } finally {
       setRegLoading(false);
     }
@@ -102,7 +130,9 @@ export function SignInPage({ callbackUrl }: SignInPageProps) {
               </div>
 
               {loginError && (
-                <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">{loginError}</div>
+                <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {loginError}
+                </div>
               )}
 
               <button
@@ -189,7 +219,9 @@ export function SignInPage({ callbackUrl }: SignInPageProps) {
               </div>
 
               {regError && (
-                <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">{regError}</div>
+                <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {regError}
+                </div>
               )}
 
               <button

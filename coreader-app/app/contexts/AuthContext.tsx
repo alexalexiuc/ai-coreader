@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getCurrentUserAction, loginAction, logoutAction, registerAction } from '@/app/auth/actions';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { getCurrentUserAction, registerAction } from '@/app/auth/actions';
 
 export interface User {
   id: string;
@@ -23,37 +24,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const [fullUser, setFullUser] = useState<User | null>(null);
 
+  const sessionLoading = status === 'loading';
+  // When the NextAuth session changes, fetch the full user profile from the DB
+  // so that firstName / lastName / createdAt are available in the context.
   const refreshUser = async () => {
+    if (status !== 'authenticated') {
+      setFullUser(null);
+      return;
+    }
     try {
       const result = await getCurrentUserAction();
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      setUser(result.user ?? null);
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
+      setFullUser(result.user ?? null);
+    } catch {
+      setFullUser(null);
     }
   };
 
   useEffect(() => {
-    refreshUser();
-  }, []);
+    if (status !== 'loading') {
+      refreshUser();
+    }
+  // refreshUser is intentionally omitted: it is stable across renders and
+  // including it would cause an infinite loop. The effect must only re-run
+  // when the NextAuth session status or data changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session]);
+
+  const loading = sessionLoading;
 
   const login = async (email: string, password: string) => {
-    const result = await loginAction(email, password);
-    if (result.error) {
-      throw new Error(result.error);
+    const result = await signIn('credentials', { email, password, redirect: false });
+    if (result?.error) {
+      // next-auth returns a generic error message; present a user-friendly one
+      throw new Error('Invalid email or password');
     }
-    if (!result.user) {
-      throw new Error('Failed to login');
-    }
-    setUser(result.user);
+    // Session will update automatically via useSession; refreshUser fires via the effect.
   };
 
   const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
@@ -61,21 +69,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (result.error) {
       throw new Error(result.error);
     }
-    if (!result.user) {
-      throw new Error('Failed to register');
+    const signInResult = await signIn('credentials', { email, password, redirect: false });
+    if (signInResult?.error) {
+      throw new Error('Account created but sign-in failed');
     }
-    setUser(result.user);
   };
 
   const logout = async () => {
-    const result = await logoutAction();
-    if (result.error) {
-      throw new Error(result.error);
-    }
-    setUser(null);
+    await signOut({ redirect: false });
+    setFullUser(null);
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user: fullUser, loading, login, register, logout, refreshUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

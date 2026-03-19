@@ -1,8 +1,7 @@
 'use server';
 
-import { getCurrentUser, setSessionCookie } from '@/lib/auth/cookies';
+import { getCurrentUser } from '@/lib/auth/cookies';
 import { validatePasswordChange, hashNewPassword } from '@/lib/auth/password';
-import { createSession, deleteAllUserSessions } from '@/lib/auth/sessions';
 import { findUserById, updateUserPassword, updateUserProfile } from '@/lib/db/users';
 
 interface ActionResult {
@@ -86,9 +85,9 @@ export async function changePasswordAction(params: {
     const newPasswordHash = await hashNewPassword(newPassword);
     await updateUserPassword(user._id, newPasswordHash);
 
-    await deleteAllUserSessions(user._id);
-    const token = await createSession(user._id);
-    await setSessionCookie(token);
+    // Note: the NextAuth JWT session remains valid after a password change.
+    // The user will need to sign in again on their next session for the change
+    // to take effect on existing sessions.
 
     return { message: 'Password changed successfully' };
   } catch (error) {
