@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math"
 	"strings"
 	"time"
 	"unicode"
@@ -26,8 +27,9 @@ const (
 )
 
 // PostProcessEntityDescriptions runs after all chunks are processed
-// It creates canonical entity records and distills descriptions
-func (w *Worker) PostProcessEntityDescriptions(ctx context.Context, bookID primitive.ObjectID) error {
+// It creates canonical entity records and distills descriptions.
+// onProgress is called with 0-100 after each entity completes (may be nil).
+func (w *Worker) PostProcessEntityDescriptions(ctx context.Context, bookID primitive.ObjectID, onProgress func(pct float64)) error {
 	log.Printf("Starting entity post-processing for book %s", bookID.Hex())
 
 	// Get all chunks with entities for this book
@@ -79,6 +81,11 @@ func (w *Worker) PostProcessEntityDescriptions(ctx context.Context, bookID primi
 		if err := w.processEntityGroup(ctx, bookID, key, group); err != nil {
 			log.Printf("Warning: Failed to process entity %q (type=%s): %v", group.name, group.typ, err)
 			// Continue with other entities
+		}
+
+		if onProgress != nil && totalEntities > 0 {
+			pct := math.Floor(float64(processedEntities) / float64(totalEntities) * 100)
+			onProgress(pct)
 		}
 	}
 

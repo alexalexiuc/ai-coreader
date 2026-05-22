@@ -15,6 +15,8 @@ export interface FileDTO {
   createdAt: string;
   status: FileStatus;
   percentage?: number;
+  entityPercentage?: number;
+  textProcessed?: boolean;
   userId?: string;
 }
 
@@ -44,6 +46,8 @@ function toDTO(doc: FilesDoc): FileDTO {
     createdAt: doc.createdAt.toISOString(),
     status: doc.status,
     percentage,
+    entityPercentage: typeof doc.entityPercentage === 'number' ? clampPct(doc.entityPercentage) : undefined,
+    textProcessed: doc.textProcessed ?? false,
     userId: doc.userId?.toHexString(),
   };
 }
@@ -164,6 +168,8 @@ export async function resetFileForReprocessing(id: string): Promise<void> {
         $set: {
           status: 'pending',
           percentage: 0,
+          entityPercentage: 0,
+          textProcessed: false,
           errorMessage: '',
           updatedAt: now,
         },

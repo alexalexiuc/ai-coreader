@@ -326,6 +326,14 @@ export interface FilesDoc {
    * Timestamp when processing was completed
    */
   processedAt?: Date;
+  /**
+   * True when text chunking is complete and the book is readable, even if entity post-processing is still running
+   */
+  textProcessed?: boolean;
+  /**
+   * Entity post-processing completion percentage (0-100)
+   */
+  entityPercentage?: number;
 }
 
 /**

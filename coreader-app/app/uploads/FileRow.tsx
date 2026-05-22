@@ -27,9 +27,11 @@ type FileRowProps = {
 
 export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
   const pct = clampPct(file.progressPct);
+  const entityPct = clampPct(file.entityProgressPct);
   const isProcessing = file.status === 'processing';
   const isCompleted = file.status === 'completed';
   const isFailed = file.status === 'failed';
+  const isReadable = isCompleted || (isProcessing && !!file.textProcessed);
 
   return (
     <div className="px-4 py-3">
@@ -42,7 +44,7 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
             <div className="w-full min-w-0">
               <p className="truncate text-sm font-semibold text-white">{file.originalName}</p>
 
-              {isCompleted && file.bookId && (
+              {isReadable && file.bookId && (
                 <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
                   <IoBookOutline className="text-slate-500" />
                   <span className="truncate">
@@ -60,14 +62,37 @@ export function FileRow({ file, onRetry, onDelete, onDownload }: FileRowProps) {
                 </p>
               )}
 
-              {isProcessing && typeof pct === 'number' && (
+              {isProcessing && !file.textProcessed && typeof pct === 'number' && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Processing</span>
+                    <span>Reading text</span>
                     <span>{pct}%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">
                     <div className="h-full rounded-full bg-slate-200/70" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {isProcessing && file.textProcessed && (
+                <div className="mt-2 flex flex-col gap-1.5">
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Reading text</span>
+                      <span>100%</span>
+                    </div>
+                    <div className="mt-1 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">
+                      <div className="h-full rounded-full bg-emerald-500/70" style={{ width: '100%' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Enriching entities</span>
+                      <span>{entityPct ?? 0}%</span>
+                    </div>
+                    <div className="mt-1 h-2 w-full rounded-full border border-slate-800 bg-slate-900/60">
+                      <div className="h-full rounded-full bg-slate-200/70" style={{ width: `${entityPct ?? 0}%` }} />
+                    </div>
                   </div>
                 </div>
               )}

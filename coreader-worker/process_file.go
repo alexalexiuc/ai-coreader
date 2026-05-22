@@ -289,17 +289,6 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		}
 	}
 
-	if file.Size > 0 {
-		err = w.db.SetFileProgress(file.ID, 100)
-		if err != nil {
-			return &ErrorInfo{
-				RawError:        fmt.Errorf("failed to set final progress: %w", err),
-				FriendlyMessage: "Failed to update final progress",
-				BookID:          &bookID,
-			}
-		}
-	}
-
 	fmt.Println("Processed data length for file", file.ID.Hex(), ":", len(processedData))
 
 	// Deduplicate chapters and pick middle occurrence
@@ -330,9 +319,25 @@ func (w *Worker) processFileInternal(ctx context.Context, file *FilesDoc) *Error
 		}
 	}
 
-	// Post-process entity descriptions
+	// Text processing is complete — book is now readable. Mark it so the UI can unlock reading.
+	if file.Size > 0 {
+		if err = w.db.SetFileTextProcessed(file.ID); err != nil {
+			return &ErrorInfo{
+				RawError:        fmt.Errorf("failed to set text processed: %w", err),
+				FriendlyMessage: "Failed to update text processing status",
+				BookID:          &bookID,
+			}
+		}
+	}
+
+	// Post-process entity descriptions, reporting progress after each entity.
 	log.Printf("Starting entity post-processing for book %s", book.ID.Hex())
-	if err := w.PostProcessEntityDescriptions(ctx, book.ID); err != nil {
+	entityProgress := func(pct float64) {
+		if err := w.db.SetFileEntityProgress(file.ID, pct); err != nil {
+			log.Printf("Warning: Failed to update entity progress for file %s: %v", file.ID.Hex(), err)
+		}
+	}
+	if err := w.PostProcessEntityDescriptions(ctx, book.ID, entityProgress); err != nil {
 		log.Printf("Warning: Entity post-processing failed for book %s: %v", book.ID.Hex(), err)
 		// Non-fatal: we still mark the file as processed
 	} else {

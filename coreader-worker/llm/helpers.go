@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 // Precompiled regex patterns for chapter validation to avoid repeated compilation
@@ -199,16 +200,19 @@ Rules:
 }
 
 func correctEntityOffsets(chunk string, entities []ChunkEntityRef) {
+	// Normalize \r\n to \n to match TypeScript's text normalization in splitIntoParagraphs.
+	// Also use rune offsets (not byte offsets) for compatibility with JavaScript string indexing.
+	normalized := strings.ReplaceAll(chunk, "\r\n", "\n")
 	for i := range entities {
 		entity := &entities[i]
-		// Compute all occurrences of the entity name in the chunk
-		entity.StartOffsets = findAllOccurrences(chunk, entity.Name)
+		entity.StartOffsets = findAllRuneOccurrences(normalized, entity.Name)
 		if len(entity.StartOffsets) == 0 {
 			log.Printf("Warning: Entity %q not found in chunk text", entity.Name)
 		}
 	}
 }
 
+// findAllOccurrences returns byte offsets of all non-overlapping occurrences of needle in text.
 func findAllOccurrences(text, needle string) []int {
 	if strings.TrimSpace(needle) == "" {
 		return []int{}
@@ -222,6 +226,30 @@ func findAllOccurrences(text, needle string) []int {
 		}
 		positions = append(positions, offset+idx)
 		offset += idx + len(needle)
+	}
+	return positions
+}
+
+// findAllRuneOccurrences returns Unicode code-point (rune) offsets of all non-overlapping
+// occurrences of needle in text. Rune offsets match JavaScript's string character positions
+// for BMP text, unlike byte offsets which diverge for multi-byte UTF-8 sequences.
+func findAllRuneOccurrences(text, needle string) []int {
+	if strings.TrimSpace(needle) == "" {
+		return []int{}
+	}
+	var positions []int
+	byteOffset := 0
+	runeOffset := 0
+	for {
+		idx := strings.Index(text[byteOffset:], needle)
+		if idx == -1 {
+			break
+		}
+		runesBeforeMatch := utf8.RuneCountInString(text[byteOffset : byteOffset+idx])
+		matchRuneOffset := runeOffset + runesBeforeMatch
+		positions = append(positions, matchRuneOffset)
+		byteOffset += idx + len(needle)
+		runeOffset = matchRuneOffset + utf8.RuneCountInString(needle)
 	}
 	return positions
 }

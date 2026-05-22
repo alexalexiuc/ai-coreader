@@ -87,6 +87,19 @@
     "processedAt": {
       "description": "Timestamp when processing was completed",
       "bsonType": "date"
+    },
+    "textProcessed": {
+      "description": "True when text chunking is complete and the book is readable, even if entity post-processing is still running",
+      "bsonType": "bool"
+    },
+    "entityPercentage": {
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Entity post-processing completion percentage (0-100)",
+      "bsonType": [
+        "double",
+        "int"
+      ]
     }
   },
   "bsonType": "object"

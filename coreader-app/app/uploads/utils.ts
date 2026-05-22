@@ -31,6 +31,8 @@ export function toUploadedFile(file: FileDTO | FileWithBookDTO): UploadedFile {
   const status = mapFileStatus(file.status);
   const rawPct = typeof file.percentage === 'number' && !Number.isNaN(file.percentage) ? file.percentage : undefined;
   const progressPct = status === 'completed' || rawPct === undefined ? undefined : clampPct(Math.floor(rawPct));
+  const rawEntityPct = typeof file.entityPercentage === 'number' && !Number.isNaN(file.entityPercentage) ? file.entityPercentage : undefined;
+  const entityProgressPct = status === 'completed' || rawEntityPct === undefined ? undefined : clampPct(Math.floor(rawEntityPct));
 
   return {
     id: file.id,
@@ -39,6 +41,8 @@ export function toUploadedFile(file: FileDTO | FileWithBookDTO): UploadedFile {
     uploadedAt: file.createdAt,
     status,
     progressPct,
+    entityProgressPct,
+    textProcessed: file.textProcessed ?? false,
     bookId: 'bookId' in file ? file.bookId : undefined,
     bookTitle: 'bookTitle' in file ? file.bookTitle : undefined,
   };

@@ -245,6 +245,16 @@ func (db *DB) SetFileProgress(fileID primitive.ObjectID, percentage float64) err
 	return err
 }
 
+func (db *DB) SetFileTextProcessed(fileID primitive.ObjectID) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"percentage": 100, "textProcessed": true})
+	return err
+}
+
+func (db *DB) SetFileEntityProgress(fileID primitive.ObjectID, percentage float64) error {
+	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"entityPercentage": percentage})
+	return err
+}
+
 func (db *DB) SetFileProcessingStarted(fileID primitive.ObjectID) error {
 	_, err := UpdateOneWithMeta(context.TODO(), db.FilesCollection, fileID, bson.M{"processingStartedAt": time.Now().UTC(), "status": "processing"})
 	return err
