@@ -134,6 +134,12 @@ func (c *AIClient) doRequest(ctx context.Context, prompt string, options Options
 	return final.Choices[0].Message.Content, nil
 }
 
+// Ping sends a minimal request to warm the model into memory.
+func (c *AIClient) Ping(ctx context.Context) error {
+	_, err := c.doRequest(ctx, "hi", Options{Temperature: 0})
+	return err
+}
+
 // GenerateEmbedding generates a vector embedding for the given text.
 // This is a placeholder implementation that returns an error for non-Ollama providers.
 func (c *AIClient) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {

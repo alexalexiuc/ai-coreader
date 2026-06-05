@@ -71,6 +71,9 @@ type LLMClient interface {
 
 	// GenerateEmbedding generates a vector embedding for the given text.
 	GenerateEmbedding(ctx context.Context, text string) ([]float32, error)
+
+	// Ping sends a minimal request to warm up the model so the first real call is faster.
+	Ping(ctx context.Context) error
 }
 
 // Options represents configuration options for model generation.

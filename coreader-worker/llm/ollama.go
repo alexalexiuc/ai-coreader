@@ -84,6 +84,12 @@ func (c *OllamaClient) doRequest(ctx context.Context, prompt string, options Opt
 	return responseText.String(), nil
 }
 
+// Ping sends a minimal request to warm the model into memory.
+func (c *OllamaClient) Ping(ctx context.Context) error {
+	_, err := c.doRequest(ctx, "hi", Options{Temperature: 0})
+	return err
+}
+
 // GenerateEmbedding generates a vector embedding for the given text using Ollama's embedding model.
 func (c *OllamaClient) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
 	req := &api.EmbedRequest{

@@ -93,3 +93,6 @@ llm_logs/
 llm_logs/**
 
 .tmp
+
+# Claude local setup
+.claude/settings.local.json

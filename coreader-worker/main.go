@@ -30,6 +30,15 @@ func main() {
 		return
 	}
 
+	go func() {
+		fmt.Println("Pinging LLM agent to warm it up...")
+		if err := llmClient.Ping(ctx); err != nil {
+			fmt.Printf("LLM warm-up ping failed (non-fatal): %v\n", err)
+		} else {
+			fmt.Println("LLM agent warm-up complete.")
+		}
+	}()
+
 	qdrantClient, err := InitQdrant()
 	if err != nil {
 		fmt.Printf("Error initializing Qdrant client: %v\n", err)
